@@ -1,0 +1,51 @@
+.userInput {
+    width: 250px;
+    padding: 10px;
+}
+
+.userIntInput {
+    width: 40px;
+    height: 30px;
+    margin: 0px 10px 5px 10px;
+}
+
+.form-container {
+    width: max-content;
+    transition: width 5s;
+}
+
+.register-form {
+    height: 600px;
+}
+
+.pt-button {
+    width: 100px;
+    height: 35px;
+    border-radius: 25px;
+
+    border: none;
+    background-color: rgb(173, 173, 173);
+
+    &:hover {
+        cursor: pointer;
+        border: 2px solid black;
+    }
+}
+
+.selected-pt-btn {
+    border: 2px solid black;
+}
+
+.grid-specs-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 5px;
+}
+
+.pageBtn,
+.registerBtn {
+    border-radius: 25px;
+    border: none;
+    padding: 10px;
+    width: 200px;
+}
