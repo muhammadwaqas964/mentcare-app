@@ -10,7 +10,7 @@ function PatientDashboard() {
 
     useEffect(() => {
         const patientId = localStorage.getItem("userID");
-        console.log("Patient ID: ", patientId);
+        console.log("Patient ID: ", patientId)
 
         fetch('http://localhost:5000/patientDashboardData', {
             method: 'POST',
@@ -50,12 +50,7 @@ function PatientDashboard() {
 
             <div className="card-container">
                 {journals.map(row => (
-                    <tr key={row.film_id}>
-                        <>
-                            <td className='cell-info-actor'>{row.title}</td>
-                            <td className='cell-info-actor'>{row.rental_count}</td>
-                        </>
-                    </tr>
+                    <p>{row.journalEntry}</p>
                 ))}
             </div>
         </div>
