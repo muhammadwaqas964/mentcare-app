@@ -1,0 +1,46 @@
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.flex-centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.text-centered {
+    text-align: center;
+}
+
+.margin-top-15 {
+    margin-top: 15px;
+}
+
+/*  Use this for login/registration pages  */
+.form-container {
+    padding: 50px;
+    background-color: rgba(87, 216, 194, 0.9);
+    border-radius: 25px;
+    box-shadow: 2px 2px 5px rgb(63, 63, 63);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hidden {
+    display: none;
+    visibility: none;
+}
