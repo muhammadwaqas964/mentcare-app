@@ -41,13 +41,22 @@ function Register() {
         stress: null
     });
 
-    function registerUser(e) {
+    const infoTherapistRefs = useRef({
+        fname: null,
+        lname: null,
+        email: null,
+        password: null,
+        license: null,
+        tosAgreement: null,
+        gridContainer: null
+    });
+
+    function registerPatient(e) {
         e.preventDefault();
         const fname = infoRefs.current.firstName.value;
         const lname = infoRefs.current.lastName.value;
         const email = infoRefs.current.email.value;
         const password = infoRefs.current.password.value;
-        const license = infoRefs.current.license.value;
         const tosAgreement = infoRefs.current.tosAgreement.checked;
         console.log(tosAgreement);
         const company = insuranceRefs.current.company.value;
@@ -62,12 +71,12 @@ function Register() {
         const energy = answersRefs.current.energy.value;
         const stress = answersRefs.current.stress.value;
 
-        fetch('http://localhost:5000/registerUser', {
+        fetch('http://localhost:5000/registerPatient', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ fname, lname, email, password, license, company, insuranceId, tier, weight, height, calories, water, exercise, sleep, energy, stress }),
+            body: JSON.stringify({ fname, lname, email, password, company, insuranceId, tier, weight, height, calories, water, exercise, sleep, energy, stress }),
         })
             .then(response => response.json())
             .then(data => {
@@ -75,6 +84,10 @@ function Register() {
                 navigate('/dashboard');
             })
             .catch(err => console.error('Error updating rental:', err));
+    }
+
+    function registerTherapist(e) {
+        e.preventDefault();
     }
 
     function changeUserRegister(btn) {
@@ -236,7 +249,7 @@ function Register() {
                         <h1>Register</h1>
                         <h2 style={{ color: 'black', margin: '0px 0px 20px 0px' }}>Initial Questionnaire</h2>
                     </div>
-                    <form onSubmit={(e) => registerUser(e)}>
+                    <form onSubmit={(e) => registerPatient(e)}>
                         <div>
                             <div className='flex-row' style={{ justifyContent: 'space-between' }}>
                                 <label>What is your current weight? (in pounds)</label>
@@ -304,64 +317,64 @@ function Register() {
                             <input type='button' value={'THERAPIST'} className='pt-button ' ref={el => (infoRefs.current.therapistBtn = el)} onClick={() => { changeUserRegister(1) }}></input>
                         </div>
                     </div>
-                    <div className='flex-row'>
-                        <form>
-                            <div className='flex-col userInput'>
-                                <label>First Name</label>
-                                <input type="text" ref={el => (infoRefs.current.firstName = el)}></input>
-                            </div>
+                    <form onSubmit={(e) => registerTherapist(e)}>
+                        <div className='flex-row'>
+                            <div>
+                                <div className='flex-col userInput'>
+                                    <label>First Name</label>
+                                    <input type="text" required ref={el => (infoTherapistRefs.current.fname = el)}></input>
+                                </div>
 
-                            <div className='flex-col userInput'>
-                                <label>Last Name</label>
-                                <input type="text" ref={el => (infoRefs.current.lastName = el)}></input>
-                            </div>
+                                <div className='flex-col userInput'>
+                                    <label>Last Name</label>
+                                    <input type="text" required ref={el => (infoTherapistRefs.current.lname = el)}></input>
+                                </div>
 
-                            <div className='flex-col userInput'>
-                                <label>Email</label>
-                                <input type="text" ref={el => (infoRefs.current.email = el)}></input>
-                            </div>
+                                <div className='flex-col userInput'>
+                                    <label>Email</label>
+                                    <input type="text" required ref={el => (infoTherapistRefs.current.email = el)}></input>
+                                </div>
 
-                            <div className='flex-col userInput'>
-                                <label>Password</label>
-                                <input type="password" ref={el => (infoRefs.current.password = el)}></input>
-                            </div>
-                        </form>
-
-                        <form id='therapistInfo'>
-                            <div className='flex-col userInput'>
-                                <label>License Number</label>
-                                <input type="text" ref={el => (infoRefs.current.license = el)}></input>
-                            </div>
-                            <div className='userInput'>
-                                <label>Specializations</label>
-                                <div className='grid-specs-container'>
-                                    <input type='button' value={'Marriage'} className='grid-spec'></input>
-                                    <input type='button' value={'Addiction'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 3'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 4'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 5'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 6'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 7'} className='grid-spec'></input>
-                                    <input type='button' value={'Example 8'} className='grid-spec'></input>
+                                <div className='flex-col userInput'>
+                                    <label>Password</label>
+                                    <input type="password" required ref={el => (infoTherapistRefs.current.password = el)}></input>
                                 </div>
                             </div>
-                        </form>
-                    </div>
 
-                    <div className='flex-centered checkboxInput'>
-                        <input
-                            type='checkbox'
-                            name='checkboxInput'
-                            ref={el => (infoRefs.current.tosAgreement = el)}
-                        /*onChange={ }*/  // Handle state change
-                        />
-                        <label htmlFor='checkboxInput'>
-                            I agree to the Terms of Service.
-                        </label>
-                    </div>
-                    <div className='flex-col margin-top-15'>
-                        <input className='registerBtn' type='button' value={'REGISTER'}></input>
-                    </div>
+                            <div id='therapistInfo'>
+                                <div className='flex-col userInput'>
+                                    <label>License Number</label>
+                                    <input type="text" required ref={el => (infoTherapistRefs.current.license = el)}></input>
+                                </div>
+                                <div className='userInput'>
+                                    <label>Specializations</label>
+                                    <div className='grid-specs-container' required ref={el => (infoTherapistRefs.current.gridContainer = el)}>
+                                        <input type='button' value={'Marriage'} className='grid-spec'></input>
+                                        <input type='button' value={'Addiction'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 3'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 4'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 5'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 6'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 7'} className='grid-spec'></input>
+                                        <input type='button' value={'Example 8'} className='grid-spec'></input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div className='flex-centered checkboxInput'>
+                                <input type='checkbox' name='checkboxInput' required ref={el => (infoTherapistRefs.current.tosAgreement = el)}></input>
+                                <label htmlFor='checkboxInput'>
+                                    I agree to the Terms of Service.
+                                </label>
+                            </div>
+                            <div className='flex-col margin-top-15'>
+                                <input className='registerBtn' type='submit' value={'REGISTER'}></input>
+                            </div>
+                        </div>
+                    </form>
+
+
                 </div>
             </div>
         </>

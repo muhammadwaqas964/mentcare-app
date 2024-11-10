@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/Login.css';
@@ -42,6 +42,7 @@ function Login() {
                 console.log(data.userType);
                 if (data.userType === 'Patient' || data.userType === 'Therapist') {
                     localStorage.setItem('userType', data.userType);
+                    localStorage.setItem('userID', data.userID);
                     navigate('/dashboard');
                 }
             })
