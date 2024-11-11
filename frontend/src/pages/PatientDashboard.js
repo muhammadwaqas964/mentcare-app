@@ -45,39 +45,86 @@ function PatientDashboard() {
         };
     }, []);
 
+    //  ---- JOURNALS FUNCTIONS START HERE ----
     function displayJournal(e) {
         const divParent = e.target.parentElement;
-        divParent.children[1].className = 'visible popUp';
+        divParent.children[1].className = 'visible popUp-background';
     }
 
     function hideJournal(e) {
-        const divParent = e.target.parentElement.parentElement;
-        divParent.className = 'hidden popUp';
+        const divParent = e.target.parentElement.parentElement.parentElement;
+        divParent.className = 'hidden popUp-background';
     }
 
+    function saveJournal(e) {
+        const newEntry = e.target.parentElement.parentElement.children[2];
+        const patientId = localStorage.getItem("userID");
+        const journalId = e.target.getAttribute('journalid');
+        console.log(journalId);
+
+        fetch('http://localhost:5000/saveJournal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "journalEntry": newEntry.value, patientId, journalId }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("Successfully saved the journal");
+            })
+            .catch(err => console.error('Error fetching data:', err));
+    }
+
+    function createJournal(e) {
+        const newJournal = { journalID: null, journalEntry: '', timeDone: new Date().toISOString() };
+        setJournals([...journals, newJournal]);
+    }
+
+    //  ---- JOURNAL FUNCTIONS END HERE ----
+
     return (
-        <div>
-            <h1>Welcome to your Patient Dashboard</h1>
+        <div className='flex-col flex-centered'>
+            <h1>Welcome to your Patient Dashboard!</h1>
             {/* Display patient-specific content */}
 
             <div className="cards-container">
                 <DashboardCard title="Journals">
                     {journals && journals.map((row, index) => {
                         return (
-                            <div key={index}>
+                            <div key={`journal-${index}`}>
                                 <input type='button' value={'Journal'} onClick={(e) => displayJournal(e)}></input>
-                                <div className='hidden popUp'>
-                                    <h2>Journal Entry #n</h2>
-                                    <h3>Date: ##/##/##</h3>
-                                    <textarea defaultValue={row.journalEntry}></textarea>
-                                    <div>
-                                        <input type='button' value={'CANCEL'} onClick={(e) => hideJournal(e)}></input>
-                                        <input type='button' value={'SAVE'}></input>
+                                <div className='hidden popUp-background'>
+                                    <div className='popUp'>
+                                        <h2>Journal Entry #{index + 1}</h2>
+                                        <h3>Date: {new Date(row.timeDone).toDateString()}</h3>
+                                        <textarea defaultValue={row.journalEntry}></textarea>
+                                        <div>
+                                            <input type='button' value={'CANCEL'} onClick={(e) => hideJournal(e)}></input>
+                                            <input type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         );
                     })}
+                    <input type='button' value={'CREATE NEW JOURNAL'} onClick={(e) => createJournal(e)}></input>
+                </DashboardCard>
+
+                <DashboardCard title="Feedback">
+
+                </DashboardCard>
+
+                <DashboardCard title="Daily Surveys">
+
+                </DashboardCard>
+
+                <DashboardCard title="Invoices">
+
+                </DashboardCard>
+
+                <DashboardCard title="Therapist Surveys">
+
                 </DashboardCard>
             </div>
         </div>

@@ -60,7 +60,28 @@ def patientDashFunc():
         print(patientId)
         cursor = mysql.connection.cursor()
         cursor.execute('''
-                SELECT journalEntry FROM journals WHERE journals.patientID = %s
+                SELECT journalID, journalEntry, timeDone FROM journals WHERE journals.patientID = %s
+                ''', (patientId, ))
+        data = cursor.fetchall()
+        if data:
+            columns = [column[0] for column in cursor.description]
+            results = [dict(zip(columns, row)) for row in data]
+            cursor.close()
+            return jsonify(results)
+        else:
+            return jsonify({"error": "No user found with the given email and password"}), 404
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@app.route("/saveJournal", methods=['POST'])
+def save():
+    try:
+        patientId = request.json.get('patientId')
+        journalId = request.json.get('journalId')
+        journalEntry = request.json.get('journalEntry')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                SELECT journalEntry, timeDone FROM journals WHERE journals.patientID = %s
                 ''', (patientId, ))
         data = cursor.fetchall()
         print(data)
