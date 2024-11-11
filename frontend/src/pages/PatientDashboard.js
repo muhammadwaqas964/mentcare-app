@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import DashboardCard from '../components/DashboardCard.js';
+import './styles/PatientDashboard.css'
 
 const socket = io('http://localhost:5000');
 
@@ -43,15 +45,40 @@ function PatientDashboard() {
         };
     }, []);
 
+    function displayJournal(e) {
+        const divParent = e.target.parentElement;
+        divParent.children[1].className = 'visible popUp';
+    }
+
+    function hideJournal(e) {
+        const divParent = e.target.parentElement.parentElement;
+        divParent.className = 'hidden popUp';
+    }
+
     return (
         <div>
             <h1>Welcome to your Patient Dashboard</h1>
             {/* Display patient-specific content */}
 
-            <div className="card-container">
-                {journals.map(row => (
-                    <p>{row.journalEntry}</p>
-                ))}
+            <div className="cards-container">
+                <DashboardCard title="Journals">
+                    {journals && journals.map((row, index) => {
+                        return (
+                            <div key={index}>
+                                <input type='button' value={'Journal'} onClick={(e) => displayJournal(e)}></input>
+                                <div className='hidden popUp'>
+                                    <h2>Journal Entry #n</h2>
+                                    <h3>Date: ##/##/##</h3>
+                                    <textarea defaultValue={row.journalEntry}></textarea>
+                                    <div>
+                                        <input type='button' value={'CANCEL'} onClick={(e) => hideJournal(e)}></input>
+                                        <input type='button' value={'SAVE'}></input>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </DashboardCard>
             </div>
         </div>
     );
