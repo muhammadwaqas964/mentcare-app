@@ -46,9 +46,10 @@ function PatientDashboard() {
     }, []);
 
     //  ---- JOURNALS FUNCTIONS START HERE ----
-    function displayJournal(e) {
-        const divParent = e.target.parentElement;
-        divParent.children[1].className = 'visible popUp-background';
+    function displayJournal(e, x) {
+        console.log(e.target.parentElement.children[1].children.length);
+        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[1].children[e.target.parentElement.children[1].children.length - 1];
+        divParent.className = 'visible popUp-background';
     }
 
     function hideJournal(e) {
@@ -79,6 +80,7 @@ function PatientDashboard() {
     function createJournal(e) {
         const newJournal = { journalID: null, journalEntry: '', timeDone: new Date().toISOString() };
         setJournals([...journals, newJournal]);
+        displayJournal(e, 2);
     }
 
     //  ---- JOURNAL FUNCTIONS END HERE ----
@@ -89,15 +91,15 @@ function PatientDashboard() {
             {/* Display patient-specific content */}
 
             <div className="cards-container">
-                <DashboardCard title="Journals">
+                <DashboardCard title="JOURNALS">
                     {journals && journals.map((row, index) => {
                         return (
                             <div key={`journal-${index}`}>
-                                <input type='button' value={'Journal'} onClick={(e) => displayJournal(e)}></input>
+                                <input type='button' value={'Journal'} onClick={(e) => displayJournal(e, 1)}></input>
                                 <div className='hidden popUp-background'>
                                     <div className='popUp'>
                                         <h2>Journal Entry #{index + 1}</h2>
-                                        <h3>Date: {new Date(row.timeDone).toDateString()}</h3>
+                                        <h3>Date Created: {new Date(row.timeDone).toDateString()}</h3>
                                         <textarea defaultValue={row.journalEntry}></textarea>
                                         <div>
                                             <input type='button' value={'CANCEL'} onClick={(e) => hideJournal(e)}></input>
@@ -111,19 +113,19 @@ function PatientDashboard() {
                     <input type='button' value={'CREATE NEW JOURNAL'} onClick={(e) => createJournal(e)}></input>
                 </DashboardCard>
 
-                <DashboardCard title="Feedback">
+                <DashboardCard title="FEEDBACK">
 
                 </DashboardCard>
 
-                <DashboardCard title="Daily Surveys">
+                <DashboardCard title="DAILY SURVEYS">
 
                 </DashboardCard>
 
-                <DashboardCard title="Invoices">
+                <DashboardCard title="INVOICES">
 
                 </DashboardCard>
 
-                <DashboardCard title="Therapist Surveys">
+                <DashboardCard title="THERAPIST SURVEYS">
 
                 </DashboardCard>
             </div>
