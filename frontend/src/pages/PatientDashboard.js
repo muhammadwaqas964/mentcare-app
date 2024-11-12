@@ -26,8 +26,10 @@ function PatientDashboard() {
             .then(data => {
                 //console.log(data[0]);
                 //console.log(data[1]);
+                console.log(data[2]);
                 setJournals(data[0]);
                 setFeedback(data[1]);
+                setSurveys(data[2]);
             })
             .catch(err => console.error('Error fetching data:', err));
 
