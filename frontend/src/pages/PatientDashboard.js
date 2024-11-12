@@ -6,13 +6,14 @@ import './styles/PatientDashboard.css'
 const socket = io('http://localhost:5000');
 
 function PatientDashboard() {
+    const [updatedJournals, setUpdatedJournals] = useState(0);
     const [journals, setJournals] = useState([]);
     const [feedback, setFeedback] = useState([]);
     const [surveys, setSurveys] = useState([]);
 
     useEffect(() => {
         const patientId = localStorage.getItem("userID");
-        console.log("Patient ID: ", patientId)
+        //console.log("Patient ID: ", patientId)
 
         fetch('http://localhost:5000/patientDashboardData', {
             method: 'POST',
@@ -23,8 +24,10 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data); // Log the data to inspect it
-                setJournals(data); // Set the journals state with the fetched data
+                //console.log(data[0]);
+                //console.log(data[1]);
+                setJournals(data[0]);
+                setFeedback(data[1]);
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -43,16 +46,23 @@ function PatientDashboard() {
             socket.off('new-feedback');
             socket.off('new-survey');
         };
-    }, []);
+    }, [updatedJournals]);
 
-    //  ---- JOURNALS FUNCTIONS START HERE ----
-    function displayJournal(e, x) {
-        console.log(e.target.parentElement.children[1].children.length);
-        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[1].children[e.target.parentElement.children[1].children.length - 1];
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function displayPopUp(e, x) {
+        if (x === 2) {
+            await sleep(100);
+        }
+        //console.log(e.target.parentElement.children[e.target.parentElement.children.length - 2].children[0]);
+        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[e.target.parentElement.children.length - 2].children[1];
         divParent.className = 'visible popUp-background';
     }
 
-    function hideJournal(e) {
+    function hidePopUp(e) {
+        setUpdatedJournals(!updatedJournals);
         const divParent = e.target.parentElement.parentElement.parentElement;
         divParent.className = 'hidden popUp-background';
     }
@@ -61,7 +71,7 @@ function PatientDashboard() {
         const newEntry = e.target.parentElement.parentElement.children[2];
         const patientId = localStorage.getItem("userID");
         const journalId = e.target.getAttribute('journalid');
-        console.log(journalId);
+        //console.log(journalId);
 
         fetch('http://localhost:5000/saveJournal', {
             method: 'POST',
@@ -72,7 +82,7 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("Successfully saved the journal");
+                //console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
     }
@@ -80,10 +90,8 @@ function PatientDashboard() {
     function createJournal(e) {
         const newJournal = { journalID: null, journalEntry: '', timeDone: new Date().toISOString() };
         setJournals([...journals, newJournal]);
-        displayJournal(e, 2);
+        displayPopUp(e, 2);
     }
-
-    //  ---- JOURNAL FUNCTIONS END HERE ----
 
     return (
         <div className='flex-col flex-centered'>
@@ -95,14 +103,14 @@ function PatientDashboard() {
                     {journals && journals.map((row, index) => {
                         return (
                             <div key={`journal-${index}`}>
-                                <input type='button' value={'Journal'} onClick={(e) => displayJournal(e, 1)}></input>
+                                <input type='button' value={'Journal'} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
                                     <div className='popUp'>
                                         <h2>Journal Entry #{index + 1}</h2>
                                         <h3>Date Created: {new Date(row.timeDone).toDateString()}</h3>
                                         <textarea defaultValue={row.journalEntry}></textarea>
                                         <div>
-                                            <input type='button' value={'CANCEL'} onClick={(e) => hideJournal(e)}></input>
+                                            <input type='button' value={'CANCEL'} onClick={(e) => hidePopUp(e)}></input>
                                             <input type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
                                         </div>
                                     </div>
@@ -114,7 +122,23 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="FEEDBACK">
-
+                    {feedback && feedback.map((row, index) => {
+                        return (
+                            <div key={`feedback-${index}`}>
+                                <input type='button' value={row.feedback} onClick={(e) => displayPopUp(e, 1)}></input>
+                                <div className='hidden popUp-background'>
+                                    <div className='popUp'>
+                                        <h2>Feedback #{index + 1}</h2>
+                                        <h3>Date Sent: {new Date(row.feedbackDate).toDateString()}</h3>
+                                        <p>{row.feedback}</p>
+                                        <div>
+                                            <input type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e)}></input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </DashboardCard>
 
                 <DashboardCard title="DAILY SURVEYS">

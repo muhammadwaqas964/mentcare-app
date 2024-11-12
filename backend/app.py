@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify #,render_template, request
 from flask_mysqldb import MySQL
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, emit
+from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
@@ -56,41 +57,55 @@ def patientOrTherapistFunc():
 @app.route("/patientDashboardData", methods=['POST'])
 def patientDashFunc():
     try:
+        totalResults = []
         patientId = request.json.get('patientId')
         print(patientId)
         cursor = mysql.connection.cursor()
         cursor.execute('''
-                SELECT journalID, journalEntry, timeDone FROM journals WHERE journals.patientID = %s
+                SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
                 ''', (patientId, ))
         data = cursor.fetchall()
-        if data:
-            columns = [column[0] for column in cursor.description]
-            results = [dict(zip(columns, row)) for row in data]
-            cursor.close()
-            return jsonify(results)
-        else:
-            return jsonify({"error": "No user found with the given email and password"}), 404
+        columns = [column[0] for column in cursor.description]
+        results = [dict(zip(columns, row)) for row in data]
+        totalResults.append(results)
+
+        cursor.execute('''
+                SELECT feedbackID, feedbackDate, feedback FROM feedback where patientID = %s
+                ''', (patientId, ))
+        feedback_data = cursor.fetchall()
+        feedback_columns = [column[0] for column in cursor.description]
+        feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
+
+        totalResults.append(feedback_results)
+        cursor.close()
+
+        return jsonify(totalResults)
     except Exception as err:
         return {"error":  f"{err}"}
     
 @app.route("/saveJournal", methods=['POST'])
 def save():
     try:
-        patientId = request.json.get('patientId')
-        journalId = request.json.get('journalId')
         journalEntry = request.json.get('journalEntry')
+        patientId = request.json.get('patientId')
+        journalId = request.json.get('journalId') if request.json.get('journalId') else "null"
+        print("Journal ID: " + journalId + "\n")
         cursor = mysql.connection.cursor()
-        cursor.execute('''
-                SELECT journalEntry, timeDone FROM journals WHERE journals.patientID = %s
-                ''', (patientId, ))
-        data = cursor.fetchall()
-        print(data)
-        if data:
-            columns = [column[0] for column in cursor.description]
-            results = [dict(zip(columns, row)) for row in data]
-            cursor.close()
-            return jsonify(results)
+        if journalId == "null":
+            currentDate = datetime.now()
+            print(currentDate)
+            cursor.execute('''
+                    INSERT INTO journals (patientID, journalEntry, timeDone)
+                    VALUES (%s, %s, %s)
+                    ''', (patientId, journalEntry, currentDate))
         else:
-            return jsonify({"error": "No user found with the given email and password"}), 404
+            cursor.execute('''
+                    UPDATE journals
+                    SET journalEntry = %s
+                    WHERE patientID = %s AND journalID = %s
+                    ''', (journalEntry, patientId, journalId))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message" : "Journal saved successfully"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
