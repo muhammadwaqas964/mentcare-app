@@ -38,6 +38,10 @@ const Navbar = () => {
             .catch(err => console.error('Error fetching data:', err));
     }, []);
 
+    function showHamburger() {
+
+    }
+
     return (
         <nav>
             <div className="left-section">
@@ -86,13 +90,41 @@ const Navbar = () => {
                         <h2>Login</h2>
                     </Link>
                 ) : (
-                    <h2>
-                        {userData ? (
-                            userData.userName
+                    <>
+                        {userData && userData.userType === 'Patient' ? (
+                            <div style={{ height: '100%' }}>
+                                <div className="dropdown">
+                                    <h2 className="username">{userData.userName}</h2>
+
+                                    <div className="dropdown-items">
+                                        <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
+                                            Settings
+                                        </Link>
+                                        <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                            Log Out
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         ) : (
-                            <span>Patient</span>
+                            <div>
+                                <h2 className="username">{userData.userName}</h2>
+                                <div className="hamburger-container">
+                                    <div className="hamburger-items-container">
+                                        <Link to={`/therapistProfile`} onClick={() => handleTabClick(`/therapistProfile`)} className="hamburger-item">
+                                            Profile
+                                        </Link>
+                                        <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
+                                            Settings
+                                        </Link>
+                                        <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                            Log Out
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
                         )}
-                    </h2>
+                    </>
                 )}
 
                 {/*
@@ -101,7 +133,7 @@ const Navbar = () => {
                 </Link>
                 */}
             </div>
-        </nav>
+        </nav >
     );
 }
 

@@ -58,3 +58,52 @@ a {
         color: black;
     }
 }
+
+.username {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    &:hover {
+        background-color: red;
+    }
+}
+
+.dropdown {
+    float: left;
+    overflow: hidden;
+    height: 100%;
+}
+
+.dropdown-items {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.hamburger-item {
+    height: 20px;
+    color: black;
+    margin: 0;
+    padding: 20px;
+
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* Add a grey background color to dropdown links on hover */
+.dropdown-items a:hover {
+    background-color: #858585;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-items {
+    display: block;
+}
