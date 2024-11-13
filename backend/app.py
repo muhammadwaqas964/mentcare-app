@@ -195,3 +195,17 @@ def save():
         return jsonify({"message" : "Journal saved successfully"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
+    
+@app.route("/therapistDashboardData", methods=['POST'])
+def theraDashFunc():
+    try:
+        userId = request.json.get('userId')
+        cursor = mysql.connection.cursor()
+        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
+        therapistId = cursor.fetchall()[0][0]
+        cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM surveys WHERE therapistID = {therapistId}')
+        data = cursor.fetchall()
+        cursor.close()
+        return jsonify({"survey" : data[0]}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}

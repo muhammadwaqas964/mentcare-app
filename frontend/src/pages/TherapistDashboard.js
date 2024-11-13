@@ -6,46 +6,45 @@ import './styles/TherapistDashboard.css'
 const socket = io('http://localhost:5000');
 
 function TherapistDashboard() {
-    const [journals, setJournals] = useState([]);
-    const [feedback, setFeedback] = useState([]);
-    const [surveys, setSurveys] = useState([]);
     const [acceptingStatus, setAcceptingStatus] = useState(true);
+    const [surveyQuestions, setSurveyQuestions] = useState([{ "question": "Loading Questions", "questionType": "Loading" }]);
+    const [patients, setPatients] = useState(null);
 
     useEffect(() => {
-        const patientId = localStorage.getItem("userID");
-        console.log("Patient ID: ", patientId);
+        const userId = localStorage.getItem("userID");
+        console.log("User ID: ", userId);
 
-        fetch('http://localhost:5000/patientDashboardData', {
+        fetch('http://localhost:5000/therapistDashboardData', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ patientId }), // Send patientId in the body
+            body: JSON.stringify({ userId }), // Send userId in the body
         })
             .then(res => res.json())
             .then(data => {
+                console.log("START");
                 console.log(data); // Log the data to inspect it
-                setJournals(data); // Set the journals state with the fetched data
+                setSurveyQuestions(JSON.parse(data.survey));
             })
             .catch(err => console.error('Error fetching data:', err));
 
         // Listen for new feedback from therapist
-        socket.on('new-feedback', (newFeedback) => {
-            setFeedback((prevFeedback) => [...prevFeedback, newFeedback]);
-        });
+        // socket.on('new-feedback', (newFeedback) => {
+
+        // });
 
         // Listen for new surveys from therapist
-        socket.on('new-survey', (newSurvey) => {
-            setSurveys((prevSurveys) => [...prevSurveys, newSurvey]);
-        });
+        // socket.on('new-survey', (newSurvey) => {
+
+        // });
 
         // Cleanup on component unmount
-        return () => {
-            socket.off('new-feedback');
-            socket.off('new-survey');
-        };
+        // return () => {
+        //     socket.off('new-feedback');
+        //     socket.off('new-survey');
+        // };
     }, []);
-
 
     return (
         <>
@@ -57,19 +56,16 @@ function TherapistDashboard() {
                                 <DashboardCardTitleless extraClasses="margined">
                                     <p>{acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS</p>
                                 </DashboardCardTitleless>
-                                <DashboardCard title="Your Survey Questions" extraClasses="margined" >
-                                    <p>bruh</p>
-                                </DashboardCard>
-                                <DashboardCard title="Your Initial Questions" extraClasses="margined">
-                                    <p>bruh</p>
-                                </DashboardCard>
-                                <DashboardCard title="Active Patients" extraClasses="margined">
-                                    <p>bruh</p>
+                                <DashboardCard title="Your Survey Questions" extraClasses="margined">
+                                    {surveyQuestions.map((item, index) => (
+                                        <p> {item.question} (Type: {item.questionType}) </p>
+                                    ))}
                                 </DashboardCard>
                             </div>
                         </div>
                     </td>
                     <td style={{ width: '50%' }}>
+                        <h1 style={{ textAlign: 'center' }}>Active Patients</h1>
                         <div className="flex-row flex-centered main-container">
                             <div className="right-side">
                                 <DashboardCardTitleless extraClasses="margined">
