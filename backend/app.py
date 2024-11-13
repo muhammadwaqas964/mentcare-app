@@ -20,6 +20,37 @@ mysql = MySQL(app)
 def defaultFunc():
     return {"status": "Backend is alive"}
 
+@app.route("/navbarData", methods=['POST'])
+def navbarDataFunc():
+    try:
+        userId = request.json.get('userId')
+        userType = request.json.get('userType')
+
+        cursor = mysql.connection.cursor()
+
+        if userType == 'Patient':
+            cursor.execute('''
+                    SELECT userName, userType FROM users
+                    INNER JOIN patients ON users.userID = patients.userID
+                    WHERE patients.userID = %s
+                    ''', (userId, ))
+        elif userType == 'Therapist':
+            cursor.execute('''
+                    SELECT userName, userType FROM users
+                    INNER JOIN therapists ON users.userID = therapists.userID
+                    WHERE therapists.userID = %s
+                    ''', (userId, ))
+        data = cursor.fetchall()
+        if data:
+            columns = [column[0] for column in cursor.description]
+            results = [dict(zip(columns, row)) for row in data]
+            return jsonify(results)
+        else:
+            return jsonify({"message" : "User not found"}), 404
+
+    except Exception as err:
+        return {"error":  f"{err}"}
+
 @app.route("/patientOrTherapist", methods=['POST'])
 def patientOrTherapistFunc():
     try:
@@ -95,7 +126,6 @@ def patientDashFunc():
                 WHERE (cds.dailySurveyID IS NULL)
                     OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
                 ''', (patientId, ))
-
         daily_survey_data = cursor.fetchall()
         daily_survey_columns = [column[0] for column in cursor.description]
         daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]

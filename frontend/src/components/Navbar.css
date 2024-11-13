@@ -52,3 +52,9 @@ a {
 .right-section {
     margin-right: 10%;
 }
+
+.navbar-tab {
+    &:hover {
+        color: black;
+    }
+}

@@ -16,19 +16,33 @@ const Navbar = () => {
     const isLandingPage = location.pathname === "/";
     const isLoginPage = location.pathname === "/login";
     const isRegistrationPage = location.pathname === "/register";
-    const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
+    const isLoggedIn = localStorage.getItem("userID") ? true : false;
+    //const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
 
     useEffect(() => {
-        return () => {
+        const userId = localStorage.getItem("userID");
+        const userType = localStorage.getItem("userType");
 
-        };
+        fetch('http://localhost:5000/navbarData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId, userType }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data[0]);
+                setUserData(data[0]);
+            })
+            .catch(err => console.error('Error fetching data:', err));
     }, []);
 
     return (
         <nav>
             <div className="left-section">
                 <Link to='/'>
-                    <h2>MentCare</h2>
+                    <h2 className="navbar-tab">MentCare</h2>
                 </Link>
             </div>
 
@@ -40,15 +54,45 @@ const Navbar = () => {
                     </Link>
                 ))}
                 */}
+                {userData && (
+                    <div className="flex-row" style={{ gap: '20px' }}>
+                        {/* Common links for both Patient and Therapist */}
+                        <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+                            <h2 className="navbar-tab">Dashboard</h2>
+                        </Link>
+
+                        {/* Conditional links based on userType */}
+                        {userData.userType === 'Patient' && (
+                            <Link to={`/therapistlist`} onClick={() => handleTabClick(`/therapistlist`)}>
+                                <h2 className="navbar-tab">Therapist List</h2>
+                            </Link>
+                        )}
+                        {userData.userType === 'Therapist' && (
+                            <Link to={`/profile`} onClick={() => handleTabClick(`/profile`)}>
+                                <h2 className="navbar-tab">Profile</h2>
+                            </Link>
+                        )}
+
+                        <Link to={`/chats`} onClick={() => handleTabClick(`/chats`)}>
+                            <h2 className="navbar-tab">Chats</h2>
+                        </Link>
+                    </div>
+                )}
             </div>
 
             <div className="right-section">
-                {isLandingPage || isLoginPage || isRegistrationPage ? (
+                {isLoggedIn !== true ? (
                     <Link to={`/login`} onClick={() => handleTabClick(`/login`)}>
                         <h2>Login</h2>
                     </Link>
                 ) : (
-                    <h2>Patient Name</h2>
+                    <h2>
+                        {userData ? (
+                            userData.userName
+                        ) : (
+                            <span>Patient</span>
+                        )}
+                    </h2>
                 )}
 
                 {/*
