@@ -17,11 +17,14 @@ const Navbar = () => {
     const isLoginPage = location.pathname === "/login";
     const isRegistrationPage = location.pathname === "/register";
     const isLoggedIn = localStorage.getItem("userID") ? true : false;
+    console.log("TESTING");
     //const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
 
     useEffect(() => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
+        console.log(userId);
+        console.log(userType);
 
         fetch('http://localhost:5000/navbarData', {
             method: 'POST',
@@ -51,13 +54,6 @@ const Navbar = () => {
             </div>
 
             <div className="mid-section">
-                {/*
-                {props.mid_tabs && props.mid_tabs.map(tabName => (
-                    <Link to={`/${tabName}`} onClick={() => handleTabClick(`/${tabName}`)} key={`tab-${tabName}`}>
-                        <h2 className={selectedTab === `/${tabName}` ? "selected" : console.log(`/${tabName}`)}>{tabName}</h2>
-                    </Link>
-                ))}
-                */}
                 {userData && (
                     <div className="flex-row" style={{ gap: '20px' }}>
                         {/* Common links for both Patient and Therapist */}
@@ -91,38 +87,37 @@ const Navbar = () => {
                     </Link>
                 ) : (
                     <>
-                        {userData && userData.userType === 'Patient' ? (
-                            <div style={{ height: '100%' }}>
+                        {userData ? (  // Check if userData exists before accessing it
+                            <>
                                 <div className="dropdown">
                                     <h2 className="username">{userData.userName}</h2>
 
-                                    <div className="dropdown-items">
-                                        <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
-                                            Settings
-                                        </Link>
-                                        <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
-                                            Log Out
-                                        </Link>
-                                    </div>
+                                    {userData.userType === 'Patient' ? (
+                                        <div className="dropdown-items">
+                                            <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
+                                                Settings
+                                            </Link>
+                                            <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                                Log Out
+                                            </Link>
+                                        </div>
+                                    ) : (
+                                        <div className="dropdown-items">
+                                            <Link to={`/therapistProfile`} onClick={() => handleTabClick(`/therapistProfile`)} className="hamburger-item">
+                                                Profile
+                                            </Link>
+                                            <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
+                                                Settings
+                                            </Link>
+                                            <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                                Log Out
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            </>
                         ) : (
-                            <div>
-                                <h2 className="username">{userData.userName}</h2>
-                                <div className="hamburger-container">
-                                    <div className="hamburger-items-container">
-                                        <Link to={`/therapistProfile`} onClick={() => handleTabClick(`/therapistProfile`)} className="hamburger-item">
-                                            Profile
-                                        </Link>
-                                        <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
-                                            Settings
-                                        </Link>
-                                        <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
-                                            Log Out
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
+                            <p>Loading...</p>  // Optional: Show a loading message while userData is being fetched
                         )}
                     </>
                 )}
