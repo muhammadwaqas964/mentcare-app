@@ -9,7 +9,9 @@ function PatientDashboard() {
     const [updatedJournals, setUpdatedJournals] = useState(0);
     const [journals, setJournals] = useState([]);
     const [feedback, setFeedback] = useState([]);
-    const [surveys, setSurveys] = useState([]);
+    const [dailySurveys, setDailySurveys] = useState([]);
+    const [incompleteTherapistSurveys, setIncompleteTherapistSurveys] = useState([]);
+    const [completeTherapistSurveys, setCompleteTherapistSurveys] = useState([]);
 
     useEffect(() => {
         const patientId = localStorage.getItem("userID");
@@ -26,10 +28,14 @@ function PatientDashboard() {
             .then(data => {
                 //console.log(data[0]);
                 //console.log(data[1]);
-                console.log(data[2]);
+                //console.log(data[2]);
+                //console.log(data[3]);
+                //console.log(data[4]);
                 setJournals(data[0]);
                 setFeedback(data[1]);
-                setSurveys(data[2]);
+                setDailySurveys(data[2]);
+                setIncompleteTherapistSurveys(data[3]);
+                setCompleteTherapistSurveys(data[4]);
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -40,7 +46,7 @@ function PatientDashboard() {
 
         // Listen for new surveys from therapist
         socket.on('new-survey', (newSurvey) => {
-            setSurveys((prevSurveys) => [...prevSurveys, newSurvey]);
+            setIncompleteTherapistSurveys((prevSurveys) => [...prevSurveys, newSurvey]);
         });
 
         // Cleanup on component unmount
@@ -95,6 +101,10 @@ function PatientDashboard() {
         displayPopUp(e, 2);
     }
 
+    function submitDailySurvey(e) {
+
+    }
+
     return (
         <div className='flex-col flex-centered'>
             <h1>Welcome to your Patient Dashboard!</h1>
@@ -144,7 +154,104 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="DAILY SURVEYS">
+                    {dailySurveys && dailySurveys.map((row, index) => {
+                        return (
+                            <div key={`daily-survey-${index}`}>
+                                <input
+                                    type='button'
+                                    dailysurveyid={row.dailySurveyID}
+                                    value={row.weight !== null ? `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}` : `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
+                                    onClick={(e) => displayPopUp(e, 1)}
+                                />
+                                <div className='hidden popUp-background'>
+                                    <div className='popUp'>
+                                        <h2>Daily Survey #{index + 1}</h2>
+                                        <h3>Date: {new Date(row.dateCreated).toDateString()}</h3>
 
+                                        {row.weight !== null ? (
+                                            <>
+                                                <div>
+                                                    <p>QUESTION #1: </p>
+                                                    <p>ANSWER: {row.weight}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #2: </p>
+                                                    <p>ANSWER: {row.height}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #3: </p>
+                                                    <p>ANSWER: {row.calories}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #4: </p>
+                                                    <p>ANSWER: {row.water}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #5: </p>
+                                                    <p>ANSWER: {row.exercise}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #6: </p>
+                                                    <p>ANSWER: {row.sleep}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #7: </p>
+                                                    <p>ANSWER: {row.energy}</p>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #8: </p>
+                                                    <p>ANSWER: {row.stress}</p>
+                                                </div>
+                                                <div>
+                                                    <input type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e)}></input>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <p>QUESTION #1: Weight</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #2: Height </p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #3: Calories</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #4: Water</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #5: Exercise</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #6: Sleep</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #7: Energy</p>
+                                                    <textarea></textarea>
+                                                </div>
+                                                <div>
+                                                    <p>QUESTION #8: Stress</p>
+                                                    <textarea></textarea>
+                                                </div>
+
+                                                <div>
+                                                    <input type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e)}></input>
+                                                    <input type='button' dailysurveyid={row.dailySurveyID} value={'SUBMIT'} onClick={(e) => submitDailySurvey(e)}></input>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </DashboardCard>
 
                 <DashboardCard title="INVOICES">
@@ -152,7 +259,52 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="THERAPIST SURVEYS">
+                    {incompleteTherapistSurveys && incompleteTherapistSurveys.map((surveyObj, index) => {
+                        // Parse the 'survey' JSON string into an array of questions
+                        const questions = JSON.parse(surveyObj.survey);
 
+                        return (
+                            <div key={`incompleted-survey-${index}`}>
+                                <input type='button' value={`Survey ${index + 1}`} onClick={(e) => displayPopUp(e, 1)}></input>
+                                <div className='hidden popUp-background'>
+                                    <div className='popUp'>
+                                        {questions.map((question, questionIndex) => (
+                                            <div key={questionIndex} className='flex-col'>
+                                                <label>{question.question}</label>
+                                                <input type='text' placeholder={question.questionType}></input>
+                                            </div>
+                                        ))}
+                                        <div>
+                                            <input type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e)}></input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    {completeTherapistSurveys && completeTherapistSurveys.map((surveyObj, index) => {
+                        const questions = JSON.parse(surveyObj.questions);
+                        const answers = JSON.parse(surveyObj.answers);
+
+                        return (
+                            <div key={`completed-survey-${index}`}>
+                                <input type='button' value={`COMPLETED Survey ${new Intl.DateTimeFormat('en-US').format(new Date(surveyObj.dateDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
+                                <div className='hidden popUp-background'>
+                                    <div className='popUp'>
+                                        {questions && questions.map((question, questionIndex) => (
+                                            <div key={questionIndex} className='flex-col'>
+                                                <label>{question.question}</label>
+                                                <input type='text' disabled value={answers[0][`q${questionIndex + 1}`] || ''}></input>
+                                            </div>
+                                        ))}
+                                        <div>
+                                            <input type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e)}></input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </DashboardCard>
             </div>
         </div>

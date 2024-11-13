@@ -59,7 +59,6 @@ def patientDashFunc():
     try:
         totalResults = []
         patientId = request.json.get('patientId')
-        print(patientId)
         cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
@@ -70,15 +69,72 @@ def patientDashFunc():
         totalResults.append(results)
 
         cursor.execute('''
-                SELECT feedbackID, feedbackDate, feedback FROM feedback where patientID = %s
+                SELECT feedbackID, feedbackDate, feedback FROM feedback WHERE patientID = %s
                 ''', (patientId, ))
         feedback_data = cursor.fetchall()
         feedback_columns = [column[0] for column in cursor.description]
         feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
-
         totalResults.append(feedback_results)
-        cursor.close()
 
+        #   Extract incomplete + complete daily surveys        
+        cursor.execute('''
+                SELECT
+                    ds.dailySurveyID,
+                    ds.dateCreated,
+                    IFNULL(cds.weight, NULL) AS weight,
+                    IFNULL(cds.height, NULL) AS height,
+                    IFNULL(cds.calories, NULL) AS calories,
+                    IFNULL(cds.water, NULL) AS water,
+                    IFNULL(cds.exercise, NULL) AS exercise,
+                    IFNULL(cds.sleep, NULL) AS sleep,
+                    IFNULL(cds.energy, NULL) AS energy,
+                    IFNULL(cds.stress, NULL) AS stress
+                FROM dailySurveys ds
+                LEFT JOIN completedDailySurveys cds
+                    ON ds.dailySurveyID = cds.dailySurveyID
+                WHERE (cds.dailySurveyID IS NULL)
+                    OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
+                ''', (patientId, ))
+
+        daily_survey_data = cursor.fetchall()
+        daily_survey_columns = [column[0] for column in cursor.description]
+        daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
+        totalResults.append(daily_survey_results)
+
+        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
+        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
+        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
+        
+        #   Extract incomplete therapist survey (if exists)
+        cursor.execute('''
+                SELECT therapistID FROM therapistPatientsList WHERE patientID = %s AND status = 'Active';
+                ''', (patientId, ))
+        therapistId = cursor.fetchone()[0]
+        if (therapistId):
+            cursor.execute('''
+                    SELECT JSON_EXTRACT(content, '$.survey') AS survey FROM surveys
+                    WHERE therapistID = %s AND patientID = %s;
+                ''', (therapistId, patientId ))
+            incomp_surveys_data = cursor.fetchall()
+            if (incomp_surveys_data):
+                incomp_surveys_columns = [column[0] for column in cursor.description]
+                incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
+                #print(therap_surveys_results)
+                totalResults.append(incomp_surveys_results)
+
+        
+        #   Extract complete therapist surveys (if exists)
+        cursor.execute('''
+                SELECT JSON_EXTRACT(questions, '$.survey') AS questions, JSON_EXTRACT(answers, '$.answers') AS answers, dateDone FROM completedSurveys
+                WHERE patientID = %s
+                ''', (patientId, ))
+        comp_surveys_data = cursor.fetchall()
+        if (comp_surveys_data):
+            comp_surveys_columns = [column[0] for column in cursor.description]
+            comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
+            totalResults.append(comp_surveys_results)
+
+        cursor.close()
         return jsonify(totalResults)
     except Exception as err:
         return {"error":  f"{err}"}
