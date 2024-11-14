@@ -20,9 +20,6 @@ const Navbar = () => {
         setSelectedTab(path.toLowerCase());
     };
 
-    const isLandingPage = location.pathname === "/";
-    const isLoginPage = location.pathname === "/login";
-    const isRegistrationPage = location.pathname === "/register";
     const isLoggedIn = localStorage.getItem("userID") ? true : false;
     //const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
 
@@ -45,7 +42,7 @@ const Navbar = () => {
                 setUserData(data[0]);
             })
             .catch(err => console.error('Error fetching data:', err));
-    }, []);
+    }, [localStorage.getItem("userID")]);   //  If it aint broke, dont fix it
 
     return (
         <nav>
