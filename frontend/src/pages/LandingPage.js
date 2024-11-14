@@ -8,13 +8,8 @@ import missionImage from './assets/images/img4_mission.png';
 function LandingPage() {
     return (
         <div className="landing-page">
-            <header className="header">
-                <h1>MentCare</h1>
-                <button className="login-btn">Login</button>
-            </header>
-            
             <section className="about-us">
-                <img src={backgroundImage} alt="bg pic1" className="about-image"/>
+                <img src={backgroundImage} alt="bg pic1" className="about-image" />
                 <button className="register-btn">Register Now</button>
             </section>
 
@@ -28,14 +23,14 @@ function LandingPage() {
             <section className="testimonials">
                 <h2>Testimonials</h2>
                 <div className="testimonial">
-                    <img src={profileImage1} alt="profile pic1" className="profile-picture"/>
+                    <img src={profileImage1} alt="profile pic1" className="profile-picture" />
                     <p>"MentCare has been a game-changer in my life. I was matched with a therapist who truly understands my challenges, and the resources provided have helped me manage my mental health in ways I never thought possible. The convenience of virtual sessions and personalized tools make it easy for me to stay on track."
-                    — Alex R.</p>
+                        — Alex R.</p>
                 </div>
                 <div className="testimonial">
-                    <img src={profileImage2} alt="profile pic2" className="profile-picture"/>
+                    <img src={profileImage2} alt="profile pic2" className="profile-picture" />
                     <p>"After struggling to find the right therapist locally, MentCare connected me with an amazing professional who provided a personalized treatment plan that addresses my specific needs. I feel understood and supported, and I can already see a positive change in my mental health."
-                    — Mary T.</p>
+                        — Mary T.</p>
                 </div>
             </section>
 

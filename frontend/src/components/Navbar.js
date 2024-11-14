@@ -9,7 +9,14 @@ const Navbar = () => {
     //  Need this since Routing makes window.location not update on tab clicks
     const location = useLocation();
     const [selectedTab, setSelectedTab] = useState(location.pathname);
-    const handleTabClick = (path) => {
+    function handleTabClick(path) {
+        if (path === '/logout') {
+            console.log("HELLO");
+            localStorage.removeItem("userID");
+            localStorage.removeItem("userType");
+            setUserData();
+            return;
+        }
         setSelectedTab(path.toLowerCase());
     };
 
@@ -17,14 +24,13 @@ const Navbar = () => {
     const isLoginPage = location.pathname === "/login";
     const isRegistrationPage = location.pathname === "/register";
     const isLoggedIn = localStorage.getItem("userID") ? true : false;
-    console.log("TESTING");
     //const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
 
     useEffect(() => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
-        console.log(userId);
-        console.log(userType);
+        //console.log(userId);
+        //console.log(userType);
 
         fetch('http://localhost:5000/navbarData', {
             method: 'POST',
@@ -40,10 +46,6 @@ const Navbar = () => {
             })
             .catch(err => console.error('Error fetching data:', err));
     }, []);
-
-    function showHamburger() {
-
-    }
 
     return (
         <nav>
@@ -97,7 +99,7 @@ const Navbar = () => {
                                             <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
                                                 Settings
                                             </Link>
-                                            <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                            <Link to={`/login`} onClick={() => handleTabClick(`/logout`)} className="hamburger-item">
                                                 Log Out
                                             </Link>
                                         </div>
@@ -109,7 +111,7 @@ const Navbar = () => {
                                             <Link to={`/settings`} onClick={() => handleTabClick(`/settings`)} className="hamburger-item">
                                                 Settings
                                             </Link>
-                                            <Link to={`/login`} onClick={() => handleTabClick(`/login`)} className="hamburger-item">
+                                            <Link to={`/login`} onClick={() => handleTabClick('/logout')} className="hamburger-item">
                                                 Log Out
                                             </Link>
                                         </div>
