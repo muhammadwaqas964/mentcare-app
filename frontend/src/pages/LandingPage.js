@@ -1,5 +1,5 @@
 import React from 'react';
-import './LandingPage.css';
+import './styles/LandingPage.css';
 import backgroundImage from './assets/images/img1_bg.png';
 import profileImage1 from './assets/images/img2_alex.png';
 import profileImage2 from './assets/images/img3_mary.png';

@@ -8,7 +8,6 @@ li,
 h2 {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-weight: bold;
-    /*color: #20221C;*/
     color: white;
 }
 
@@ -29,16 +28,6 @@ a {
     cursor: pointer;
 }
 
-.hidden {
-    display: block;
-    visibility: hidden;
-}
-
-.selected-nav-item {
-    /*border-bottom: 2px solid #20221C;*/
-    color: red;
-}
-
 .left-section,
 .mid-section,
 .right-section {
@@ -47,17 +36,32 @@ a {
 
 .left-section {
     margin-left: 10%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 .right-section {
     margin-right: 10%;
 }
 
-.navbar-tab {
+.selectable-tab {
+    background-color: #00C7A6;
+    border-radius: 25px;
+    padding: 10px;
+
     &:hover {
-        color: black;
+        background-color: #00b698;
     }
 }
+
+.active-tab {
+    background-color: #007460;
+    border-radius: 25px;
+    padding: 10px;
+}
+
 
 .username {
     height: 100%;
@@ -68,7 +72,7 @@ a {
     flex-direction: column;
 
     &:hover {
-        background-color: red;
+        cursor: default;
     }
 }
 

@@ -12,6 +12,7 @@ function PatientDashboard() {
     const [dailySurveys, setDailySurveys] = useState([]);
     const [incompleteTherapistSurveys, setIncompleteTherapistSurveys] = useState([]);
     const [completeTherapistSurveys, setCompleteTherapistSurveys] = useState([]);
+    const [invoices, setInvoices] = useState([]);
 
     useEffect(() => {
         const patientId = localStorage.getItem("userID");
@@ -31,11 +32,13 @@ function PatientDashboard() {
                 //console.log(data[2]);
                 //console.log(data[3]);
                 //console.log(data[4]);
+                console.log(data[5]);
                 setJournals(data[0]);
                 setFeedback(data[1]);
                 setDailySurveys(data[2]);
                 setIncompleteTherapistSurveys(data[3]);
                 setCompleteTherapistSurveys(data[4]);
+                setInvoices(data[5]);
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -255,7 +258,11 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="INVOICES">
-
+                    {invoices && invoices.map((row, index) => {
+                        return (
+                            <input key={`invoice-${index}`} type='button' value={`$${row.amountDue} Invoice to ${row.userName}`}></input>
+                        );
+                    })}
                 </DashboardCard>
 
                 <DashboardCard title="THERAPIST SURVEYS">

@@ -130,10 +130,6 @@ def patientDashFunc():
         daily_survey_columns = [column[0] for column in cursor.description]
         daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
         totalResults.append(daily_survey_results)
-
-        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
-        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
-        #   MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE - MYSQL FOR INVOICES GOES HERE
         
         #   Extract incomplete therapist survey (if exists)
         cursor.execute('''
@@ -159,10 +155,23 @@ def patientDashFunc():
                 WHERE patientID = %s
                 ''', (patientId, ))
         comp_surveys_data = cursor.fetchall()
-        if (comp_surveys_data):
+        if comp_surveys_data:
             comp_surveys_columns = [column[0] for column in cursor.description]
             comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
             totalResults.append(comp_surveys_results)
+
+        #   Extract invoices (if exists):
+        cursor.execute('''
+                SELECT users.userName, invoices.amountDue, invoices.dateCreated FROM invoices
+                INNER JOIN therapists ON invoices.therapistID = therapists.therapistID
+                INNER JOIN users ON therapists.userID = users.userID
+                WHERE invoices.patientID = %s;
+                ''', (patientId, ))
+        invoices_data = cursor.fetchall()
+        if invoices_data:
+            invoices_columns = [column[0] for column in cursor.description]
+            invoices_results = [dict(zip(invoices_columns, row)) for row in invoices_data]
+            totalResults.append(invoices_results)
 
         cursor.close()
         return jsonify(totalResults)

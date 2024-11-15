@@ -9,6 +9,9 @@ const Navbar = () => {
     //  Need this since Routing makes window.location not update on tab clicks
     const location = useLocation();
     const [selectedTab, setSelectedTab] = useState(location.pathname);
+
+    const isLoggedIn = localStorage.getItem("userID") ? true : false;
+
     function handleTabClick(path) {
         if (path === '/logout') {
             console.log("HELLO");
@@ -18,16 +21,12 @@ const Navbar = () => {
             return;
         }
         setSelectedTab(path.toLowerCase());
+        console.log(path);
     };
-
-    const isLoggedIn = localStorage.getItem("userID") ? true : false;
-    //const isRegisteredUser = localStorage.getItem('token') ? localStorage.getItem('token') : null;
 
     useEffect(() => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
-        //console.log(userId);
-        //console.log(userType);
 
         fetch('http://localhost:5000/navbarData', {
             method: 'POST',
@@ -47,7 +46,7 @@ const Navbar = () => {
     return (
         <nav>
             <div className="left-section">
-                <Link to='/'>
+                <Link to='/' onClick={() => handleTabClick(`/`)}>
                     <h2 className="navbar-tab">MentCare</h2>
                 </Link>
             </div>
@@ -57,23 +56,23 @@ const Navbar = () => {
                     <div className="flex-row" style={{ gap: '20px' }}>
                         {/* Common links for both Patient and Therapist */}
                         <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
-                            <h2 className="navbar-tab">Dashboard</h2>
+                            <h2 className={`navbar-tab ${selectedTab === '/dashboard' ? 'active-tab' : 'selectable-tab'}`}>Dashboard</h2>
                         </Link>
 
                         {/* Conditional links based on userType */}
                         {userData.userType === 'Patient' && (
                             <Link to={`/therapistlist`} onClick={() => handleTabClick(`/therapistlist`)}>
-                                <h2 className="navbar-tab">Therapist List</h2>
+                                <h2 className={`navbar-tab ${selectedTab === '/therapistlist' ? 'active-tab' : 'selectable-tab'}`}>Therapist List</h2>
                             </Link>
                         )}
                         {userData.userType === 'Therapist' && (
                             <Link to={`/profile`} onClick={() => handleTabClick(`/profile`)}>
-                                <h2 className="navbar-tab">Profile</h2>
+                                <h2 className={`navbar-tab ${selectedTab === '/profile' ? 'active-tab' : 'selectable-tab'}`}>Profile</h2>
                             </Link>
                         )}
 
-                        <Link to={`/chats`} onClick={() => handleTabClick(`/chats`)}>
-                            <h2 className="navbar-tab">Chats</h2>
+                        <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                            <h2 className={`navbar-tab ${selectedTab === '/chat' ? 'active-tab' : 'selectable-tab'}`}>Chats</h2>
                         </Link>
                     </div>
                 )}
