@@ -8,11 +8,10 @@ const socket = io('http://localhost:5000');
 function TherapistDashboard() {
     const [acceptingStatus, setAcceptingStatus] = useState(true);
     const [surveyQuestions, setSurveyQuestions] = useState([{ "question": "Loading Questions", "questionType": "Loading" }]);
-    const [patients, setPatients] = useState(null);
+    const [patients, setPatients] = useState([]);
 
     useEffect(() => {
         const userId = localStorage.getItem("userID");
-        console.log("User ID: ", userId);
 
         fetch('http://localhost:5000/therapistDashboardData', {
             method: 'POST',
@@ -23,9 +22,10 @@ function TherapistDashboard() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("START");
-                console.log(data); // Log the data to inspect it
                 setSurveyQuestions(JSON.parse(data.survey));
+                setAcceptingStatus(JSON.parse(data.accepting));
+                console.log(JSON.parse(data.survey));
+                console.log(JSON.parse(data.accepting));
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -44,7 +44,43 @@ function TherapistDashboard() {
         //     socket.off('new-feedback');
         //     socket.off('new-survey');
         // };
-    }, []);
+    }, []); // TODO: Add to "[]" so the patients list auto-updates upon new patient adding themself! (Socket.io?)
+
+    useEffect(() => {
+        const userId = localStorage.getItem("userID");
+
+        fetch('http://localhost:5000/therapistsAcceptingStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId, acceptingStatus }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                // setAcceptingStatus(JSON.parse(data.accepting));
+                console.log(data);
+            })
+            .catch(err => console.error('Error fetching data:', err));
+    }, [acceptingStatus]);
+
+    useEffect(() => {
+        const userId = localStorage.getItem("userID");
+        console.log("User ID: ", userId);
+
+        fetch('http://localhost:5000/therapistsPaitentsList', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId }), // Send userId in the body
+        })
+            .then(res => res.json())
+            .then(data => {
+                setPatients(data.patientData);
+            })
+            .catch(err => console.error('Error fetching data:', err));
+    }, []); // TODO: Add to "[]" so the patients list auto-updates upon new patient adding themself! (Socket.io?)
 
     return (
         <>
@@ -52,9 +88,9 @@ function TherapistDashboard() {
                 <tr>
                     <td style={{ width: '50%' }}>
                         <div className="flex-row flex-centered main-container">
-                            <div className="left-side">
+                            <div className="">
                                 <DashboardCardTitleless extraClasses="margined">
-                                    <p>{acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS</p>
+                                    <p onClick={() => setAcceptingStatus(!acceptingStatus)}>{acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS</p>
                                 </DashboardCardTitleless>
                                 <DashboardCard title="Your Survey Questions" extraClasses="margined">
                                     {surveyQuestions.map((item, index) => (
@@ -67,10 +103,12 @@ function TherapistDashboard() {
                     <td style={{ width: '50%' }}>
                         <h1 style={{ textAlign: 'center' }}>Active Patients</h1>
                         <div className="flex-row flex-centered main-container">
-                            <div className="right-side">
-                                <DashboardCardTitleless extraClasses="margined">
-                                    <p>ACCEPTING PATIENTS</p>
-                                </DashboardCardTitleless>
+                            <div className="">
+                                {patients.map((item, index) => (
+                                    <DashboardCardTitleless extraClasses="margined">
+                                        <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
+                                    </DashboardCardTitleless>
+                                ))}
                             </div>
                         </div>
                     </td>

@@ -201,11 +201,52 @@ def theraDashFunc():
     try:
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
-        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
-        therapistId = cursor.fetchall()[0][0]
+        cursor.execute(f'SELECT therapistID, acceptingPatients FROM therapists WHERE userID = {userId}')
+        (accepting, therapistId) = cursor.fetchall()[0]
         cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM surveys WHERE therapistID = {therapistId}')
         data = cursor.fetchall()
         cursor.close()
-        return jsonify({"survey" : data[0]}), 200
+        return jsonify({"accepting": accepting, "survey" : data[0]}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@app.route("/therapistsPaitentsList", methods=['POST'])
+def theraPatListFunc():
+    try:
+        userId = request.json.get('userId')
+        cursor = mysql.connection.cursor()
+        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
+        therapistId = cursor.fetchall()[0][0]
+        cursor.execute(f'''SELECT users.userName, feedback.feedback
+                       FROM therapistpatientslist, patients, users, feedback
+                       WHERE therapistpatientslist.therapistID = {therapistId}
+                       AND therapistpatientslist.patientID = patients.patientID
+                       AND patients.userID = users.userID
+                       AND therapistpatientslist.therapistID = feedback.therapistID
+                       AND feedback.patientID = patients.patientID''')
+        data = cursor.fetchall()
+        cursor.close()
+        return jsonify({"patientData" : data}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+
+@app.route("/therapistsAcceptingStatus", methods=['POST'])
+def theraAcceptFunc():
+    try:
+        userId = request.json.get('userId')
+        accepting = bool(request.json.get('acceptingStatus'))
+        cursor = mysql.connection.cursor()
+        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
+        therapistId = cursor.fetchall()[0][0]
+        cursor.execute(f'''UPDATE therapists
+                       SET acceptingPatients = {not accepting}
+                       WHERE therapistID = {therapistId}''')
+        mysql.connection.commit()
+        if cursor.rowcount > 0:
+            cursor.close()
+            return jsonify({"status" : "inserted"}), 200
+        else:
+            cursor.close()
+            return jsonify({"status" : "not inserted"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
