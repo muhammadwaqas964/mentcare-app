@@ -32,13 +32,13 @@ def navbarDataFunc():
             cursor.execute('''
                     SELECT userName, userType FROM users
                     INNER JOIN patients ON users.userID = patients.userID
-                    WHERE patients.userID = %s
+                    WHERE patients.patientID = %s
                     ''', (userId, ))
         elif userType == 'Therapist':
             cursor.execute('''
                     SELECT userName, userType FROM users
                     INNER JOIN therapists ON users.userID = therapists.userID
-                    WHERE therapists.userID = %s
+                    WHERE therapists.therapistID = %s
                     ''', (userId, ))
         data = cursor.fetchall()
         if data:
@@ -75,6 +75,7 @@ def patientOrTherapistFunc():
                 cursor.execute('''
                 SELECT therapistID from therapists WHERE userID = %s               
                 ''', (user_id, ))
+                data = cursor.fetchone()
                 userID = data[0]
             
             #   userID ( NOT THE SAME AS user_id, im just bad at naming), is used to send the patient/therapist id
@@ -210,29 +211,27 @@ def theraDashFunc():
     try:
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
-        cursor.execute(f'SELECT therapistID, acceptingPatients FROM therapists WHERE userID = {userId}')
-        (accepting, therapistId) = cursor.fetchall()[0]
-        cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM surveys WHERE therapistID = {therapistId}')
+        cursor.execute(f'SELECT acceptingPatients FROM therapists WHERE therapistID = {userId}')
+        data = cursor.fetchall()
+        accepting = data[0][0]
+        cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM surveys WHERE therapistID = {userId}')
         data = cursor.fetchall()
         cursor.close()
-        return jsonify({"accepting": accepting, "survey" : data[0]}), 200
+        return jsonify({"accepting": int(accepting), "survey" : data[0]}), 200
     except Exception as err:
         return {"error":  f"{err}"}
     
-@app.route("/therapistsPaitentsList", methods=['POST'])
+@app.route("/therapistsPatientsList", methods=['POST'])
 def theraPatListFunc():
     try:
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
-        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
-        therapistId = cursor.fetchall()[0][0]
-        cursor.execute(f'''SELECT users.userName, feedback.feedback
-                       FROM therapistpatientslist, patients, users, feedback
-                       WHERE therapistpatientslist.therapistID = {therapistId}
-                       AND therapistpatientslist.patientID = patients.patientID
-                       AND patients.userID = users.userID
-                       AND therapistpatientslist.therapistID = feedback.therapistID
-                       AND feedback.patientID = patients.patientID''')
+        cursor.execute(f'''
+                       SELECT users.userName, feedback.feedback FROM feedback
+                       INNER JOIN patients ON feedback.patientID = patients.patientID
+                       INNER JOIN users ON patients.userID = users.userID
+                       WHERE patients.mainTherapistID = {userId}
+                       ''')
         data = cursor.fetchall()
         cursor.close()
         return jsonify({"patientData" : data}), 200
@@ -243,19 +242,22 @@ def theraPatListFunc():
 def theraAcceptFunc():
     try:
         userId = request.json.get('userId')
-        accepting = bool(request.json.get('acceptingStatus'))
+        accepting = True if request.json.get('acceptingStatus') == 1 else False # "accepting" mirrors the value of "acceptingStatus" from the frontend
         cursor = mysql.connection.cursor()
-        cursor.execute(f'SELECT therapistID FROM therapists WHERE userID = {userId}')
-        therapistId = cursor.fetchall()[0][0]
         cursor.execute(f'''UPDATE therapists
                        SET acceptingPatients = {not accepting}
-                       WHERE therapistID = {therapistId}''')
+                       WHERE therapistID = {userId}''') # We flip the value of "accepting" in the MySQL query
         mysql.connection.commit()
-        if cursor.rowcount > 0:
+        if(cursor.rowcount > 0): # We ensure the table was modified
             cursor.close()
-            return jsonify({"status" : "inserted"}), 200
+            if(accepting): # If "accepting" was 1, we tell the frontend it is now 0; Vice versa
+                return jsonify({"inserted": 1, "accepting" : 0}), 200
+            else:
+                return jsonify({"inserted": 1, "accepting" : 1}), 200
         else:
             cursor.close()
-            return jsonify({"status" : "not inserted"}), 200
+            return jsonify({"inserted": 0, "accepting" : 0}), 200
     except Exception as err:
         return {"error":  f"{err}"}
+    
+    
