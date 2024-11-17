@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify #,render_template, request
+from flask import Flask, request, jsonify, json #,render_template, request
 from flask_mysqldb import MySQL
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, emit
@@ -11,8 +11,8 @@ sockets = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
-app.config["MYSQL_DB"] = "cs490_GP"
+app.config["MYSQL_PASSWORD"] = "dasaniwater"
+app.config["MYSQL_DB"] = "health"
 
 mysql = MySQL(app)
 
@@ -259,5 +259,83 @@ def theraAcceptFunc():
             return jsonify({"inserted": 0, "accepting" : 0}), 200
     except Exception as err:
         return {"error":  f"{err}"}
-    
-    
+
+@app.route("/userChats", methods=['POST'])
+def get_user_chats():
+    try:
+        choose_id = request.json.get('chooseId')
+        user_type = request.json.get('userType')
+
+        cursor = mysql.connection.cursor()
+
+        if user_type == "Therapist":
+            cursor.execute('''
+                SELECT p.patientID, u.userName AS patientName, c.content
+                FROM patients p
+                INNER JOIN therapistPatientsList tpl ON p.patientID = tpl.patientID
+                INNER JOIN users u ON p.userID = u.userID
+                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
+                WHERE tpl.therapistID = %s AND tpl.status = 'Active'
+            ''', (choose_id,))
+        else:
+            cursor.execute('''
+                SELECT t.therapistID, u.userName AS therapistName, c.content
+                FROM therapists t
+                INNER JOIN therapistPatientsList tpl ON t.therapistID = tpl.therapistID
+                INNER JOIN users u ON t.userID = u.userID
+                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
+                WHERE tpl.patientID = %s AND tpl.status = 'Active'
+            ''', (choose_id,))
+
+        data = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        results = [dict(zip(columns, row)) for row in data]
+        cursor.close()
+
+        return jsonify(results), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
+@app.route("/sendMessage", methods=['POST'])
+def send_message():
+    try:
+        patient_id = request.json.get('patientId')
+        therapist_id = request.json.get('therapistId')
+        message = request.json.get('message')
+        sender = request.json.get('sender')
+
+        if not all([patient_id, therapist_id, message, sender]):
+            return jsonify({"error": "Missing params"}), 400
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
+        chat_data = cursor.fetchone()
+
+        if chat_data:
+            try:
+                content = json.loads(chat_data[0])
+                if "chats" not in content:
+                    raise ValueError("Err Json")
+            except Exception as e:
+                return jsonify({"error": f"Err: {str(e)}"}), 500
+
+            content['chats'].append({"msg": message, "sender": sender})
+
+            cursor.execute(
+                'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
+                (json.dumps(content), patient_id, therapist_id)
+            )
+        else:
+            new_content = {"chats": [{"msg": message, "sender": sender}]}
+            cursor.execute(
+                'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
+                (patient_id, therapist_id, json.dumps(new_content), datetime.now())
+            )
+
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Success"}), 200
+
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
