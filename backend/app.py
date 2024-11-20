@@ -161,6 +161,7 @@ def registerTherapistFunc():
         password = request.json.get('password')
         license = request.json.get('license')
         specsArray = ','.join(request.json.get('specializations'))
+        content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
 
         cursor = mysql.connection.cursor()
         cursor.execute('''
@@ -173,17 +174,22 @@ def registerTherapistFunc():
         cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
         data = cursor.fetchone()
         userID = data[0]
+        print(userID)
+        print(license)
+        print(specsArray)
 
         cursor.execute('''
                 INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content)
-                VALUES (%s, %s, %s, %s)
-                ''', (userID, license, specsArray, True,'{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'))
+                VALUES (%s, %s, %s, %s, %s)
+                ''', (userID, license, specsArray, 1, content))
         mysql.connection.commit()
 
         #   Retrive therapistID of newly created user
         cursor.execute("SELECT therapistID FROM therapists WHERE userID = %s", (userID,))
         data = cursor.fetchone()
         therapistID = data[0]
+
+        cursor.close()
 
         return jsonify({"message" : "User successfully registered", "therapistID" : therapistID}), 200
     except Exception as err:
