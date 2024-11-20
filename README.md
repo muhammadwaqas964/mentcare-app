@@ -1,1 +1,1 @@
-# cs490_GP
+# mentcare-app
