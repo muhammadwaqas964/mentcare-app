@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles/Chat.css";
 
-function Chat({ userType, chooseId }) {
+function Chat() {
+    const userType = localStorage.getItem('userType');
+    const chooseId = localStorage.getItem('userID');
+
     const [therapists, setTherapists] = useState([]);
     const [selectedTherapist, setSelectedTherapist] = useState(null);
     const [chatHistory, setChatHistory] = useState([]);
@@ -24,9 +27,26 @@ function Chat({ userType, chooseId }) {
     }, [chooseId, userType]);
 
     const handleTherapistSelect = (therapist) => {
-        setSelectedTherapist(therapist);
+        setSelectedTherapist({
+            therapistID: therapist.therapistID || therapist.patientID,
+            therapistName: therapist.therapistName || therapist.patientName,
+            content: therapist.content,
+            chatStatus: therapist.chatStatus,
+            requestStatus: therapist.requestStatus,
+        });
         setChatHistory(JSON.parse(therapist.content).chats);
     };
+
+    const updateUsers = async () => {
+        const response = await fetch("http://localhost:5000/userChats", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chooseId, userType }),
+        });
+        const data = await response.json();
+        return data;
+    };
+
 
     const handleSendMessage = async () => {
         if (input.trim() !== "" && selectedTherapist) {
@@ -47,7 +67,7 @@ function Chat({ userType, chooseId }) {
             let therapistId;
 
             if (userType === "Therapist") {
-                patientId = selectedTherapist.patientID;
+                patientId = selectedTherapist.therapistID;
             } else {
                 patientId = chooseId;
             }
@@ -58,7 +78,7 @@ function Chat({ userType, chooseId }) {
                 therapistId = chooseId;
             }
 
-            await fetch("http://localhost:5000/sendMessage", {
+            const response = await fetch("http://localhost:5000/sendMessage", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -68,9 +88,67 @@ function Chat({ userType, chooseId }) {
                     sender: sender,
                 }),
             });
+
+            if (response.ok) {
+                const updatedUsers = await updateUsers();
+                setTherapists(updatedUsers);
+                setSelectedTherapist((prevSelected) =>
+                    prevSelected ? { ...prevSelected } : null
+                );
+            } else {
+                console.error("Failed to update new message history");
+            }
         }
     };
 
+    const handleStatus = async (status, type) => {
+        if (userType === "Therapist") {
+            const patientId = selectedTherapist.therapistID;
+            const response = await fetch("http://localhost:5000/updateStatus", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    therapistId: chooseId,
+                    patientId: patientId,
+                    status: status,
+                    type: type,
+                }),
+            });
+
+            if (response.ok) {
+                const updatedUsers = await updateUsers();
+                setTherapists(updatedUsers);
+                setSelectedTherapist((prevSelected) =>
+                    prevSelected ? { ...prevSelected, chatStatus: status } : null
+                );
+            } else {
+                console.error("Failed to update chatStatus");
+            }
+        }
+        else if (userType === "Patient") {
+            const therapistId = selectedTherapist.therapistID;
+            const response = await fetch("http://localhost:5000/updateStatus", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    therapistId: therapistId,
+                    patientId: chooseId,
+                    status: status,
+                    type: type,
+                }),
+            });
+
+            if (response.ok) {
+                const updatedUsers = await updateUsers();
+                setTherapists(updatedUsers);
+                setSelectedTherapist((prevSelected) =>
+                    prevSelected ? { ...prevSelected, requestStatus: status } : null
+                );
+            } else {
+                console.error("Failed to update requestStatus");
+            }
+        }
+    };
 
     const handleKeyDown = (event) => {
         if (event.key === "Enter") {
@@ -89,16 +167,27 @@ function Chat({ userType, chooseId }) {
             <div className="main-container">
                 <div className="sidebar">
                     <div className="chat-list">
-                        {therapists.map((therapist) => (
-                            <button key={therapist.therapistID || therapist.patientID}
-                                className={`chat-item ${selectedTherapist?.therapistID === therapist.therapistID ? "current" : ""}`}
-                                onClick={() => handleTherapistSelect(therapist)}>
-                                {therapist.therapistName || therapist.patientName}
-                            </button>
-                        ))}
+                        {therapists.map((therapist) => {
+                            const isCurrent = selectedTherapist?.therapistID === (therapist.therapistID || therapist.patientID);
+                            return (
+                                <button key={therapist.therapistID || therapist.patientID}
+                                    className={therapist.chatStatus === 'Active' ? `chat-item ${isCurrent ? "current" : ""}` : `chat-item ${isCurrent ? "inactivechosen" : "inactive"}`}
+                                    onClick={() => handleTherapistSelect(therapist)}>
+                                    {therapist.therapistName || therapist.patientName}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="bottom-list">
+                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Active') ?
+                            <div className="request-chat-button not" style={{ textAlign: "center" }}>Patient has requested to chat!</div> : ''}
+                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') ? <button className="request-chat-button inactive">Start Chat</button> : 
+                        userType === 'Therapist'? <button className="request-chat-button" onClick={() => handleStatus('Active', 'chat')}>Start Chat</button> :
+                            (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive') ?
+                                <button className="request-chat-button" onClick={() => handleStatus('Active', 'request')}>Request to chat</button> :
+                                <button className="request-chat-button inactive">Request to Chat</button>}
                     </div>
                 </div>
-
                 <div className="chat-box-container">
                     <div className="chat-box-header">
                         {selectedTherapist ? selectedTherapist.therapistName || selectedTherapist.patientName : "Select a Chat"}
@@ -110,7 +199,6 @@ function Chat({ userType, chooseId }) {
                                     message.sender === "P") ||
                                 (userType === "Therapist" &&
                                     message.sender === "T");
-
                             return (
                                 <div
                                     key={index}
@@ -122,24 +210,28 @@ function Chat({ userType, chooseId }) {
                     </div>
                     {selectedTherapist && (
                         <div className="chat-input-container">
-                            <input
+                            {selectedTherapist?.chatStatus === 'Active' ? <input
                                 type="text"
                                 className="chat-input"
                                 placeholder="Type a message..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                            />
-                            <button
-                                className="send-button"
-                                onClick={handleSendMessage}
-                            >
-                                Send
-                            </button>
+                            /> : <div className="chat-input inactive">This chat is inactive</div>}
+                            {(selectedTherapist?.chatStatus === 'Active') ? <button className="send-button" onClick={handleSendMessage}>Send</button> :
+                                <button className="send-button inactive">Send</button>}
                         </div>
                     )}
                 </div>
-            </div>
+                {(selectedTherapist?.chatStatus === 'Active' && userType === 'Therapist') ? <div className="invoice-container">
+                    <button className="invoice-button" onClick={() => handleStatus('Inactive', 'chat')}>End Chat</button>
+                    <button className="invoice-button">Send Invoice</button>
+                </div> : ((selectedTherapist?.chatStatus === 'Inactive' && userType === 'Therapist') ?
+                    <div className="invoice-container">
+                        <button className="invoice-button inactive">End Chat</button>
+                        <button className="invoice-button inactive">Send Invoice</button></div> :
+                    ((userType === 'Therapist') ? <div className="invoice-container"></div> : ''))}
+            </div> {/* Container end (kill me)*/}
         </div>
     );
 }
