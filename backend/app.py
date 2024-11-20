@@ -259,6 +259,27 @@ def theraAcceptFunc():
             return jsonify({"inserted": 0, "accepting" : 0}), 200
     except Exception as err:
         return {"error":  f"{err}"}
+    
+@app.route("/therapistUpdateSurvey", methods=['POST'])
+def theraUpdSurveyFunc():
+    try:
+        surveyData = str(request.json.get('surveyToSubmit'))
+        therapistId = request.json.get('therapistId')
+
+        surveyData = '{"survey": ' + surveyData + '}'
+        surveyData = surveyData.replace("'", '\"')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('UPDATE surveys SET content = %s WHERE therapistID = %s', (surveyData, therapistId))
+        mysql.connection.commit()
+        if(cursor.rowcount > 0): # We ensure the table was modified
+            cursor.close()
+            return jsonify({"inserted": True}), 200
+        else:
+            cursor.close()
+            return jsonify({"inserted": False}), 200
+    except Exception as err:
+        return jsonify({"error":  f"{err}"})
 
 @app.route("/userChats", methods=['POST'])
 def get_user_chats():
