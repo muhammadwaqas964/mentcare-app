@@ -6,11 +6,20 @@
     display: flex;
     justify-content: space-between;
     padding: 1rem;
-    background-color: #d4f5e9;
+    background-color: #4183bd;
 }
 
 .header h1 {
-    margin: 0;
+    margin: 10;
+}
+
+h1 {
+    font-family: 'Georgia', serif; /* Applies a stylish serif font */
+    font-size: 3rem; /* Sets the font size to 3 rem units */
+    font-weight: bold; /* Makes the text bold */
+    color: #4147bd; /* Sets a dark blue-gray color */
+    text-align: center; /* Centers the text horizontally */
+    margin-top: 20px; /* Adds space above the heading */
 }
 
 .login-btn {
@@ -29,14 +38,14 @@
 .carousel .register-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #34c4a9;
+    background-color: #345dc4;
     color: #fff;
     border: none;
     cursor: pointer;
 }
 
-.about-us, .testimonials, .faqs, .contact-us {
-    padding: 2rem;
+.about-us, .testimonials, .faqs, .contact-us, .statement, .tabs {
+    padding: 1rem;
     border-bottom: 1px solid #e0e0e0;
 }
 
@@ -60,9 +69,11 @@
     margin-top: 20px;
     padding: 0.5rem 1rem;
     width: 100%;
-    max-width: 350px;
+    max-width: 300px;
     height: auto;
+    text-align: center;
     border-radius: 8px;
+    margin: 10px auto;
 }
 
 
@@ -76,10 +87,23 @@
     margin-top: 1rem;
 }
 
+
+.nav-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #3434c4;
+    color: #fff;
+    border: navajowhite;
+    cursor: pointer;
+    border: 5px solid rgb(228, 232, 6); /* Adds a black border */
+    margin-right: 20px;
+}
+
+
 .send-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #34c4a9;
+    background-color: #3472c4;
     color: #fff;
     border: none;
     cursor: pointer;
