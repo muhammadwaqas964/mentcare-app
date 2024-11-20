@@ -325,7 +325,7 @@ def theraDashFunc():
         cursor.execute(f'SELECT acceptingPatients FROM therapists WHERE therapistID = {userId}')
         data = cursor.fetchall()
         accepting = data[0][0]
-        cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM surveys WHERE therapistID = {userId}')
+        cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM therapists WHERE therapistID = {userId}')
         data = cursor.fetchall()
         cursor.close()
         return jsonify({"accepting": int(accepting), "survey" : data[0]}), 200
@@ -381,7 +381,7 @@ def theraUpdSurveyFunc():
         surveyData = surveyData.replace("'", '\"')
 
         cursor = mysql.connection.cursor()
-        cursor.execute('UPDATE surveys SET content = %s WHERE therapistID = %s', (surveyData, therapistId))
+        cursor.execute('UPDATE therapists SET content = %s WHERE therapistID = %s', (surveyData, therapistId))
         mysql.connection.commit()
         if(cursor.rowcount > 0): # We ensure the table was modified
             cursor.close()

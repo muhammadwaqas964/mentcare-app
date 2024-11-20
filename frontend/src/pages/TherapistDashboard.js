@@ -74,7 +74,7 @@ function TherapistDashboard() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userId: therapistId }), // We send the current value of acceptingStatus to the backend
+            body: JSON.stringify({ userId: therapistId, acceptingStatus: acceptingStatus }), // We send the current value of acceptingStatus to the backend
         })
             .then(res => res.json())
             .then(data => {
