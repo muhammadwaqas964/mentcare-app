@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../presets.css';
 import './LandingPage.css';
 import '../presets.css';
 
