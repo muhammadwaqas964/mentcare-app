@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
+import '../presets.css';
 
 import profileImage1 from './assets/images/img2_alex.png';
 import profileImage2 from './assets/images/img3_mary.png';
