@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, json #,render_template, request
 from flask_mysqldb import MySQL
 from flask_cors import CORS, cross_origin
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
@@ -11,8 +11,8 @@ sockets = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "dasaniwater"
-app.config["MYSQL_DB"] = "health"
+app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
+app.config["MYSQL_DB"] = "cs490_GP"
 
 mysql = MySQL(app)
 
@@ -85,7 +85,110 @@ def patientOrTherapistFunc():
             return jsonify({"error": "No user found with the given email and password"}), 404
     except Exception as err:
         return {"error":  f"{err}"}
+
+@app.route("/validateUserEmail", methods=['POST'])
+def validateEmailFunc():
+    email = request.json.get('email')
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT email FROM users WHERE email LIKE %s", (email, ))
+    if(cursor.rowcount > 0):
+        return jsonify({"message" : "Email/User already exists"}), 409
+    else:
+        return jsonify({"message" : "Email is good for use"}), 200
+
+@app.route("/registerPatient", methods=['POST'])
+def registerPatientFunc():
+    try:
+        fname = request.json.get('fname')
+        lname = request.json.get('lname')
+        fullname = fname + ' ' + lname
+        email = request.json.get('email')
+        password = request.json.get('password')
+
+        #   SET INSURANCE VARIABLE TO NULL IF EMPTY
+        insuranceCompany = request.json.get('company')
+        insuranceID = request.json.get('insuranceId')
+        insuranceTier = request.json.get('tier')
+
+        weight = request.json.get('weight')
+        height = request.json.get('height')
+        calories = request.json.get('calories')
+        water = request.json.get('water')
+        exercise = request.json.get('exercise')
+        sleep = request.json.get('sleep')
+        energy = request.json.get('energy')
+        stress = request.json.get('stress')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                INSERT INTO users (userName, email, pass, userType)
+                VALUES (%s, %s, %s, 'Patient')
+                ''', (fullname, email, password))
+        mysql.connection.commit()
+
+        #   Retrive userID of newly created user
+        cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        #   Check if user inputted Insurance Information
+        if insuranceCompany and insuranceID and insuranceTier:
+            cursor.execute('''
+                    INSERT INTO patients (userID, insuranceCompany, insuranceID, insuranceTier)
+                    VALUES (%s, %s, %s, %s)
+                    ''', (userID, insuranceCompany, insuranceID, insuranceTier))
+        else:
+            cursor.execute('INSERT INTO patients (userID) VALUES (%s)', (userID, ))
+        mysql.connection.commit()
+
+        #   Retrive patientID of newly created user
+        cursor.execute("SELECT patientID FROM patients WHERE userID = %s", (userID,))
+        data = cursor.fetchone()
+        patientID = data[0]
+
+        cursor.close()
+        return jsonify({"message" : "User successfully registered", "patientID" : patientID}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
     
+@app.route("/registerTherapist", methods=['POST'])
+def registerTherapistFunc():
+    try:
+        fname = request.json.get('fname')
+        lname = request.json.get('lname')
+        fullname = fname + ' ' + lname
+        email = request.json.get('email')
+        password = request.json.get('password')
+        license = request.json.get('license')
+        specsArray = ','.join(request.json.get('specializations'))
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                INSERT INTO users (userName, email, pass, userType)
+                VALUES (%s, %s, %s, 'Therapist')
+                ''', (fullname, email, password))
+        mysql.connection.commit()
+
+        #   Retrive userID of newly created user
+        cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        cursor.execute('''
+                INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content)
+                VALUES (%s, %s, %s, %s)
+                ''', (userID, license, specsArray, True,'{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'))
+        mysql.connection.commit()
+
+        #   Retrive therapistID of newly created user
+        cursor.execute("SELECT therapistID FROM therapists WHERE userID = %s", (userID,))
+        data = cursor.fetchone()
+        therapistID = data[0]
+
+        return jsonify({"message" : "User successfully registered", "therapistID" : therapistID}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+
 @app.route("/patientDashboardData", methods=['POST'])
 def patientDashFunc():
     try:
@@ -139,10 +242,13 @@ def patientDashFunc():
         therapistId = cursor.fetchone()[0]
         if (therapistId):
             cursor.execute('''
-                    SELECT JSON_EXTRACT(content, '$.survey') AS survey FROM surveys
-                    WHERE therapistID = %s AND patientID = %s;
+                    SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
+                    INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                    INNER JOIN users ON therapists.userID = users.userID
+                    WHERE surveys.therapistID = %s AND surveys.patientID = %s;
                 ''', (therapistId, patientId ))
             incomp_surveys_data = cursor.fetchall()
+            print("HELLO", incomp_surveys_data[0])
             if (incomp_surveys_data):
                 incomp_surveys_columns = [column[0] for column in cursor.description]
                 incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
@@ -152,9 +258,14 @@ def patientDashFunc():
         
         #   Extract complete therapist surveys (if exists)
         cursor.execute('''
-                SELECT JSON_EXTRACT(questions, '$.survey') AS questions, JSON_EXTRACT(answers, '$.answers') AS answers, dateDone FROM completedSurveys
-                WHERE patientID = %s
-                ''', (patientId, ))
+                SELECT users.userName, JSON_EXTRACT(completedSurveys.questions, '$.survey') AS questions,
+                JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone 
+                FROM completedSurveys
+                INNER JOIN surveys ON completedSurveys.surveyID = surveys.surveyID
+                INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                INNER JOIN users ON therapists.userID = users.userID
+                WHERE completedSurveys.patientID = %s and surveys.therapistID = %s;
+                ''', (patientId, therapistId))
         comp_surveys_data = cursor.fetchall()
         if comp_surveys_data:
             comp_surveys_columns = [column[0] for column in cursor.description]
@@ -163,7 +274,7 @@ def patientDashFunc():
 
         #   Extract invoices (if exists):
         cursor.execute('''
-                SELECT users.userName, invoices.amountDue, invoices.dateCreated FROM invoices
+                SELECT users.userName, invoices.invoiceID, invoices.amountDue, invoices.dateCreated FROM invoices
                 INNER JOIN therapists ON invoices.therapistID = therapists.therapistID
                 INNER JOIN users ON therapists.userID = users.userID
                 WHERE invoices.patientID = %s;
@@ -360,3 +471,122 @@ def send_message():
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
+@app.route("/completeDailySurvey", methods=['POST'])
+def sendDailySurveyFunc():
+    try:
+        print("GOT HERE IN APP.ROUTE")
+        
+        data = request.get_json()
+        
+        fakeUserID = data.get('fakeUserID')
+        dailySurveyID = data.get('dailySurveyID')
+        weight = data.get('weight')
+        height = data.get('height')
+        calories = data.get('calories')
+        water = data.get('water')
+        exercise = data.get('exercise')
+        sleep = data.get('sleep')
+        energy = data.get('energy')
+        stress = data.get('stress')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                INSERT INTO completedDailySurveys (dailySurveyID, patientID, weight, height, calories, water, exercise, sleep, energy, stress)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (dailySurveyID, fakeUserID, weight, height, calories, water, exercise, sleep, energy, stress))
+        mysql.connection.commit()
+        cursor.close()
+
+        # Emit the event to the connected socket clients
+        socketio.emit('submit-daily-survey', {
+            'patientID': fakeUserID,
+            'dailySurveyID': dailySurveyID,
+            'weight': weight,
+            'height': height,
+            'calories': calories,
+            'water': water,
+            'exercise': exercise,
+            'sleep': sleep,
+            'energy': energy,
+            'stress': stress
+        }, room=sockets[fakeUserID])
+
+        return jsonify({"message": "Survey data submitted successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
+#############   BEGINNING OF SOCKETIO CODE   ############
+
+if __name__ == '__app__':
+    socketio.run(app)
+
+@socketio.on('init-socket-comm')
+def initializeSocketCommunication(data):
+    #   Here, userID is NOT the actual userID from users table
+    #   It is the patientID OR therapistID from patients/therapists tables
+    #   I'm naming it userID because this authenticate will be used for either patient or therapist
+    userId = data.get('userID')
+    socketId = request.sid
+    sockets[userId] = socketId
+    print(f"Added socketId {socketId} for userId {userId}")
+
+@socketio.on('rem-socket-comm')
+def removeSocketCommunication(data):
+    #   Here, userID is NOT the actual userID from users table
+    #   It is the patientID OR therapistID from patients/therapists tables
+    #   I'm naming it userID because this authenticate will be used for either patient or therapist
+    userId = data.get('userID')
+    if userId in sockets:
+        socketId = sockets.pop(userId)
+        print(f"Removed socketId {socketId} for userId {userId}")
+    else:
+        print(f"userId {userId} not found in sockets dictionary")
+
+#   Received from Patient Dashboard (Patient submits daily survey)
+@socketio.on('submit-daily-survey')
+def dailySurveyFunc(data):
+    try:
+        patient_id = data.get('patientID')
+        daily_survey_id = data.get('dailySurveyID')
+        weight = data.get('weight')
+        height = data.get('height')
+        calories = data.get('calories')
+        water = data.get('water')
+        exercise = data.get('exercise')
+        sleep = data.get('sleep')
+        energy = data.get('energy')
+        stress = data.get('stress')
+
+        print("HELLO I AM HERE")
+        print(f"Received Survey Data: PatientID={patient_id}, DailySurveyID={daily_survey_id}, Weight={weight}, Height={height}, etc.")
+
+        # You can now process the received data (e.g., store it in a database, perform any logic)
+        
+    except Exception as err:
+        print(f"Error handling socket event: {err}")
+
+#   Sent from Patient Overview Page to a Patient's Dashboard Page
+@socketio.on('send-new-feedback')
+def sendFeedback(data):
+    patientId = data.get('patientID')
+    feedback = data.get('feedback')
+
+    if patientId in sockets:
+        socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
+
+
+#   To be used for chatting (Just a basic layout)
+@socketio.on('join')
+def on_join(data):
+    userId = data['userID']
+    room = data['room']
+    join_room(room)
+    send(userId + ' has entered the room.', to=room)
+
+#   To be used for chatting (Just a basic layout)
+@socketio.on('leave')
+def on_leave(data):
+    userId = data['userID']
+    room = data['room']
+    leave_room(room)
+    send(userId + ' has left the room.', to=room)

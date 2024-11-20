@@ -18,6 +18,7 @@ const Navbar = () => {
             localStorage.removeItem("userID");
             localStorage.removeItem("userType");
             setUserData();
+            setSelectedTab('/dashboard');
             return;
         }
         setSelectedTab(path.toLowerCase());
@@ -41,7 +42,7 @@ const Navbar = () => {
                 setUserData(data[0]);
             })
             .catch(err => console.error('Error fetching data:', err));
-    }, [localStorage.getItem("userID")]);   //  If it aint broke, dont fix it
+    }, [localStorage.getItem("userID"),]);   //  If it aint broke, dont fix it
 
     return (
         <nav>

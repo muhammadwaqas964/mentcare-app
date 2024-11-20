@@ -13,7 +13,7 @@
     text-align: center;
 } */
 
-.main-container {
+.therapist-dashboard-container {
     justify-content: space-evenly;
 }
 
@@ -44,10 +44,14 @@
     align-items: center;
     z-index: 1000;
 
-    background-color: rgb(63, 89, 110);
+    background-color: #e0e0e0;
     padding: 20px;
     border-radius: 25px;
     z-index: 999;
+
+    &>h2 {
+        color: black;
+    }
 }
 
 .right-side {

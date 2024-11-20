@@ -51,7 +51,7 @@ function Login() {
     }
 
     return (
-        <div className="form-container">
+        <div className="default-form-container">
             <h1>LOG IN</h1>
             <form>
                 <div className='flex-col emailInput'>
