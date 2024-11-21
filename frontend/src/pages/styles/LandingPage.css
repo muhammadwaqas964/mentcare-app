@@ -45,7 +45,7 @@
     margin-top: 1rem;
     padding: 0.5rem 1rem;
     background-color: #345dc4;
-    color: #fff;
+    color: #000;
     border: none;
     cursor: pointer;
 }
@@ -103,7 +103,7 @@
     margin-top: 1rem;
     padding: 0.5rem 1rem;
     background-color: #3434c4;
-    color: #fff;
+    color: #000;
     border: navajowhite;
     cursor: pointer;
     border: 5px solid rgb(228, 232, 6);
@@ -116,7 +116,7 @@
     margin-top: 1rem;
     padding: 0.5rem 1rem;
     background-color: #3472c4;
-    color: #fff;
+    color: #000;
     border: none;
     cursor: pointer;
 }
