@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/LandingPage.css';
-import '../presets.css';
 
 import profileImage1 from './assets/images/img2_alex.png';
 import profileImage2 from './assets/images/img3_mary.png';
@@ -13,9 +12,6 @@ import missionImage3 from './assets/images/img6_mission.png';
 
 function LandingPage() {
     const navigate = useNavigate();
-
-
-
     const handleTabClick = (path) => {
         navigate(path);
     };
@@ -23,7 +19,6 @@ function LandingPage() {
     return (
         <div className="landing-page">
             <header className="header">
-                <h1 className="h1_class">MentCare</h1>
             </header>
 
             <nav className="tabs">
@@ -32,7 +27,7 @@ function LandingPage() {
                 <button className="nav-btn" onClick={() => handleTabClick('/dashboard')}>Dashboard</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/therapistProfile')}>Therapist Profile</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/chat')}>Chat</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/payment')}>Settings</button>
+                <button className="nav-btn" onClick={() => handleTabClick('/settings')}>Settings</button>
             </nav>
 
             <section className="statement">
