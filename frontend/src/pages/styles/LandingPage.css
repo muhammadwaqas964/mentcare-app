@@ -9,17 +9,23 @@
     background-color: #4183bd;
 }
 
-.header h1 {
+.header .h1_class {
     margin: 10;
 }
 
-h1 {
-    font-family: 'Georgia', serif; /* Applies a stylish serif font */
-    font-size: 3rem; /* Sets the font size to 3 rem units */
-    font-weight: bold; /* Makes the text bold */
-    color: #4147bd; /* Sets a dark blue-gray color */
-    text-align: center; /* Centers the text horizontally */
-    margin-top: 20px; /* Adds space above the heading */
+.h1_class {
+    font-family: 'Georgia', serif;
+    /* Applies a stylish serif font */
+    font-size: 3rem;
+    /* Sets the font size to 3 rem units */
+    font-weight: bold;
+    /* Makes the text bold */
+    color: #4147bd;
+    /* Sets a dark blue-gray color */
+    text-align: center;
+    /* Centers the text horizontally */
+    margin-top: 20px;
+    /* Adds space above the heading */
 }
 
 .login-btn {
@@ -44,7 +50,12 @@ h1 {
     cursor: pointer;
 }
 
-.about-us, .testimonials, .faqs, .contact-us, .statement, .tabs {
+.about-us,
+.testimonials,
+.faqs,
+.contact-us,
+.statement,
+.tabs {
     padding: 1rem;
     border-bottom: 1px solid #e0e0e0;
 }
@@ -95,7 +106,8 @@ h1 {
     color: #fff;
     border: navajowhite;
     cursor: pointer;
-    border: 5px solid rgb(228, 232, 6); /* Adds a black border */
+    border: 5px solid rgb(228, 232, 6);
+    /* Adds a black border */
     margin-right: 20px;
 }
 
