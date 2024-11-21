@@ -29,11 +29,10 @@ function LandingPage() {
             <nav className="tabs">
                 <button className="nav-btn" onClick={() => handleTabClick('/register')}>Register</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/login')}>Login</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/therapist')}>Therapist</button>
+                <button className="nav-btn" onClick={() => handleTabClick('/dashboard')}>Dashboard</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/therapistProfile')}>Therapist Profile</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/patient')}>Patient</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/chat')}>Chat</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/payment')}>Payment</button>
+                <button className="nav-btn" onClick={() => handleTabClick('/payment')}>Settings</button>
             </nav>
 
             <section className="statement">
