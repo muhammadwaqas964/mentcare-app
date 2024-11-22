@@ -11,8 +11,7 @@ function TherapistProfile() {
     
     return (
         <div className="therapist-profile">
-            <header className="header">
-            </header>
+      
 
             <section className="profile">
                 <img src={profilePicture} alt="Mike K." className="profile-picture" />
