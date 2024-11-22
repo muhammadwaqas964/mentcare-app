@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", threaded=True)
+socketio = SocketIO(app, cors_allowed_origins="*", threaded=True)
 
 sockets = {}
 
@@ -145,20 +145,26 @@ def sendFeedback(data):
     if patientId in sockets:
         socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
 
-
-#   To be used for chatting (Just a basic layout)
 @socketio.on('join')
-def on_join(data):
-    userId = data['userID']
+def join(data):
     room = data['room']
     join_room(room)
-    send(userId + ' has entered the room.', to=room)
+    print("User " + str(request.sid) + " joined room: "+ room)
 
-#   To be used for chatting (Just a basic layout)
-@socketio.on('leave')
-def on_leave(data):
-    userId = data['userID']
-    room = data['room']
+@socketio.on('chat-start')
+def start_chat(data):
+    therapistId = data['therapistId']
+    patientId = data['patientId']
+    room = str(therapistId) + "-" + str(patientId)
+    print(room)
+    join_room(room)
+    socketio.emit('chat-start', {'room': room, 'status': 'Active'}, to = room)
+
+@socketio.on('chat-end')
+def end_chat(data):
+    therapistId = data['therapistId']
+    patientId = data['patientId']
+    room = str(therapistId) + "-" + str(patientId)
+    print(room)
     leave_room(room)
-    send(userId + ' has left the room.', to=room)
-
+    socketio.emit('chat-end', {'room': room, 'status': 'Inactive'}, to = room)

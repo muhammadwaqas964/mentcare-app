@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles/Chat.css";
+import BasicModalInvoice from "../components/InvoiceModal";
+import { io } from 'socket.io-client';
 
 function Chat() {
     const userType = localStorage.getItem('userType');
@@ -10,8 +12,11 @@ function Chat() {
     const [chatHistory, setChatHistory] = useState([]);
     const [input, setInput] = useState("");
     const chatBoxRef = useRef(null);
+    const socket = useRef();
 
     useEffect(() => {
+        socket.current = io('http://localhost:5000')
+
         const fetchChats = async () => {
             const response = await fetch("http://localhost:5000/userChats", {
                 method: "POST",
@@ -24,6 +29,30 @@ function Chat() {
         };
 
         fetchChats();
+
+        socket.current.on('chat-start', (data) => {
+            console.log("Patient notified:", data.room);
+            socket.current.emit('join', { room: data.room });
+
+            setSelectedTherapist({
+                therapistID: data.room[0],
+                patientID: data.room[2],
+                chatStatus: 'Active',
+            });
+        });
+
+        socket.current.on('chat-end', (data) => {
+            console.log("Chat ended in room:", data.room);
+            setSelectedTherapist((prev) =>
+                prev ? { ...prev, chatStatus: 'Inactive' } : null
+            );
+        });
+
+        return () => {
+            socket.current.off('chat-start');
+            socket.current.off('chat-end');
+            socket.current.disconnect();
+        };
     }, [chooseId, userType]);
 
     const handleTherapistSelect = (therapist) => {
@@ -150,6 +179,28 @@ function Chat() {
         }
     };
 
+    const handleStartChat = () => {
+        if (selectedTherapist) {
+            socket.current.emit('chat-start', {
+                therapistId: chooseId,
+                patientId: selectedTherapist?.therapistID,
+            });
+            console.log("started chat");
+            handleStatus('Active', 'chat')
+        }
+    }
+
+    const handleEndChat = () => {
+        if (selectedTherapist) {
+            socket.current.emit('chat-end', {
+                therapistId: chooseId,
+                patientId: selectedTherapist?.therapistID,
+            });
+            console.log("Ended  cat");
+            handleStatus('Inactive', 'chat')
+        }
+    }
+
     const handleKeyDown = (event) => {
         if (event.key === "Enter") {
             handleSendMessage();
@@ -181,11 +232,11 @@ function Chat() {
                     <div className="bottom-list">
                         {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Active') ?
                             <div className="request-chat-button not" style={{ textAlign: "center" }}>Patient has requested to chat!</div> : ''}
-                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') ? <button className="request-chat-button inactive">Start Chat</button> : 
-                        userType === 'Therapist'? <button className="request-chat-button" onClick={() => handleStatus('Active', 'chat')}>Start Chat</button> :
-                            (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive') ?
-                                <button className="request-chat-button" onClick={() => handleStatus('Active', 'request')}>Request to chat</button> :
-                                <button className="request-chat-button inactive">Request to Chat</button>}
+                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') ? <button className="request-chat-button inactive">Start Chat</button> :
+                            userType === 'Therapist' && selectedTherapist ? <button className="request-chat-button" onClick={() => handleStartChat('Active', 'chat')}>Start Chat</button> :
+                                (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive') ?
+                                    <button className="request-chat-button" onClick={() => handleStatus('Active', 'request')}>Request to chat</button> : (userType === 'Patient') ?
+                                        <button className="request-chat-button inactive">Request to Chat</button> : <button className="request-chat-button inactive">Start Chat</button>}
                     </div>
                 </div>
                 <div className="chat-box-container">
@@ -224,8 +275,9 @@ function Chat() {
                     )}
                 </div>
                 {(selectedTherapist?.chatStatus === 'Active' && userType === 'Therapist') ? <div className="invoice-container">
-                    <button className="invoice-button" onClick={() => handleStatus('Inactive', 'chat')}>End Chat</button>
-                    <button className="invoice-button">Send Invoice</button>
+                    <button className="invoice-button" onClick={() => handleEndChat('Inactive', 'chat')}>End Chat</button>
+                    {/* <button className="invoice-button" onClick={BasicModalInvoice}>Send Invoice</button> */}
+                    <BasicModalInvoice patientId={selectedTherapist?.therapistID} therapistId={chooseId} />
                 </div> : ((selectedTherapist?.chatStatus === 'Inactive' && userType === 'Therapist') ?
                     <div className="invoice-container">
                         <button className="invoice-button inactive">End Chat</button>

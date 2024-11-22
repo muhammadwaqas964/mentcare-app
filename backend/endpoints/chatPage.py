@@ -98,15 +98,37 @@ def set_chat_status():
 
         cursor = mysql.connection.cursor()
         if (type == 'chat' and status == 'Active'):
-            cursor.execute('UPDATE therapistPatientsList SET chatStatus = %s, requestStatus = \'Inactive\' where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
+            cursor.execute('UPDATE therapistpatientslist SET chatStatus = %s, requestStatus = \'Inactive\' where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
         if (type == 'chat' and status == 'Inactive'):
-            cursor.execute('UPDATE therapistPatientsList SET chatStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
+            cursor.execute('UPDATE therapistpatientslist SET chatStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
         elif (type == 'request'):
-            cursor.execute('UPDATE therapistPatientsList SET requestStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
+            cursor.execute('UPDATE therapistpatientslist SET requestStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
 
         mysql.connection.commit()
         cursor.close()
         return jsonify({"message": "Success"}), 200
     
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
+@chatPageData.route('/sendInvoice', methods=['POST'])
+def send_invoice():
+    try: 
+        patient_id = request.json.get('patientId')
+        therapist_id = request.json.get('therapistId')
+        amount = str(round(float(request.json.get('amountDue')), 2))
+
+        # print(patient_id)
+        # print(therapist_id)
+        # print(amount)
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''INSERT INTO invoices (patientID, therapistID, amountDue, dateCreated) VALUES
+                        (%s, %s, %s, %s);''', (patient_id, therapist_id, amount, datetime.now()))
+        
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Success"}), 200
+
     except Exception as err:
         return jsonify({"error": str(err)}), 500
