@@ -43,6 +43,8 @@ function Login() {
                 if (data.userType === 'Patient' || data.userType === 'Therapist') {
                     localStorage.setItem('userType', data.userType);
                     localStorage.setItem('userID', data.userID);
+                    localStorage.setItem('realUserID', data.realUserID)
+                    console.log(localStorage.getItem('userID'));
                     navigate('/dashboard');
                 }
             })
@@ -50,7 +52,7 @@ function Login() {
     }
 
     return (
-        <div className="form-container">
+        <div className="default-form-container">
             <h1>LOG IN</h1>
             <form>
                 <div className='flex-col emailInput'>

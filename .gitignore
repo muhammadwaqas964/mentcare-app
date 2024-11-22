@@ -165,3 +165,6 @@ cython_debug/
 api/
 frontend/node_modules/
 backend/node_modules/
+start-all.bat
+start-backend.bat
+start-frontend.bat

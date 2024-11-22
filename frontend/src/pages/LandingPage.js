@@ -1,51 +1,81 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../presets.css';
 import './styles/LandingPage.css';
-import backgroundImage from './assets/images/img1_bg.png';
+
 import profileImage1 from './assets/images/img2_alex.png';
 import profileImage2 from './assets/images/img3_mary.png';
-import missionImage from './assets/images/img4_mission.png';
+import missionImage1 from './assets/images/img4_mission.png';
+import missionImage2 from './assets/images/img5_mission.png';
+import missionImage3 from './assets/images/img6_mission.png';
+
 
 function LandingPage() {
+    const navigate = useNavigate();
+    const handleTabClick = (path) => {
+        navigate(path);
+    };
+
     return (
         <div className="landing-page">
-            <section className="about-us">
-                <img src={backgroundImage} alt="bg pic1" className="about-image" />
-                <button className="register-btn">Register Now</button>
-            </section>
 
-            <section className="about-us">
-                <h2>Mission Statement</h2>
-                <p>MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists will conduct mental diagnostic tests, and provide personalized health-care tools, resources, and treatment to the patients.
-                </p>
-                <img src={missionImage} alt="MentCare Mission" className="about-image" />
+
+            <section className="statement">
+
+                <div className="statement">
+                    <h1>Mission Statement</h1>
+                    <p>
+                        MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists conduct mental diagnostic tests and provide personalized health-care tools, resources, and treatment to patients.
+                        <br></br><br></br>The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
+                        <br></br><br></br><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
+                        <br></br><br></br><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
+                        <br></br><br></br><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
+                        <br></br><br></br><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
+                        <br></br><br></br>These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
+                    </p>
+                    <img src={missionImage2} alt="MentCare Mission" className="about-image" />
+                    <img src={missionImage1} alt="MentCare Mission" className="about-image" />
+                    <img src={missionImage3} alt="MentCare Mission" className="about-image" />
+                </div>
             </section>
 
             <section className="testimonials">
-                <h2>Testimonials</h2>
+                <h1>Testimonials</h1>
                 <div className="testimonial">
-                    <img src={profileImage1} alt="profile pic1" className="profile-picture" />
-                    <p>"MentCare has been a game-changer in my life. I was matched with a therapist who truly understands my challenges, and the resources provided have helped me manage my mental health in ways I never thought possible. The convenience of virtual sessions and personalized tools make it easy for me to stay on track."
-                        — Alex R.</p>
+                    <img src={profileImage1} alt="Alex R." className="profile-picture" />
+                    <p>
+                        "MentCare has been a game-changer in my life. I was matched with a therapist who truly understands my challenges, and the resources provided have helped me manage my mental health in ways I never thought possible. The convenience of virtual sessions and personalized tools make it easy for me to stay on track."
+                        — Alex R.
+                    </p>
                 </div>
                 <div className="testimonial">
-                    <img src={profileImage2} alt="profile pic2" className="profile-picture" />
-                    <p>"After struggling to find the right therapist locally, MentCare connected me with an amazing professional who provided a personalized treatment plan that addresses my specific needs. I feel understood and supported, and I can already see a positive change in my mental health."
-                        — Mary T.</p>
+                    <img src={profileImage2} alt="Mary T." className="profile-picture" />
+                    <p>
+                        "After struggling to find the right therapist locally, MentCare connected me with an amazing professional who provided a personalized treatment plan that addresses my specific needs. I feel understood and supported, and I can already see a positive change in my mental health."
+                        — Mary T.
+                    </p>
                 </div>
             </section>
 
             <section className="faqs">
-                <h2>FAQs</h2>
-                <div className="faq-item">Q: What is MentCare, and how does it work?<br /> Ans: MentCare is a mental health care organization that connects patients with top therapists worldwide. Our therapists provide mental diagnostic tests, personalized health tools, and treatment plans to help patients on their mental health journey. Through our app, you can find and connect with therapists, track progress, and access resources from anywhere.</div>
-                <div className="faq-item">Q: How can I find a therapist that’s right for me?<br /> Ans: MentCare uses a detailed matching process to connect you with a therapist suited to your unique needs. During registration, you'll fill out a questionnaire about your preferences and challenges. Based on your responses, we suggest therapists who specialize in areas relevant to you.</div>
-                <div className="faq-item">Q: Is my information secure with MentCare?<br /> Ans: Yes, MentCare is committed to maintaining the privacy and confidentiality of all users. We use advanced security protocols to protect your personal information and comply with industry standards for data security and privacy.</div>
+                <h1>FAQs</h1>
+                <div className="faq-item">
+                    <strong>Q:</strong> What is MentCare, and how does it work?<br />
+                    <strong>A:</strong> MentCare is a mental health care organization that connects patients with top therapists worldwide. Our therapists provide mental diagnostic tests, personalized health tools, and treatment plans to help patients on their mental health journey. Through our app, you can find and connect with therapists, track progress, and access resources from anywhere.
+                </div>
+                <div className="faq-item">
+                    <strong>Q:</strong> How can I find a therapist that’s right for me?<br />
+                    <strong>A:</strong> MentCare uses a detailed matching process to connect you with a therapist suited to your unique needs. During registration, you'll fill out a questionnaire about your preferences and challenges. Based on your responses, we suggest therapists who specialize in areas relevant to you.
+                </div>
+                <div className="faq-item">
+                    <strong>Q:</strong> Is my information secure with MentCare?<br />
+                    <strong>A:</strong> Yes, MentCare is committed to maintaining the privacy and confidentiality of all users. We use advanced security protocols to protect your personal information and comply with industry standards for data security and privacy.
+                </div>
             </section>
 
             <section className="contact-us">
-                <h2>Contact Us</h2>
-                <textarea placeholder="Leave a review"></textarea>
-                <button className="send-btn">Send</button>
-                <div>Need Assistance? Call: 123 1234 1234 or Email: mentcareabc@gmail.com</div>
+                <h1>Contact Us</h1>
+                <div>Need Assistance? Call: 123-1234-1234 or Email: mentcareabc@gmail.com</div>
             </section>
         </div>
     );

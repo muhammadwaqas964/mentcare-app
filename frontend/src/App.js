@@ -7,12 +7,13 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import TherapistProfile from './pages/TherapistProfile';
 import Chat from './pages/Chat';
 import TherapistListPage from './pages/TherapistListPage';
+import SettingsPage from './pages/Settings';
 
 function App() {
   return (
-
     <Router>
       <Navbar />
       <Routes>
@@ -20,12 +21,13 @@ function App() {
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/dashboard' element={<Dashboard />} />
+        <Route path='/therapistprofile' element={<TherapistProfile />} />
         <Route path='/chat' element={<Chat />} />
         <Route path="/therapistlist" element={<TherapistListPage />} />
-      </Routes >
-    </Router >
-
-  )
+        <Route path='/settings' element={<SettingsPage />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

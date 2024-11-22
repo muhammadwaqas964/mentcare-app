@@ -1,49 +1,69 @@
 .landing-page {
-    font-family: Arial, sans-serif;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     padding: 1rem;
-    background-color: #d4f5e9;
+    background-color: rgba(87, 216, 194);
 }
 
-.header h1 {
-    margin: 0;
+.header .h1_class {
+    margin: 10;
 }
 
-.login-btn {
-    background: none;
-    border: none;
-    color: #000;
-    cursor: pointer;
+.h1_class {
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    /* Applies a stylish serif font */
+    font-size: 3rem;
+    /* Sets the font size to 3 rem units */
+    font-weight: bold;
+    /* Makes the text bold */
+    color: rgba(87, 216, 194);
+    /* Sets a dark blue-gray color */
+    text-align: center;
+    /* Centers the text horizontally */
+    margin-top: 20px;
+    /* Adds space above the heading */
 }
+
+
+.about-image {
+    width: 350px;  /* Set the width to your desired size */
+    height: 350px; /* Set the height to your desired size */
+    object-fit: cover; /* This ensures the images cover the space without distorting aspect ratio */
+  }
+  
+
 
 .carousel {
     text-align: center;
     padding: 2rem;
-    background-color: #f0f0f0;
+    
 }
 
 .carousel .register-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #34c4a9;
-    color: #fff;
+    background-color: rgba(87, 216, 194);
+    color: #000;
     border: none;
     cursor: pointer;
 }
 
-.about-us, .testimonials, .faqs, .contact-us {
-    padding: 2rem;
-    border-bottom: 1px solid #e0e0e0;
+.about-us,
+.testimonials,
+.faqs,
+.contact-us,
+.statement,
+.tabs {
+    padding: 1rem;
 }
 
 .profile-picture {
-    background-color: #e0e0e0;
-    height: 100px;
-    width: 100px;
+    height: 150px;
+    width: 150px;
     margin-top: 1rem;
 }
 
@@ -56,14 +76,7 @@
     padding: 20px;
 }
 
-.about-image {
-    margin-top: 20px;
-    padding: 0.5rem 1rem;
-    width: 100%;
-    max-width: 350px;
-    height: auto;
-    border-radius: 8px;
-}
+
 
 
 .faq-item {
@@ -76,11 +89,22 @@
     margin-top: 1rem;
 }
 
+.nav-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    color: #000;
+    cursor: pointer;
+    border: 5px solid rgb(228, 232, 6);
+    /* Adds a black border */
+    margin-right: 10px;
+}
+
+
 .send-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #34c4a9;
-    color: #fff;
+    background-color: #3472c4;
+    color: #000;
     border: none;
     cursor: pointer;
 }

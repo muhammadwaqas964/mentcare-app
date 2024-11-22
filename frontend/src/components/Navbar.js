@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import "../presets.css";
+import NotificationBellImg from "./notification-bell.png";
+import NotificationBellActiveImg from "./notification-bell-active.png";
 
 const Navbar = () => {
   const [userData, setUserData] = useState();
+  const [notifications, setNotifications] = useState(null);
+  const [bellImage, setBellImage] = useState(NotificationBellImg);
 
   //  Routing makes window.location not update on tab clicks
   const location = useLocation();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(location.pathname);
+
+  const bellRef = useRef(null);
 
   const isLoggedIn = localStorage.getItem("userID") ? true : false;
 
@@ -17,6 +24,7 @@ const Navbar = () => {
       localStorage.removeItem("userID");
       localStorage.removeItem("userType");
       setUserData();
+      setSelectedTab("/dashboard");
       return;
     }
     setSelectedTab(path.toLowerCase());
@@ -35,10 +43,55 @@ const Navbar = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        setUserData(data[0]);
+        setUserData(data[0][0]);
+        setNotifications(data[1]);
+        handleTabClick(location.pathname);
       })
       .catch((err) => console.error("Error fetching data:", err));
-  }, [localStorage.getItem("userID")]); // Re-fetch user data when localStorage changes
+  }, [localStorage.getItem("userID")]);
+
+  useEffect(() => {
+    if (!notifications) {
+      setBellImage(NotificationBellImg);
+    } else {
+      setBellImage(NotificationBellActiveImg);
+    }
+  }, [notifications]);
+
+  function toggleNotifications() {
+    if (bellRef.current.className === "notifs-dropdown-items hidden") {
+      bellRef.current.className = "notifs-dropdown-items";
+    } else {
+      bellRef.current.className = "notifs-dropdown-items hidden";
+    }
+  }
+
+  function handleNotificationClick(redLocation, notificationID) {
+    if (redLocation !== "null") {
+      handleTabClick(redLocation);
+      navigate(redLocation);
+      handleRemoveNotification(notificationID);
+    }
+  }
+
+  function handleRemoveNotification(notificationID) {
+    const updatedNotifications = [...notifications].filter(
+      (notification) => notification.notificationID !== parseInt(notificationID)
+    );
+    if (updatedNotifications.length === 0) {
+      setNotifications(null);
+    } else {
+      setNotifications(updatedNotifications);
+    }
+
+    fetch("http://localhost:5000/deleteNotification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ notificationID }),
+    }).catch((err) => console.error("Error fetching data:", err));
+  }
 
   return (
     <nav>
@@ -51,8 +104,10 @@ const Navbar = () => {
       <div className="mid-section">
         {userData && (
           <div className="flex-row" style={{ gap: "20px" }}>
-            {/* Common links for both Patient and Therapist */}
-            <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+            <Link
+              to={`/dashboard`}
+              onClick={() => handleTabClick(`/dashboard`)}
+            >
               <h2
                 className={`navbar-tab ${
                   selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"
@@ -62,7 +117,6 @@ const Navbar = () => {
               </h2>
             </Link>
 
-            {/* Conditional links based on userType */}
             {userData.userType === "Patient" && (
               <Link
                 to={`/therapistlist`}
@@ -79,11 +133,9 @@ const Navbar = () => {
                 </h2>
               </Link>
             )}
+
             {userData.userType === "Therapist" && (
-              <Link
-                to={`/profile`}
-                onClick={() => handleTabClick(`/profile`)}
-              >
+              <Link to={`/profile`} onClick={() => handleTabClick(`/profile`)}>
                 <h2
                   className={`navbar-tab ${
                     selectedTab === "/profile"
@@ -117,23 +169,110 @@ const Navbar = () => {
         ) : (
           <>
             {userData ? (
-              <div className="dropdown">
-                <h2 className="username">{userData.userName}</h2>
-                <div className="dropdown-items">
-                  <Link
-                    to={`/settings`}
-                    onClick={() => handleTabClick(`/settings`)}
-                    className="hamburger-item"
+              <div className="flex-row user-bell-container">
+                <div className="dropdown">
+                  <h2 className="username">{userData.userName}</h2>
+
+                  {userData.userType === "Patient" ? (
+                    <div className="dropdown-items">
+                      <Link
+                        to={`/settings`}
+                        onClick={() => handleTabClick(`/settings`)}
+                        className="hamburger-item"
+                      >
+                        Settings
+                      </Link>
+                      <Link
+                        to={`/login`}
+                        onClick={() => handleTabClick(`/logout`)}
+                        className="hamburger-item"
+                      >
+                        Log Out
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="dropdown-items">
+                      <Link
+                        to={`/therapistProfile`}
+                        onClick={() =>
+                          handleTabClick(`/therapistProfile`)
+                        }
+                        className="hamburger-item"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        to={`/settings`}
+                        onClick={() => handleTabClick(`/settings`)}
+                        className="hamburger-item"
+                      >
+                        Settings
+                      </Link>
+                      <Link
+                        to={`/login`}
+                        onClick={() => handleTabClick(`/logout`)}
+                        className="hamburger-item"
+                      >
+                        Log Out
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <div className="notifs-dropdown">
+                  <div
+                    className="flex-col flex-centered"
+                    style={{ height: "100%" }}
                   >
-                    Settings
-                  </Link>
-                  <Link
-                    to={`/login`}
-                    onClick={() => handleTabClick(`/logout`)}
-                    className="hamburger-item"
-                  >
-                    Log Out
-                  </Link>
+                    <img
+                      src={bellImage}
+                      width={"40px"}
+                      height={"40px"}
+                      onClick={() => toggleNotifications()}
+                    />
+                  </div>
+
+                  {notifications ? (
+                    <div
+                      className="notifs-dropdown-items hidden"
+                      ref={bellRef}
+                    >
+                      {notifications.map((row, index) => (
+                        <div
+                          key={`notif-${index}`}
+                          onClick={() =>
+                            handleNotificationClick(
+                              `${row.redirectLocation}`,
+                              `${row.notificationID}`
+                            )
+                          }
+                          className={`flex-row hamburger-item ${
+                            row.redirectLocation
+                              ? "hamburger-item-pointer"
+                              : "hamburger-item-no-pointer"
+                          }`}
+                        >
+                          {row.message}
+                          <input
+                            type="button"
+                            value={"X"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveNotification(
+                                `${row.notificationID}`
+                              );
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="notifs-dropdown-items">
+                      <div className="hamburger-item hamburger-item-no-pointer">
+                        No Notifications!
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -147,3 +286,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+

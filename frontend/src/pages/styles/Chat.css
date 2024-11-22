@@ -1,6 +1,7 @@
 body {
     margin: 0;
     background-color: #f5f5f5;
+    /* font-family: 'Lato'; */
 }
 
 .chat-page {
@@ -30,6 +31,40 @@ body {
     margin-right: 20px;
 }
 
+.bottom-list {
+    flex-direction: column;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.invoice-container {
+    width: 250px;
+    height: 30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 70px 0;
+    text-align: center;
+    margin-right: 20px;
+}
+
+.invoice-button {
+    padding: 20px;
+    width: 50%;
+    align-self: center;
+    background-color: rgba(87, 216, 194);
+    color: black;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.invoice-button.inactive {
+    background-color: gray;
+    color: white;
+}
+
 .chat-list {
     display: flex;
     flex-direction: column;
@@ -46,19 +81,40 @@ body {
 }
 
 .chat-item.current {
-    background-color: #00C7A6;
+    background-color: rgba(87, 216, 194);
+    color: white;
+    font-weight: bold;
+}
+
+.chat-item.inactive {
+    background-color: gray;
+    color: white;
+    font-weight: bold;
+}
+
+.chat-item.inactivechosen {
+    background-color: black;
     color: white;
     font-weight: bold;
 }
 
 .request-chat-button {
     padding: 10px;
-    background-color: #00C7A6;
+    background-color: rgba(87, 216, 194);
     color: white;
     border: none;
     border-radius: 100px;
     cursor: pointer;
     font-size: 16px;
+}
+
+.request-chat-button.not {
+    cursor: default;
+}
+
+.request-chat-button.inactive {
+    background-color: gray;
+    cursor: default;
 }
 
 .chat-box-container {
@@ -117,13 +173,28 @@ body {
     font-size: 16px;
 }
 
+.chat-input.inactive {
+    flex: 1;
+    padding: 10px;
+    color: white;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 16px;
+    background-color: gray;
+    text-align: center;
+}
+
 .send-button {
     margin-left: 10px;
     padding: 10px 20px;
-    background-color: #00C7A6;
+    background-color: rgba(87, 216, 194);
     color: white;
     border: none;
     border-radius: 20px;
     cursor: pointer;
     font-size: 16px;
+}
+
+.send-button.inactive {
+    background-color: gray;
 }

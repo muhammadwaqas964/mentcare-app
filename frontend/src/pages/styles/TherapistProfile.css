@@ -30,6 +30,17 @@
     transition: background-color 0.3s, color 0.3s;
 }
 
+.nav-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background-color: #3434c4;
+    color: #fff;
+    border: navajowhite;
+    cursor: pointer;
+    border: 5px solid rgb(228, 232, 6); /* Adds a black border */
+    margin-right: 20px;
+}
+
 .login-btn:hover {
     background-color: #34c4a9;
     color: #fff;

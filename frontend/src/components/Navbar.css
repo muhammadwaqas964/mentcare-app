@@ -78,8 +78,17 @@ a {
 
 .dropdown {
     float: left;
-    overflow: hidden;
     height: 100%;
+}
+
+.notifs-dropdown {
+    float: right;
+    height: 100%;
+    position: relative;
+
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .dropdown-items {
@@ -87,6 +96,17 @@ a {
     position: absolute;
     background-color: #f9f9f9;
     min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.notifs-dropdown-items {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    right: 0;
+    width: 250px;
+    text-align: center;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
@@ -102,12 +122,38 @@ a {
     flex-direction: column;
 }
 
+.hamburger-item-pointer:hover {
+    cursor: pointer;
+}
+
+.hamburger-item-no-pointer:hover {
+    cursor: default;
+}
+
 /* Add a grey background color to dropdown links on hover */
 .dropdown-items a:hover {
     background-color: #858585;
 }
 
-/* Show the dropdown menu on hover */
+.notifs-dropdown-items a:hover {
+    background-color: #858585;
+}
+
 .dropdown:hover .dropdown-items {
     display: block;
+}
+
+.notifs-dropdown:hover .notifs-dropdown-items {
+    display: block;
+}
+
+.user-bell-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 20px;
+}
+
+.bell {
+    height: 100%;
 }

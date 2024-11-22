@@ -1,3 +1,11 @@
+.patient-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+}
+
 .cards-container {
     display: grid;
     grid-template-columns: auto auto auto;
@@ -27,13 +35,19 @@
     align-items: center;
     z-index: 1000;
 
-    background-color: rgb(63, 89, 110);
+    background-color: #e0e0e0;
     padding: 20px;
     border-radius: 25px;
     z-index: 999;
 }
 
-input[type='button'] {
+.questions-container {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.card-buttons {
     background-color: #00C7A6;
     padding: 10px 16px;
     border-radius: 25px;
