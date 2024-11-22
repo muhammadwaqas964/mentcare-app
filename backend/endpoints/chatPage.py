@@ -57,48 +57,48 @@ def send_invoice():
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
-@chatPageData.route("/sendMessage", methods=['POST'])
-def send_message():
-    try:
-        patient_id = request.json.get('patientId')
-        therapist_id = request.json.get('therapistId')
-        message = request.json.get('message')
-        sender = request.json.get('sender')
+# @chatPageData.route("/sendMessage", methods=['POST'])
+# def send_message():
+#     try:
+#         patient_id = request.json.get('patientId')
+#         therapist_id = request.json.get('therapistId')
+#         message = request.json.get('message')
+#         sender = request.json.get('sender')
 
-        if not all([patient_id, therapist_id, message, sender]):
-            return jsonify({"error": "Missing params"}), 400
+#         if not all([patient_id, therapist_id, message, sender]):
+#             return jsonify({"error": "Missing params"}), 400
 
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
-        chat_data = cursor.fetchone()
+#         cursor = mysql.connection.cursor()
+#         cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
+#         chat_data = cursor.fetchone()
 
-        if chat_data:
-            try:
-                content = json.loads(chat_data[0])
-                if "chats" not in content:
-                    raise ValueError("Err Json")
-            except Exception as e:
-                return jsonify({"error": f"Err: {str(e)}"}), 500
+#         if chat_data:
+#             try:
+#                 content = json.loads(chat_data[0])
+#                 if "chats" not in content:
+#                     raise ValueError("Err Json")
+#             except Exception as e:
+#                 return jsonify({"error": f"Err: {str(e)}"}), 500
 
-            content['chats'].append({"msg": message, "sender": sender})
+#             content['chats'].append({"msg": message, "sender": sender})
 
-            cursor.execute(
-                'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
-                (json.dumps(content), patient_id, therapist_id)
-            )
-        else:
-            new_content = {"chats": [{"msg": message, "sender": sender}]}
-            cursor.execute(
-                'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
-                (patient_id, therapist_id, json.dumps(new_content), datetime.now())
-            )
+#             cursor.execute(
+#                 'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
+#                 (json.dumps(content), patient_id, therapist_id)
+#             )
+#         else:
+#             new_content = {"chats": [{"msg": message, "sender": sender}]}
+#             cursor.execute(
+#                 'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
+#                 (patient_id, therapist_id, json.dumps(new_content), datetime.now())
+#             )
 
-        mysql.connection.commit()
-        cursor.close()
-        return jsonify({"message": "Success"}), 200
+#         mysql.connection.commit()
+#         cursor.close()
+#         return jsonify({"message": "Success"}), 200
 
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
+#     except Exception as err:
+#         return jsonify({"error": str(err)}), 500
 
 @chatPageData.route("/userChats", methods=['POST'])
 def get_user_chats():

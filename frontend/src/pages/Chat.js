@@ -34,6 +34,7 @@ function Chat() {
         socket.on('connect', () => {
             console.log('Connected to server');
             console.log("CHOOSE ID: ", chooseId);
+            console.log("realU ID: ", realUserID);
             socket.emit("init-socket-comm", { "userID": realUserID });
         });
         //  Disconnect
@@ -43,12 +44,12 @@ function Chat() {
 
         socket.on('start-chat-for-patient', async () => {
             console.log("Your therapist has started a chat! ");
-            // socket.emit('join', { room: data.room });
 
             setSelectedTherapist({
                 therapistID: chooseId,
                 patientID: selectedTherapist?.therapistID,
                 chatStatus: 'Active',
+                requestStatus: 'Inactive',
             });
             const updatedUsers = await updateUsers();
             console.log(updatedUsers);
@@ -67,22 +68,58 @@ function Chat() {
             // );
         });
 
-        socket.on('end-chat-for-patient', () => {
+        socket.on('end-chat-for-patient', async () => {
             console.log("Your therapist has ended the chat! ");
-            // socket.emit('join', { room: data.room });
 
             setSelectedTherapist({
                 therapistID: chooseId,
                 patientID: selectedTherapist?.therapistID,
                 chatStatus: 'Inactive',
+                requestStatus: 'Inactive',
             });
+            const updatedUsers = await updateUsers();
+            console.log(updatedUsers);
+            setTherapists(updatedUsers);
+            const therapist = updatedUsers.filter(therap => therap.therapistID === 1);
+            handleTherapistSelect(therapist[0]);
         });
+
+        socket.on('request-chat', async () => {
+            console.log("Patient has sent a chat request!");
+
+            setSelectedTherapist({
+                therapistID: selectedTherapist?.therapistID,
+                patientID: chooseId,
+                chatStatus: 'Inactive',
+                requestStatus: 'Active',
+            });
+            const updatedUsers = await updateUsers();
+            console.log(updateUsers);
+            setTherapists(updatedUsers);
+            setSelectedTherapist((prevSelected) =>
+                prevSelected ? { ...prevSelected, requestStatus: 'Active' } : null
+            );
+        });
+
+        socket.on('new-message', (data) => {
+            console.log('got message');
+            setChatHistory((prevChatHistory) => [
+                ...prevChatHistory,
+                { msg: data.message, sender: data.sender }
+            ]);
+            if (chatBoxRef.current) {
+                chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+            }
+        });        
 
         return () => {
             socket.emit("rem-socket-comm", { "userID": realUserID });
-            socket.off('start-chat-for-patient')
-            socket.off('chat-start');
-            socket.off('chat-end');
+            socket.off('start-chat-for-patient');
+            socket.off('new-message');
+            socket.off('end-chat-for-patient');
+            socket.off('request-chat');
+            // socket.off('chat-start');
+            // socket.off('chat-end');
             socket.disconnect();
         };
     }, [chooseId, userType]);
@@ -92,7 +129,7 @@ function Chat() {
             therapistID: therapist.therapistID || therapist.patientID,
             therapistName: therapist.therapistName || therapist.patientName,
             content: therapist.content,
-            chatStatus: therapist.chatStatus,
+            chatStatus: therapist?.chatStatus,
             requestStatus: therapist.requestStatus,
         });
         setChatHistory(JSON.parse(therapist.content).chats);
@@ -151,14 +188,10 @@ function Chat() {
             });
 
             if (response.ok) {
-                const updatedUsers = await updateUsers();
-                console.log(updateUsers);
-                setTherapists(updatedUsers);
-                setSelectedTherapist((prevSelected) =>
-                    prevSelected ? { ...prevSelected } : null
-                );
+                console.log("Message sent");
+                setInput("");
             } else {
-                console.error("Failed to update new message history");
+                console.error("err sendin");
             }
         }
     };
@@ -255,7 +288,28 @@ function Chat() {
                 })
                 .catch(err => console.error('Error fetching data:', err));
             console.log("Ended  cat");
-            handleStatus('Inactive', 'chat')
+            handleStatus('Inactive', 'chat');
+        }
+    }
+
+    const handleRequestChat = () => {
+        if (selectedTherapist) {
+            const therapistId = selectedTherapist?.therapistID;
+            console.log(therapistId);
+            fetch('http://localhost:5000/requestChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ therapistId }),
+            })
+                .then(res => res.json())
+                .then(data => {
+                    //console.log("Successfully saved the journal");
+                })
+                .catch(err => console.error('Error fetching data:', err));
+            console.log("Ended  cat");
+            handleStatus('Active', 'request');
         }
     }
 
@@ -293,7 +347,7 @@ function Chat() {
                         {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') ? <button className="request-chat-button inactive">Start Chat</button> :
                             userType === 'Therapist' && selectedTherapist ? <button className="request-chat-button" onClick={() => handleStartChat('Active', 'chat')}>Start Chat</button> :
                                 (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive') ?
-                                    <button className="request-chat-button" onClick={() => handleStatus('Active', 'request')}>Request to chat</button> : (userType === 'Patient') ?
+                                    <button className="request-chat-button" onClick={() => handleRequestChat('Active', 'request')}>Request to chat</button> : (userType === 'Patient') ?
                                         <button className="request-chat-button inactive">Request to Chat</button> : <button className="request-chat-button inactive">Start Chat</button>}
                     </div>
                 </div>
@@ -304,10 +358,8 @@ function Chat() {
                     <div className="chat-box" ref={chatBoxRef}>
                         {chatHistory.map((message, index) => {
                             const isUserMessage =
-                                (userType === "Patient" &&
-                                    message.sender === "P") ||
-                                (userType === "Therapist" &&
-                                    message.sender === "T");
+                                (userType === "Patient" && message.sender === "P") ||
+                                (userType === "Therapist" && message.sender === "T");
                             return (
                                 <div
                                     key={index}
