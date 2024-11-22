@@ -6,16 +6,16 @@ import { io } from 'socket.io-client';
 function Chat() {
     const userType = localStorage.getItem('userType');
     const chooseId = localStorage.getItem('userID');
+    const realUserID = localStorage.getItem('realUserID');
 
     const [therapists, setTherapists] = useState([]);
     const [selectedTherapist, setSelectedTherapist] = useState(null);
     const [chatHistory, setChatHistory] = useState([]);
     const [input, setInput] = useState("");
     const chatBoxRef = useRef(null);
-    const socket = useRef();
 
     useEffect(() => {
-        socket.current = io('http://localhost:5000')
+        const socket = io('http://localhost:5000')
 
         const fetchChats = async () => {
             const response = await fetch("http://localhost:5000/userChats", {
@@ -30,28 +30,60 @@ function Chat() {
 
         fetchChats();
 
-        socket.current.on('chat-start', (data) => {
-            console.log("Patient notified:", data.room);
-            socket.current.emit('join', { room: data.room });
+        //  Connection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            console.log("CHOOSE ID: ", chooseId);
+            socket.emit("init-socket-comm", { "userID": realUserID });
+        });
+        //  Disconnect
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('start-chat-for-patient', async () => {
+            console.log("Your therapist has started a chat! ");
+            // socket.emit('join', { room: data.room });
 
             setSelectedTherapist({
-                therapistID: data.room[0],
-                patientID: data.room[2],
+                therapistID: chooseId,
+                patientID: selectedTherapist?.therapistID,
                 chatStatus: 'Active',
+            });
+            const updatedUsers = await updateUsers();
+            console.log(updatedUsers);
+            setTherapists(updatedUsers);
+            const therapist = updatedUsers.filter(therap => therap.therapistID === 1);
+            // console.log(therapist[0]);
+            // setChatHistory(JSON.parse(therapist[0].content).chats);
+            handleTherapistSelect(therapist[0]);
+
+
+            // setSelectedTherapist((prevSelected) =>
+            //     prevSelected ? { ...prevSelected, chatStatus: "Active" } : null
+            // );
+            // setSelectedTherapist((prevSelected) =>
+            //     prevSelected ? { ...prevSelected, chatStatus: "Active" } : null
+            // );
+        });
+
+        socket.on('end-chat-for-patient', () => {
+            console.log("Your therapist has ended the chat! ");
+            // socket.emit('join', { room: data.room });
+
+            setSelectedTherapist({
+                therapistID: chooseId,
+                patientID: selectedTherapist?.therapistID,
+                chatStatus: 'Inactive',
             });
         });
 
-        socket.current.on('chat-end', (data) => {
-            console.log("Chat ended in room:", data.room);
-            setSelectedTherapist((prev) =>
-                prev ? { ...prev, chatStatus: 'Inactive' } : null
-            );
-        });
-
         return () => {
-            socket.current.off('chat-start');
-            socket.current.off('chat-end');
-            socket.current.disconnect();
+            socket.emit("rem-socket-comm", { "userID": realUserID });
+            socket.off('start-chat-for-patient')
+            socket.off('chat-start');
+            socket.off('chat-end');
+            socket.disconnect();
         };
     }, [chooseId, userType]);
 
@@ -120,6 +152,7 @@ function Chat() {
 
             if (response.ok) {
                 const updatedUsers = await updateUsers();
+                console.log(updateUsers);
                 setTherapists(updatedUsers);
                 setSelectedTherapist((prevSelected) =>
                     prevSelected ? { ...prevSelected } : null
@@ -169,6 +202,7 @@ function Chat() {
 
             if (response.ok) {
                 const updatedUsers = await updateUsers();
+                console.log(updateUsers);
                 setTherapists(updatedUsers);
                 setSelectedTherapist((prevSelected) =>
                     prevSelected ? { ...prevSelected, requestStatus: status } : null
@@ -181,21 +215,45 @@ function Chat() {
 
     const handleStartChat = () => {
         if (selectedTherapist) {
-            socket.current.emit('chat-start', {
-                therapistId: chooseId,
-                patientId: selectedTherapist?.therapistID,
-            });
-            console.log("started chat");
+            const patientId = selectedTherapist.therapistID;
+            console.log(patientId);
+            fetch('http://localhost:5000/startChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ patientId }),
+            })
+                .then(res => res.json())
+                .then(data => {
+                    //console.log("Successfully saved the journal");
+                })
+                .catch(err => console.error('Error fetching data:', err));
+            // socket.emit('chat-start', {
+            //     therapistId: chooseId,
+            //     patientId: selectedTherapist?.therapistID,
+            // });
+            // console.log("started chat");
             handleStatus('Active', 'chat')
         }
     }
 
     const handleEndChat = () => {
         if (selectedTherapist) {
-            socket.current.emit('chat-end', {
-                therapistId: chooseId,
-                patientId: selectedTherapist?.therapistID,
-            });
+            const patientId = selectedTherapist.therapistID;
+            console.log(patientId);
+            fetch('http://localhost:5000/endChat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ patientId }),
+            })
+                .then(res => res.json())
+                .then(data => {
+                    //console.log("Successfully saved the journal");
+                })
+                .catch(err => console.error('Error fetching data:', err));
             console.log("Ended  cat");
             handleStatus('Inactive', 'chat')
         }

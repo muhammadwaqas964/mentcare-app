@@ -68,7 +68,6 @@ def patientDashFunc():
                     WHERE surveys.therapistID = %s AND surveys.patientID = %s;
                 ''', (therapistId, patientId ))
             incomp_surveys_data = cursor.fetchall()
-            print("HELLO", incomp_surveys_data[0])
             if (incomp_surveys_data):
                 incomp_surveys_columns = [column[0] for column in cursor.description]
                 incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
@@ -178,5 +177,20 @@ def sendDailySurveyFunc():
         }, room=sockets[fakeUserID])
 
         return jsonify({"message": "Survey data submitted successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
+@PatientDashboardData.route("/sendFeedback", methods=['POST'])
+def sendFeedbackFunc():
+    try:
+        print("GOT HERE")
+        patientID = request.json.get('patientId')
+        feedback = request.json.get('feedback')
+        # Emit the event to the connected socket clients
+        socketio.emit('new-feedback', {
+            'feedback': feedback
+        }, room=sockets[patientID])
+
+        return jsonify({"message": "Success"}), 200
     except Exception as err:
         return jsonify({"error": str(err)}), 500

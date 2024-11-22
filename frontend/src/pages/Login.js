@@ -43,6 +43,7 @@ function Login() {
                 if (data.userType === 'Patient' || data.userType === 'Therapist') {
                     localStorage.setItem('userType', data.userType);
                     localStorage.setItem('userID', data.userID);
+                    localStorage.setItem('realUserID', data.realUserID)
                     console.log(localStorage.getItem('userID'));
                     navigate('/dashboard');
                 }

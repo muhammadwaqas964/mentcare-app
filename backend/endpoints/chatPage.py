@@ -1,47 +1,59 @@
 from flask import request, jsonify, json, Blueprint #,render_template, request
-from app import mysql, socketio, sockets
+from app import mysql, socketio, app
+from flask import Flask, request, jsonify, json #,render_template, request
+from flask_mysqldb import MySQL
+from flask_cors import CORS, cross_origin
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
+#app = Flask(__name__)
 # If you need socketio stuff maybe uncomment the below line.
 # from flask_socketio import SocketIO, join_room, leave_room, send, emit
-
-# Feel free to add more imports
 
 
 chatPageData = Blueprint('chatPageData', __name__)
 
-@chatPageData.route("/userChats", methods=['POST'])
-def get_user_chats():
+@chatPageData.route("/updateStatus", methods=['POST'])
+def set_chat_status():
     try:
-        choose_id = request.json.get('chooseId')
-        user_type = request.json.get('userType')
+        patient_id = request.json.get('patientId')
+        therapist_id = request.json.get('therapistId')
+        status = request.json.get('status')
+        type = request.json.get('type')
 
         cursor = mysql.connection.cursor()
+        if (type == 'chat' and status == 'Active'):
+            cursor.execute('UPDATE therapistPatientsList SET chatStatus = %s, requestStatus = \'Inactive\' where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
+        if (type == 'chat' and status == 'Inactive'):
+            cursor.execute('UPDATE therapistPatientsList SET chatStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
+        elif (type == 'request'):
+            cursor.execute('UPDATE therapistPatientsList SET requestStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
 
-        if user_type == "Therapist":
-            cursor.execute('''
-                SELECT p.patientID, u.userName AS patientName, c.content, chatStatus, requestStatus
-                FROM patients p
-                INNER JOIN therapistPatientsList tpl ON p.patientID = tpl.patientID
-                INNER JOIN users u ON p.userID = u.userID
-                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
-                WHERE tpl.therapistID = %s
-            ''', (choose_id,))
-        else:
-            cursor.execute('''
-                SELECT t.therapistID, u.userName AS therapistName, c.content, chatStatus, requestStatus
-                FROM therapists t
-                INNER JOIN therapistPatientsList tpl ON t.therapistID = tpl.therapistID
-                INNER JOIN users u ON t.userID = u.userID
-                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
-                WHERE tpl.patientID = %s
-            ''', (choose_id,))
-
-        data = cursor.fetchall()
-        columns = [column[0] for column in cursor.description]
-        results = [dict(zip(columns, row)) for row in data]
+        mysql.connection.commit()
         cursor.close()
+        return jsonify({"message": "Success"}), 200
+    
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
 
-        return jsonify(results), 200
+@chatPageData.route('/sendInvoice', methods=['POST'])
+def send_invoice():
+    try: 
+        patient_id = request.json.get('patientId')
+        therapist_id = request.json.get('therapistId')
+        amount = str(round(float(request.json.get('amountDue')), 2))
+
+        # print(patient_id)
+        # print(therapist_id)
+        # print(amount)
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''INSERT INTO invoices (patientID, therapistID, amountDue, dateCreated) VALUES
+                        (%s, %s, %s, %s);''', (patient_id, therapist_id, amount, datetime.now()))
+        
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"message": "Success"}), 200
+
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
@@ -88,47 +100,59 @@ def send_message():
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
-@chatPageData.route("/updateStatus", methods=['POST'])
-def set_chat_status():
+@chatPageData.route("/userChats", methods=['POST'])
+def get_user_chats():
     try:
-        patient_id = request.json.get('patientId')
-        therapist_id = request.json.get('therapistId')
-        status = request.json.get('status')
-        type = request.json.get('type')
+        choose_id = request.json.get('chooseId')
+        user_type = request.json.get('userType')
 
         cursor = mysql.connection.cursor()
-        if (type == 'chat' and status == 'Active'):
-            cursor.execute('UPDATE therapistpatientslist SET chatStatus = %s, requestStatus = \'Inactive\' where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
-        if (type == 'chat' and status == 'Inactive'):
-            cursor.execute('UPDATE therapistpatientslist SET chatStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
-        elif (type == 'request'):
-            cursor.execute('UPDATE therapistpatientslist SET requestStatus = %s where therapistID = %s and patientID = %s;', (status, therapist_id, patient_id))
 
-        mysql.connection.commit()
+        if user_type == "Therapist":
+            cursor.execute('''
+                SELECT p.patientID, u.userName AS patientName, c.content, chatStatus, requestStatus
+                FROM patients p
+                INNER JOIN therapistPatientsList tpl ON p.patientID = tpl.patientID
+                INNER JOIN users u ON p.userID = u.userID
+                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
+                WHERE tpl.therapistID = %s
+            ''', (choose_id,))
+        else:
+            cursor.execute('''
+                SELECT t.therapistID, u.userName AS therapistName, c.content, chatStatus, requestStatus
+                FROM therapists t
+                INNER JOIN therapistPatientsList tpl ON t.therapistID = tpl.therapistID
+                INNER JOIN users u ON t.userID = u.userID
+                INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
+                WHERE tpl.patientID = %s
+            ''', (choose_id,))
+
+        data = cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        results = [dict(zip(columns, row)) for row in data]
         cursor.close()
-        return jsonify({"message": "Success"}), 200
-    
+
+        return jsonify(results), 200
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
-@chatPageData.route('/sendInvoice', methods=['POST'])
-def send_invoice():
-    try: 
-        patient_id = request.json.get('patientId')
-        therapist_id = request.json.get('therapistId')
-        amount = str(round(float(request.json.get('amountDue')), 2))
+# @chatPageData.route('/startChat', methods=['POST'])
+# def startChatFunc():
+#     try:
+#         patientID = request.json.get('patientId')
+#         print(sockets)
+#         print(patientID)
 
-        # print(patient_id)
-        # print(therapist_id)
-        # print(amount)
+#         cursor = mysql.connection.cursor()
+#         cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
+#         data = cursor.fetchone()
+#         userID = data[0]
 
-        cursor = mysql.connection.cursor()
-        cursor.execute('''INSERT INTO invoices (patientID, therapistID, amountDue, dateCreated) VALUES
-                        (%s, %s, %s, %s);''', (patient_id, therapist_id, amount, datetime.now()))
-        
-        mysql.connection.commit()
-        cursor.close()
-        return jsonify({"message": "Success"}), 200
+#         # Emit the event to the connected socket clients
+#         socketio.emit('start-chat-for-patient', {
+#             'message':'active'
+#         }, room=sockets[str(userID)])
 
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
+#         return jsonify({"message": "Chat started successfully!"}), 200
+#     except Exception as err:
+#         return jsonify({"error": str(err)}), 500

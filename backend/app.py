@@ -11,8 +11,8 @@ sockets = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "dasaniwater"
-app.config["MYSQL_DB"] = "health"
+app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
+app.config["MYSQL_DB"] = "cs490_GP"
 
 mysql = MySQL(app)
 
@@ -58,31 +58,63 @@ def defaultFunc():
 @app.route("/navbarData", methods=['POST'])
 def navbarDataFunc():
     try:
-        userId = request.json.get('userId')
+        fakeUserId = request.json.get('userId')
         userType = request.json.get('userType')
+        totalResults = []
 
         cursor = mysql.connection.cursor()
 
         if userType == 'Patient':
             cursor.execute('''
-                    SELECT userName, userType FROM users
+                    SELECT users.userID, userName, userType FROM users
                     INNER JOIN patients ON users.userID = patients.userID
                     WHERE patients.patientID = %s
-                    ''', (userId, ))
+                    ''', (fakeUserId, ))
         elif userType == 'Therapist':
             cursor.execute('''
-                    SELECT userName, userType FROM users
+                    SELECT users.userID, userName, userType FROM users
                     INNER JOIN therapists ON users.userID = therapists.userID
                     WHERE therapists.therapistID = %s
-                    ''', (userId, ))
+                    ''', (fakeUserId, ))
         data = cursor.fetchall()
         if data:
             columns = [column[0] for column in cursor.description]
             results = [dict(zip(columns, row)) for row in data]
-            return jsonify(results)
+            totalResults.append(results)
+
+            userId = results[0]['userID']
+
+            cursor.execute('''
+                    SELECT notificationID, message, redirectLocation FROM notifications WHERE userID = %s
+                    ''', (userId, ))
+            notifs_data = cursor.fetchall()
+            if notifs_data:
+                notifs_columns = [column[0] for column in cursor.description]
+                notifs_results = [dict(zip(notifs_columns, row)) for row in notifs_data]
+                totalResults.append(notifs_results)
+            else:
+                totalResults.append(None)
+            
+            return jsonify(totalResults)
         else:
             return jsonify({"message" : "User not found"}), 404
 
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@app.route('/deleteNotification', methods=['POST'])
+def delNotifFunc():
+    try:
+        notificationID = request.json.get('notificationID')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                    DELETE FROM notifications WHERE notificationID = %s
+                    ''', (notificationID, ))
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({"message" : "Notification succesfully delete!"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
 
@@ -112,29 +144,6 @@ def removeSocketCommunication(data):
         print(f"Removed socketId {socketId} for userId {userId}")
     else:
         print(f"userId {userId} not found in sockets dictionary")
-
-#   Received from Patient Dashboard (Patient submits daily survey)
-@socketio.on('submit-daily-survey')
-def dailySurveyFunc(data):
-    try:
-        patient_id = data.get('patientID')
-        daily_survey_id = data.get('dailySurveyID')
-        weight = data.get('weight')
-        height = data.get('height')
-        calories = data.get('calories')
-        water = data.get('water')
-        exercise = data.get('exercise')
-        sleep = data.get('sleep')
-        energy = data.get('energy')
-        stress = data.get('stress')
-
-        print("HELLO I AM HERE")
-        print(f"Received Survey Data: PatientID={patient_id}, DailySurveyID={daily_survey_id}, Weight={weight}, Height={height}, etc.")
-
-        # You can now process the received data (e.g., store it in a database, perform any logic)
-        
-    except Exception as err:
-        print(f"Error handling socket event: {err}")
 
 #   Sent from Patient Overview Page to a Patient's Dashboard Page
 @socketio.on('send-new-feedback')

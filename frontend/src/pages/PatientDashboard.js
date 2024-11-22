@@ -58,6 +58,7 @@ function PatientDashboard() {
         //  Connection
         socket.on('connect', () => {
             console.log('Connected to server');
+            console.log(patientId)
             socket.emit("init-socket-comm", { "userID": patientId });
         });
         //  Disconnect
@@ -198,7 +199,7 @@ function PatientDashboard() {
                                         <h3>Date Created: {new Date(row.timeDone).toDateString()}</h3>
                                         <textarea defaultValue={row.journalEntry}></textarea>
                                         <div>
-                                            <input className='card-buttons' type='button' value={'CANCEL'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                             <input className='card-buttons' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
                                         </div>
                                     </div>
