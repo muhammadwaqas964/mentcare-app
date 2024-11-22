@@ -1,25 +1,22 @@
 import React from 'react';
-import './TherapistProfile.css';
+import './styles/TherapistProfile.css';
 import profilePicture from './assets/images/img1_th_mike.png';
-import { useNavigate } from 'react-router-dom';
-import './TherapistDashboard.js';
+
+import '../presets.css';
 
 function TherapistProfile() {
-    const navigate = useNavigate();
+   
     
-    const goToHomePage = () => {
-        navigate('/');
-    };
+    
+    
     return (
         <div className="therapist-profile">
             <header className="header">
-                <h1>MentCare</h1>
-                <button className="nav-btn"  onClick={goToHomePage} >Home</button>
             </header>
 
             <section className="profile">
                 <img src={profilePicture} alt="Mike K." className="profile-picture" />
-                <h2>About Me</h2>
+                <h1>About Me</h1>
                 <p>
                     Hello, I'm Mike Ken, a licensed mentalcare therapist with over 15 years of experience in mental health care. I specialize in cognitive-behavioral therapy (CBT) and mindfulness-based approaches to help individuals navigate challenges such as anxiety, depression, and stress. My goal is to create a supportive and non-judgmental environment where clients feel empowered to explore their thoughts and emotions. Together, we can work towards achieving your personal goals and enhancing your overall well-being.
                 </p>

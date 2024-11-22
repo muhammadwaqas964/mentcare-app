@@ -11,36 +11,37 @@ import missionImage3 from './assets/images/img6_mission.png';
 
 
 function LandingPage() {
-    // const navigate = useNavigate();
-    // const handleTabClick = (path) => {
-    //     navigate(path);
-    // };
+    const navigate = useNavigate();
+    const handleTabClick = (path) => {
+        navigate(path);
+    };
 
     return (
         <div className="landing-page">
-            {/* <header className="header" /> */}
+            <header className="header">
+            </header>
 
-            {/* <nav className="tabs">
+            <nav className="tabs">
                 <button className="nav-btn" onClick={() => handleTabClick('/register')}>Register</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/login')}>Login</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/dashboard')}>Dashboard</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/therapistProfile')}>Therapist Profile</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/chat')}>Chat</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/settings')}>Settings</button>
-            </nav> */}
+            </nav>
 
             <section className="statement">
 
                 <div className="statement">
-                    <h2>Mission Statement</h2>
+                    <h1>Mission Statement</h1>
                     <p>
                         MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists conduct mental diagnostic tests and provide personalized health-care tools, resources, and treatment to patients.
-                        <br /><br />The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
-                        <br /><br /><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
-                        <br /><br /><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
-                        <br /><br /><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
-                        <br /><br /><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
-                        <br /><br />These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
+                        <br></br><br></br>The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
+                        <br></br><br></br><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
+                        <br></br><br></br><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
+                        <br></br><br></br><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
+                        <br></br><br></br><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
+                        <br></br><br></br>These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
                     </p>
                     <img src={missionImage2} alt="MentCare Mission" className="about-image" />
                     <img src={missionImage1} alt="MentCare Mission" className="about-image" />
@@ -49,7 +50,7 @@ function LandingPage() {
             </section>
 
             <section className="testimonials">
-                <h2>Testimonials</h2>
+                <h1>Testimonials</h1>
                 <div className="testimonial">
                     <img src={profileImage1} alt="Alex R." className="profile-picture" />
                     <p>
@@ -67,7 +68,7 @@ function LandingPage() {
             </section>
 
             <section className="faqs">
-                <h2>FAQs</h2>
+                <h1>FAQs</h1>
                 <div className="faq-item">
                     <strong>Q:</strong> What is MentCare, and how does it work?<br />
                     <strong>A:</strong> MentCare is a mental health care organization that connects patients with top therapists worldwide. Our therapists provide mental diagnostic tests, personalized health tools, and treatment plans to help patients on their mental health journey. Through our app, you can find and connect with therapists, track progress, and access resources from anywhere.
@@ -83,7 +84,7 @@ function LandingPage() {
             </section>
 
             <section className="contact-us">
-                <h2>Contact Us</h2>
+                <h1>Contact Us</h1>
                 <div>Need Assistance? Call: 123-1234-1234 or Email: mentcareabc@gmail.com</div>
             </section>
         </div>
