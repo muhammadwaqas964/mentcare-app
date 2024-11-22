@@ -5,7 +5,7 @@ from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
-socketio = SocketIO(app, cors_allowed_origins="*", threaded=True)
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
 
 sockets = {}
 
@@ -131,6 +131,7 @@ def initializeSocketCommunication(data):
     userId = data.get('userID')
     socketId = request.sid
     sockets[userId] = socketId
+    print("CURRENT SOCKETS CONNECTIONS: ", sockets)
     print(f"Added socketId {socketId} for userId {userId}")
 
 @socketio.on('rem-socket-comm')
@@ -154,26 +155,65 @@ def sendFeedback(data):
     if patientId in sockets:
         socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
 
+
+#   To be used for chatting (Just a basic layout)
 @socketio.on('join')
-def join(data):
+def on_join(data):
+    userId = data['userID']
     room = data['room']
     join_room(room)
-    print("User " + str(request.sid) + " joined room: "+ room)
+    send(userId + ' has entered the room.', to=room)
 
-@socketio.on('chat-start')
-def start_chat(data):
-    therapistId = data['therapistId']
-    patientId = data['patientId']
-    room = str(therapistId) + "-" + str(patientId)
-    print(room)
-    join_room(room)
-    socketio.emit('chat-start', {'room': room, 'status': 'Active'}, to = room)
-
-@socketio.on('chat-end')
-def end_chat(data):
-    therapistId = data['therapistId']
-    patientId = data['patientId']
-    room = str(therapistId) + "-" + str(patientId)
-    print(room)
+#   To be used for chatting (Just a basic layout)
+@socketio.on('leave')
+def on_leave(data):
+    userId = data['userID']
+    room = data['room']
     leave_room(room)
-    socketio.emit('chat-end', {'room': room, 'status': 'Inactive'}, to = room)
+    send(userId + ' has left the room.', to=room)
+
+
+
+#   CHAT PAGE CODE DOWN HERE
+@app.route('/startChat', methods=['POST'])
+def startChatFunc():
+    try:
+        patientID = request.json.get('patientId')
+        print(sockets)
+        print(patientID)
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        # Emit the event to the connected socket clients
+        socketio.emit('start-chat-for-patient', {
+            'message':'active'
+        }, room=sockets[str(userID)])
+
+        return jsonify({"message": "Chat started successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    
+@app.route('/endChat', methods=['POST'])
+def endChatFunc():
+    try:
+        patientID = request.json.get('patientId')
+        print("IN END CHAT")
+        print(sockets)
+        print(patientID)
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        # Emit the event to the connected socket clients
+        socketio.emit('end-chat-for-patient', {
+            'message':'inactive'
+        }, room=sockets[str(userID)])
+
+        return jsonify({"message": "Chat ended successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
