@@ -11,24 +11,23 @@ import missionImage3 from './assets/images/img6_mission.png';
 
 
 function LandingPage() {
-    const navigate = useNavigate();
-    const handleTabClick = (path) => {
-        navigate(path);
-    };
+    // const navigate = useNavigate();
+    // const handleTabClick = (path) => {
+    //     navigate(path);
+    // };
 
     return (
         <div className="landing-page">
-            <header className="header">
-            </header>
+            {/* <header className="header" /> */}
 
-            <nav className="tabs">
+            {/* <nav className="tabs">
                 <button className="nav-btn" onClick={() => handleTabClick('/register')}>Register</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/login')}>Login</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/dashboard')}>Dashboard</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/therapistProfile')}>Therapist Profile</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/chat')}>Chat</button>
                 <button className="nav-btn" onClick={() => handleTabClick('/settings')}>Settings</button>
-            </nav>
+            </nav> */}
 
             <section className="statement">
 
@@ -36,12 +35,12 @@ function LandingPage() {
                     <h2>Mission Statement</h2>
                     <p>
                         MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists conduct mental diagnostic tests and provide personalized health-care tools, resources, and treatment to patients.
-                        <br></br><br></br>The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
-                        <br></br><br></br><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
-                        <br></br><br></br><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
-                        <br></br><br></br><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
-                        <br></br><br></br><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
-                        <br></br><br></br>These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
+                        <br /><br />The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
+                        <br /><br /><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
+                        <br /><br /><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
+                        <br /><br /><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
+                        <br /><br /><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
+                        <br /><br />These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
                     </p>
                     <img src={missionImage2} alt="MentCare Mission" className="about-image" />
                     <img src={missionImage1} alt="MentCare Mission" className="about-image" />
