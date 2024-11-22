@@ -11,6 +11,7 @@ import TherapistProfile from './pages/TherapistProfile';
 import Chat from './pages/Chat';
 import TherapistListPage from './pages/TherapistListPage';
 import SettingsPage from './pages/Settings';
+import PatientOverview from './pages/PatientOverview';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path='/chat' element={<Chat />} />
         <Route path="/therapistlist" element={<TherapistListPage />} />
         <Route path='/settings' element={<SettingsPage />} />
+        <Route path="/patient-overview" element={<PatientOverview />} />
       </Routes>
     </Router>
   );
