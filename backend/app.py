@@ -11,8 +11,8 @@ sockets = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "dasaniwater"
-app.config["MYSQL_DB"] = "health"
+app.config["MYSQL_PASSWORD"] = "tanner25"
+app.config["MYSQL_DB"] = "mentcare"
 
 mysql = MySQL(app)
 
