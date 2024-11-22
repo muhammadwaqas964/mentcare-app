@@ -18,17 +18,7 @@ function LandingPage() {
 
     return (
         <div className="landing-page">
-            <header className="header">
-            </header>
 
-            <nav className="tabs">
-                <button className="nav-btn" onClick={() => handleTabClick('/register')}>Register</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/login')}>Login</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/dashboard')}>Dashboard</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/therapistProfile')}>Therapist Profile</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/chat')}>Chat</button>
-                <button className="nav-btn" onClick={() => handleTabClick('/settings')}>Settings</button>
-            </nav>
 
             <section className="statement">
 
