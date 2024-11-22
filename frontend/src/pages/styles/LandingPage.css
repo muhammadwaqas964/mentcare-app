@@ -1,12 +1,12 @@
 .landing-page {
-    font-family: Arial, sans-serif;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     padding: 1rem;
-    background-color: #4183bd;
+    background-color: rgba(87, 216, 194);
 }
 
 .header .h1_class {
@@ -14,13 +14,13 @@
 }
 
 .h1_class {
-    font-family: 'Georgia', serif;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     /* Applies a stylish serif font */
     font-size: 3rem;
     /* Sets the font size to 3 rem units */
     font-weight: bold;
     /* Makes the text bold */
-    color: #4147bd;
+    color: rgba(87, 216, 194);
     /* Sets a dark blue-gray color */
     text-align: center;
     /* Centers the text horizontally */
@@ -28,23 +28,25 @@
     /* Adds space above the heading */
 }
 
-.login-btn {
-    background: none;
-    border: none;
-    color: #000;
-    cursor: pointer;
-}
+
+.about-image {
+    width: 350px;  /* Set the width to your desired size */
+    height: 350px; /* Set the height to your desired size */
+    object-fit: cover; /* This ensures the images cover the space without distorting aspect ratio */
+  }
+  
+
 
 .carousel {
     text-align: center;
     padding: 2rem;
-    background-color: #f0f0f0;
+    
 }
 
 .carousel .register-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #345dc4;
+    background-color: rgba(87, 216, 194);
     color: #000;
     border: none;
     cursor: pointer;
@@ -57,13 +59,11 @@
 .statement,
 .tabs {
     padding: 1rem;
-    border-bottom: 1px solid #e0e0e0;
 }
 
 .profile-picture {
-    background-color: #e0e0e0;
-    height: 100px;
-    width: 100px;
+    height: 150px;
+    width: 150px;
     margin-top: 1rem;
 }
 
@@ -76,16 +76,7 @@
     padding: 20px;
 }
 
-.about-image {
-    margin-top: 20px;
-    padding: 0.5rem 1rem;
-    width: 100%;
-    max-width: 300px;
-    height: auto;
-    text-align: center;
-    border-radius: 8px;
-    margin: 10px auto;
-}
+
 
 
 .faq-item {
@@ -98,17 +89,14 @@
     margin-top: 1rem;
 }
 
-
 .nav-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
-    background-color: #3434c4;
     color: #000;
-    border: navajowhite;
     cursor: pointer;
     border: 5px solid rgb(228, 232, 6);
     /* Adds a black border */
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 
