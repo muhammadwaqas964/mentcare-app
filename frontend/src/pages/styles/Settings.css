@@ -1,0 +1,71 @@
+.cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    position: relative;
+    gap: 50px;
+}
+
+/* .left-side {
+    margin: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+} */
+
+.therapist-dashboard-container {
+    justify-content: space-evenly;
+}
+
+.margined {
+    margin: 50px;
+    /* padding: 100px; */
+}
+
+.popUp-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.settings-popUp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+
+    background-color: #e0e0e0;
+    padding: 20px;
+    border-radius: 25px;
+    z-index: 999;
+
+    &>h2 {
+        color: black;
+    }
+}
+
+.right-side {
+    /* margin: 50px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* text-align: center; */
+}
+
+.red {
+    background-color: red;
+}
+
+.blue {
+    background-color: blue;
+}

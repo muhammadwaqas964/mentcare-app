@@ -164,43 +164,6 @@ function TherapistDashboard() {
                                         ))}
                                         <button type="button" onClick={() => editSurvey()}>Edit Survey</button>
                                     </DashboardCard>
-                                    <div ref={popupRef} className="hidden popUp-background">
-                                        <div className="popUp flex-row flex-centered main-container">
-                                            <h1>Editing Survey</h1>
-                                            <form onSubmit={(event) => saveSurvey(event)}>
-                                                {surveyQuestions && surveyQuestions.map((item, index) => (
-                                                    <>
-                                                        <input type="text" id="{index}" name="{index}" value={item.question} onChange={(event) => handleChange(event, item.question)} />
-                                                        {/* <div className="flex-row">
-                                                        <input type="radio" id={"string_" + index} name={"button" + index} defaultChecked={'string' === item.questionType} value="string" />
-                                                        <label htmlFor={"string_" + index}>&nbsp;String</label>
-                                                        </div>
-                                                        <div className="flex-row">
-                                                        <input type="radio" id={"number_" + index} name={"button" + index} defaultChecked={'number' === item.questionType} value="number" />
-                                                        <label htmlFor={"number_" + index}>&nbsp;Number</label>
-                                                        </div>
-                                                        <div className="flex-row">
-                                                        <input type="radio" id={"range10_" + index} name={"button" + index} defaultChecked={'range10' === item.questionType} value="range10" />
-                                                        <label htmlFor={"range10_" + index}>&nbsp;1 - 10</label>
-                                                        </div>
-                                                        <div className="flex-row">
-                                                        <input type="radio" id={"boolean" + index} name={"button" + index} defaultChecked={'boolean' === item.questionType} value="boolean" />
-                                                        <label htmlFor={"boolean" + index}>&nbsp;True or False</label>
-                                                        </div> */}
-                                                        &nbsp;<button type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
-                                                        <br />
-                                                    </>
-                                                ))}
-                                                <br />
-                                                <div className="flex-row flex-centered main-container">
-                                                    <button type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
-                                                    <input type="submit" value="Save Survey"></input>&nbsp;
-                                                    <button type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-
                                 </div>
                             </div>
                         </td>
@@ -218,7 +181,43 @@ function TherapistDashboard() {
                         </td>
                     </tr>
                 </tbody>
-            </table >
+            </table>
+            <div ref={popupRef} className="hidden popUp-background">
+                <div className="popUp flex-row flex-centered main-container">
+                    <h1>Editing Survey</h1>
+                    <form onSubmit={(event) => saveSurvey(event)}>
+                        {surveyQuestions && surveyQuestions.map((item, index) => (
+                            <>
+                                <input type="text" id="{index}" name="{index}" value={item.question} onChange={(event) => handleChange(event, item.question)} />
+                                {/* <div className="flex-row">
+                                <input type="radio" id={"string_" + index} name={"button" + index} defaultChecked={'string' === item.questionType} value="string" />
+                                <label htmlFor={"string_" + index}>&nbsp;String</label>
+                                </div>
+                                <div className="flex-row">
+                                <input type="radio" id={"number_" + index} name={"button" + index} defaultChecked={'number' === item.questionType} value="number" />
+                                <label htmlFor={"number_" + index}>&nbsp;Number</label>
+                                </div>
+                                <div className="flex-row">
+                                <input type="radio" id={"range10_" + index} name={"button" + index} defaultChecked={'range10' === item.questionType} value="range10" />
+                                <label htmlFor={"range10_" + index}>&nbsp;1 - 10</label>
+                                </div>
+                                <div className="flex-row">
+                                <input type="radio" id={"boolean" + index} name={"button" + index} defaultChecked={'boolean' === item.questionType} value="boolean" />
+                                <label htmlFor={"boolean" + index}>&nbsp;True or False</label>
+                                </div> */}
+                                &nbsp;<button type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
+                                <br />
+                            </>
+                        ))}
+                        <br />
+                        <div className="flex-row flex-centered main-container">
+                            <button type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
+                            <input type="submit" value="Save Survey"></input>&nbsp;
+                            <button type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </>
     );
 }
