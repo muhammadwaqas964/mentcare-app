@@ -6,7 +6,7 @@ from datetime import datetime
 from io import BytesIO
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"])
 
 sockets = {}
 

@@ -10,4 +10,8 @@ TherapistProfileData = Blueprint('TherapistProfileData', __name__)
 
 @TherapistProfileData.route('/endpointOne', methods=['GET'])
 def sample_endpoint_function():
-    return jsonify({"data" : "I exist"}), 200
+    try:
+        pass
+        return "fart"
+    except:
+        return jsonify({"data" : "I exist"}), 200

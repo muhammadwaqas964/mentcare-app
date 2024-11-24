@@ -167,7 +167,7 @@ function TherapistDashboard() {
                                     </DashboardCardTitleless>
                                     <DashboardCard title="Your Survey Questions" extraClasses="margined">
                                         {surveyQuestions && surveyQuestions.map((item, index) => (
-                                            <p>{item.question}</p>
+                                            <p key={`question-${index}`}>{item.question}</p>
                                         ))}
                                         <button type="button" onClick={() => editSurvey()}>Edit Survey</button>
                                     </DashboardCard>
@@ -179,7 +179,7 @@ function TherapistDashboard() {
                             <div className="flex-row flex-centered main-container">
                                 <div className="">
                                     {patients && patients.map((item, index) => (
-                                        <DashboardCardTitleless key={index} extraClasses="margined">
+                                        <DashboardCardTitleless key={`patient-${index}`} extraClasses="margined">
                                             <div onClick={() => goToOverviewPage(item[2])}>
                                                 <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
                                             </div>
@@ -196,7 +196,7 @@ function TherapistDashboard() {
                     <h1>Editing Survey</h1>
                     <form onSubmit={(event) => saveSurvey(event)}>
                         {surveyQuestions && surveyQuestions.map((item, index) => (
-                            <>
+                            <div key={`edit-question-${index}`}>
                                 <input type="text" id="{index}" name="{index}" value={item.question} onChange={(event) => handleChange(event, item.question)} />
                                 {/* <div className="flex-row">
                                 <input type="radio" id={"string_" + index} name={"button" + index} defaultChecked={'string' === item.questionType} value="string" />
@@ -216,7 +216,7 @@ function TherapistDashboard() {
                                 </div> */}
                                 &nbsp;<button type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
                                 <br />
-                            </>
+                            </ div>
                         ))}
                         <br />
                         <div className="flex-row flex-centered main-container">
