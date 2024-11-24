@@ -35,9 +35,13 @@ function TherapistProfile() {
                 therapists.map((therapist, index) => (
                     <section key={index} className="profile">
                         <h1>About {capitalize(therapist.Username)}</h1>
+                        <p><strong>Passion Statement:</strong> {therapist.Intro}</p>
                         <p><strong>License Number:</strong> {therapist.LicenseNumber}</p>
+                        <p><strong>Education:</strong> {therapist.Education}</p>
                         <p><strong>Specializations:</strong> {therapist.Specializations}</p>
-                        <p><strong>Testimonial:</strong> {therapist.Patient_Testimonial || "No testimonial available."}</p>
+                        <p><strong>Days and Hours:</strong> {therapist.DaysHours}</p>
+                        <p><strong>Pricing:</strong> {therapist.Price}</p>
+                        <p><strong>Patient's Testimonial for Therapist:</strong> {therapist.Patient_Testimonial || "No testimonial available."}</p>
                     </section>
                 ))
             ) : (
