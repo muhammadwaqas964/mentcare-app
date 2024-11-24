@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/LandingPage.css';
@@ -9,29 +9,43 @@ import missionImage1 from './assets/images/img4_mission.png';
 import missionImage2 from './assets/images/img5_mission.png';
 import missionImage3 from './assets/images/img6_mission.png';
 
-
 function LandingPage() {
     const navigate = useNavigate();
-    const handleTabClick = (path) => {
-        navigate(path);
-    };
+    const [testimonials, setTestimonials] = useState([]);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/testimonials')  
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.Testimonials && data.Testimonials.length > 0) {
+                    setTestimonials(data.Testimonials);
+                } else {
+                    console.error('No testimonials found or empty array in the response');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching testimonials:', error);
+                setTestimonials([]); 
+            });
+    }, []);
 
     return (
         <div className="landing-page">
-
-
             <section className="statement">
-
                 <div className="statement">
                     <h1>Mission Statement</h1>
                     <p>
                         MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists conduct mental diagnostic tests and provide personalized health-care tools, resources, and treatment to patients.
-                        <br></br><br></br>The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
-                        <br></br><br></br><strong>Access to Care:</strong>This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
-                        <br></br><br></br><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
-                        <br></br><br></br><strong>Treatment Planning and Implementation:</strong>Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
-                        <br></br><br></br><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
-                        <br></br><br></br>These stages collectively form a structured approach to mental health care, promoting effective treatment and recovery.
+                        <br /><br />The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
+                        <br /><br /><strong>Access to Care:</strong> This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
+                        <br /><br /><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
+                        <br /><br /><strong>Treatment Planning and Implementation:</strong> Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
+                        <br /><br /><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
                     </p>
                     <img src={missionImage2} alt="MentCare Mission" className="about-image" />
                     <img src={missionImage1} alt="MentCare Mission" className="about-image" />
@@ -41,20 +55,16 @@ function LandingPage() {
 
             <section className="testimonials">
                 <h1>Testimonials</h1>
-                <div className="testimonial">
-                    <img src={profileImage1} alt="Alex R." className="profile-picture" />
-                    <p>
-                        "MentCare has been a game-changer in my life. I was matched with a therapist who truly understands my challenges, and the resources provided have helped me manage my mental health in ways I never thought possible. The convenience of virtual sessions and personalized tools make it easy for me to stay on track."
-                        — Alex R.
-                    </p>
-                </div>
-                <div className="testimonial">
-                    <img src={profileImage2} alt="Mary T." className="profile-picture" />
-                    <p>
-                        "After struggling to find the right therapist locally, MentCare connected me with an amazing professional who provided a personalized treatment plan that addresses my specific needs. I feel understood and supported, and I can already see a positive change in my mental health."
-                        — Mary T.
-                    </p>
-                </div>
+                {testimonials.length > 0 ? (
+                    testimonials.map((testimonial, index) => (
+                        <div key={index} className="testimonial">
+                            <img src={profileImage1} alt={`${testimonial.Username}`} className="profile-picture" />
+                            <p>"{testimonial.Content}" — {testimonial.Username}</p>
+                        </div>
+                    ))
+                ) : (
+                    <p>No testimonials available.</p>
+                )}
             </section>
 
             <section className="faqs">
@@ -81,4 +91,4 @@ function LandingPage() {
     );
 }
 
-export default LandingPage;
+export default LandingPage
