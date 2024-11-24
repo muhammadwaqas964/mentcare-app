@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify, json #,render_template, request
+from flask import Flask, request, jsonify, json, send_file #,render_template, request
 from flask_mysqldb import MySQL
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
+from io import BytesIO
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
@@ -11,8 +12,8 @@ sockets = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "tanner25"
-app.config["MYSQL_DB"] = "mentcare"
+app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
+app.config["MYSQL_DB"] = "cs490_GP"
 
 mysql = MySQL(app)
 
@@ -58,7 +59,7 @@ def defaultFunc():
 @app.route("/navbarData", methods=['POST'])
 def navbarDataFunc():
     try:
-        fakeUserId = request.json.get('userId')
+        fakeUserId = request.json.get('fakeUserID')
         userType = request.json.get('userType')
         totalResults = []
 
@@ -79,7 +80,7 @@ def navbarDataFunc():
         data = cursor.fetchall()
         if data:
             columns = [column[0] for column in cursor.description]
-            results = [dict(zip(columns, row)) for row in data]
+            results = [dict(zip(columns, row)) for row in data]                
             totalResults.append(results)
 
             userId = results[0]['userID']
@@ -99,6 +100,30 @@ def navbarDataFunc():
         else:
             return jsonify({"message" : "User not found"}), 404
 
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@app.route('/retriveProfilePic', methods=['POST'])
+def retriveProfilePicFunc():
+    try:
+        realUserID = request.json.get('realUserID')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+            SELECT profileImg FROM users
+            WHERE userID = %s
+        ''', (realUserID,))
+
+        data = cursor.fetchall()
+        if data:
+            profile_img_data = data[0][0]
+        
+            if profile_img_data:
+                img_stream = BytesIO(profile_img_data)
+                return send_file(img_stream, mimetype='image/jpeg')
+            else:
+                return jsonify({"error": "Profile image not found"}), 404
+        else:
+            return jsonify({"error": "User not found"}), 404
     except Exception as err:
         return {"error":  f"{err}"}
     

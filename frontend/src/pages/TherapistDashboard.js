@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from "react-router-dom";
 // import io from 'socket.io-client';
 import { DashboardCard, DashboardCardTitleless } from '../components/DashboardCards.js';
 import './styles/TherapistDashboard.css'
@@ -11,6 +12,8 @@ function TherapistDashboard() {
     const [constSurveyQuestions, setConstSurveyQuestions] = useState();
     const [patients, setPatients] = useState([]);
     const popupRef = useRef(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const therapistId = localStorage.getItem("userID");
@@ -147,6 +150,10 @@ function TherapistDashboard() {
         setSurveyQuestions(updatedQuestions);
     };
 
+    const goToOverviewPage = (realUserID) => {
+        navigate(`/patient-overview/${realUserID}`);
+    }
+
     return (
         <>
             <table style={{ width: '100%' }}>
@@ -173,7 +180,9 @@ function TherapistDashboard() {
                                 <div className="">
                                     {patients && patients.map((item, index) => (
                                         <DashboardCardTitleless key={index} extraClasses="margined">
-                                            <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
+                                            <div onClick={() => goToOverviewPage(item[2])}>
+                                                <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
+                                            </div>
                                         </DashboardCardTitleless>
                                     ))}
                                 </div>

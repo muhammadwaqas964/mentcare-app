@@ -21,12 +21,12 @@ const PatientOverview = () => {
         </div>
       </div>
 
-      <div className="cards-section">
-        <div className="card">
+      <div className="overview-cards-section">
+        <div className="overview-card">
           <h3>Patient Survey Answers</h3>
-          <div className="card-content scrollable">
+          <div className="overview-card-content scrollable">
             {Array.from({ length: 20 }).map((_, i) => (
-              <button key={i} className="card-row">
+              <button key={i} className="overview-card-row">
                 {`2023-11-${i + 1 < 10 ? '0' : ''}${i + 1} - ${
                   i % 2 === 0 ? 'Daily Survey' : 'Custom Survey'
                 }`}
@@ -35,11 +35,11 @@ const PatientOverview = () => {
           </div>
         </div>
 
-        <div className="card">
+        <div className="overview-card">
           <h3>Notes</h3>
-          <div className="card-content scrollable">
+          <div className="overview-card-content scrollable">
             {Array.from({ length: 20 }).map((_, i) => (
-              <button key={i} className="card-row">
+              <button key={i} className="overview-card-row">
                 {`2023-11-${i + 1 < 10 ? '0' : ''}${i + 1} - ${
                   i % 2 === 0 ? 'Patient was responsive' : 'Follow-up needed'
                 }`}
@@ -49,11 +49,11 @@ const PatientOverview = () => {
           <button className="add-note-btn">Add Note</button>
         </div>
 
-        <div className="card">
+        <div className="overview-card">
           <h3>Feedback</h3>
-          <div className="card-content scrollable">
+          <div className="overview-card-content scrollable">
             {Array.from({ length: 10 }).map((_, i) => (
-              <button key={i} className="card-row">
+              <button key={i} className="overview-card-row">
                 {`2023-11-${i + 1 < 10 ? '0' : ''}${i + 1} - ${
                   i % 2 === 0 ? 'Excellent progress' : 'Needs improvement'
                 }`}

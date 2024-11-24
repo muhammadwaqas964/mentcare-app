@@ -19,17 +19,26 @@ def patientDashFunc():
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
                 ''', (patientId, ))
         data = cursor.fetchall()
-        columns = [column[0] for column in cursor.description]
-        results = [dict(zip(columns, row)) for row in data]
-        totalResults.append(results)
+        if data:
+            print("DATA: ", data)
+            columns = [column[0] for column in cursor.description]
+            results = [dict(zip(columns, row)) for row in data]
+            print("RESULTS: ", results)
+            totalResults.append(results)
+        else:
+            totalResults.append("Nothing")
 
         cursor.execute('''
                 SELECT feedbackID, feedbackDate, feedback FROM feedback WHERE patientID = %s
                 ''', (patientId, ))
         feedback_data = cursor.fetchall()
-        feedback_columns = [column[0] for column in cursor.description]
-        feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
-        totalResults.append(feedback_results)
+        if feedback_data:
+            feedback_columns = [column[0] for column in cursor.description]
+            feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
+            print("Feedback RESULTS: ", feedback_results)
+            totalResults.append(feedback_results)
+        else:
+            totalResults.append("Nothing")
 
         #   Extract incomplete + complete daily surveys        
         cursor.execute('''
@@ -51,16 +60,22 @@ def patientDashFunc():
                     OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
                 ''', (patientId, ))
         daily_survey_data = cursor.fetchall()
-        daily_survey_columns = [column[0] for column in cursor.description]
-        daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
-        totalResults.append(daily_survey_results)
+        if daily_survey_data:
+            daily_survey_columns = [column[0] for column in cursor.description]
+            daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
+            print("Daily Survey RESULTS: ", daily_survey_results)
+            totalResults.append(daily_survey_results)
+        else:
+            totalResults.append("Nothing")
         
         #   Extract incomplete therapist survey (if exists)
         cursor.execute('''
                 SELECT therapistID FROM therapistPatientsList WHERE patientID = %s AND status = 'Active';
                 ''', (patientId, ))
-        therapistId = cursor.fetchone()[0]
-        if (therapistId):
+        therapistId = 0
+        if(cursor.rowcount > 0):
+            therapistId = cursor.fetchone()[0]
+        if (therapistId != 0):
             cursor.execute('''
                     SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
                     INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
@@ -71,25 +86,35 @@ def patientDashFunc():
             if (incomp_surveys_data):
                 incomp_surveys_columns = [column[0] for column in cursor.description]
                 incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
-                #print(therap_surveys_results)
+                print("Incomplete Survey RESULTS: ", incomp_surveys_results)
                 totalResults.append(incomp_surveys_results)
+            else:
+                totalResults.append("Nothing")
+        else:
+            totalResults.append("Nothing")
 
         
         #   Extract complete therapist surveys (if exists)
-        cursor.execute('''
-                SELECT users.userName, JSON_EXTRACT(completedSurveys.questions, '$.survey') AS questions,
-                JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone 
-                FROM completedSurveys
-                INNER JOIN surveys ON completedSurveys.surveyID = surveys.surveyID
-                INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
-                INNER JOIN users ON therapists.userID = users.userID
-                WHERE completedSurveys.patientID = %s and surveys.therapistID = %s;
-                ''', (patientId, therapistId))
-        comp_surveys_data = cursor.fetchall()
-        if comp_surveys_data:
-            comp_surveys_columns = [column[0] for column in cursor.description]
-            comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
-            totalResults.append(comp_surveys_results)
+        if therapistId != 0:
+            cursor.execute('''
+                    SELECT users.userName, JSON_EXTRACT(completedSurveys.questions, '$.survey') AS questions,
+                    JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone , completedSurveys.completionID,
+                    completedSurveys.dateDone
+                    FROM completedSurveys
+                    INNER JOIN surveys ON completedSurveys.surveyID = surveys.surveyID
+                    INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                    INNER JOIN users ON therapists.userID = users.userID
+                    WHERE completedSurveys.patientID = %s and surveys.therapistID = %s;
+                    ''', (patientId, therapistId))
+            comp_surveys_data = cursor.fetchall()
+            if comp_surveys_data:
+                comp_surveys_columns = [column[0] for column in cursor.description]
+                comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
+                totalResults.append(comp_surveys_results)
+            else:
+                totalResults.append("Nothing")
+        else:
+            totalResults.append("Nothing")
 
         #   Extract invoices (if exists):
         cursor.execute('''
@@ -102,7 +127,10 @@ def patientDashFunc():
         if invoices_data:
             invoices_columns = [column[0] for column in cursor.description]
             invoices_results = [dict(zip(invoices_columns, row)) for row in invoices_data]
+            print("Invoices RESULTS: ", invoices_results)
             totalResults.append(invoices_results)
+        else:
+            totalResults.append("Nothing")
 
         cursor.close()
         return jsonify(totalResults)

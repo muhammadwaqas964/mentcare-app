@@ -26,7 +26,7 @@ function App() {
         <Route path='/chat' element={<Chat />} />
         <Route path="/therapistlist" element={<TherapistListPage />} />
         <Route path='/settings' element={<SettingsPage />} />
-        <Route path="/patient-overview" element={<PatientOverview />} />
+        <Route path="/patient-overview/:userID" element={<PatientOverview />} />
       </Routes>
     </Router>
   );

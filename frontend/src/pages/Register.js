@@ -12,8 +12,13 @@ function Register() {
     const [pageThreeVisibility, setPageThreeVisibility] = useState("hidden");
     const [licenseValue, setLicenseValue] = useState('');
 
-    const [patientProfilePic, setPatientProfilePic] = useState(defaultProfilePic);
-    const [therapistProfilePic, setTherapistProfilePic] = useState(defaultProfilePic);
+    const [patientProfilePic, setPatientProfilePic] = useState(null);
+    const [patientProfilePicURL, setPatientProfilePicURL] = useState(defaultProfilePic);
+    const [therapistProfilePic, setTherapistProfilePic] = useState(null);
+    const [therapistProfilePicURL, setTherapistProfilePicURL] = useState(defaultProfilePic);
+
+    const [hasUpdatedPatientProfilePic, setUpdatedPatientProfilePic] = useState(false);
+    const [hasUpdatedTherapistProfilePic, setUpdatedTherapistProfilePic] = useState(false);
 
     //  Need this to redirect user to their dashboard page
     const navigate = useNavigate();
@@ -86,11 +91,13 @@ function Register() {
         }
     }
 
-    function registerPatient(e) {
+    async function registerPatient(e) {
         const form = formRefs.current.patientRegister;
         if (form.checkValidity()) {
             const fname = infoRefs.current.firstName.value;
             const lname = infoRefs.current.lastName.value;
+            console.log("fname: ", fname)
+            console.log("lname: ", lname)
             const email = infoRefs.current.email.value;
             const password = infoRefs.current.password.value;
             const tosAgreement = infoRefs.current.tosAgreement.checked;
@@ -106,22 +113,67 @@ function Register() {
             const sleep = answersRefs.current.sleep.value;
             const energy = answersRefs.current.energy.value;
             const stress = answersRefs.current.stress.value;
+            const profileImg = hasUpdatedPatientProfilePic ? patientProfilePic : null;
 
-            fetch('http://localhost:5000/registerPatient', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ fname, lname, email, password, company, insuranceId, tier, weight, height, calories, water, exercise, sleep, energy, stress }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("UserID: ", data.userID);
-                    localStorage.setItem('userType', 'Patient');
+            const formData = new FormData();
+            formData.append('fname', fname);
+            formData.append('lname', lname);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('company', company);
+            formData.append('insuranceId', insuranceId);
+            formData.append('tier', tier);
+            formData.append('weight', weight);
+            formData.append('height', height);
+            formData.append('calories', calories);
+            formData.append('water', water);
+            formData.append('exercise', exercise);
+            formData.append('sleep', sleep);
+            formData.append('energy', energy);
+            formData.append('stress', stress);
+            console.log(profileImg.filename);
+            formData.append('profileImg', profileImg, profileImg.filename);
+
+            try {
+                const response = await fetch('http://localhost:5000/registerPatient', {
+                    method: 'POST',
+                    body: formData,
+                });
+                if (response.ok) {
+                    const data = await response.json()
                     localStorage.setItem('userID', data.patientID);
+                    localStorage.setItem('realUserID', data.userID)
+                    localStorage.setItem('userType', 'Patient');
                     navigate('/dashboard');
-                })
-                .catch(err => console.error('Error updating rental:', err));
+                    return true;
+                } else {
+                    alert("Patient Registration Failed. Try Again!");
+                    return false;
+                }
+            } catch (err) {
+                console.error('Error duing patient registration:', err);
+                return false;  // In case of error (e.g., network issues)
+            }
+
+            // fetch('http://localhost:5000/registerPatient', {
+            //     method: 'POST',
+            //     body: formData,
+            // })
+            //     .then((res) => {
+            //         if (!res.ok) {
+
+            //         }
+            //         return res.json();
+            //     })
+            //     .then(data => {
+            //         //console.log("UserID: ", data.userID);
+            //         localStorage.setItem('userID', data.patientID);
+            //         localStorage.setItem('realUserID', data.userID)
+            //         localStorage.setItem('userType', 'Patient');
+            //         navigate('/dashboard');
+
+            //     })
+            //     .catch(err => console.error('Error updating rental:', err));
         }
         else {
             form.reportValidity();
@@ -145,20 +197,56 @@ function Register() {
                 const email = infoTherapistRefs.current.email.value;
                 const password = infoTherapistRefs.current.password.value;
                 const license = infoTherapistRefs.current.license.value;
-                fetch('http://localhost:5000/registerTherapist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ fname, lname, email, password, license, specializations }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        localStorage.setItem('userType', 'Therapist');
+                const profileImg = hasUpdatedTherapistProfilePic ? therapistProfilePic : null;
+
+                const formData = new FormData();
+                formData.append('fname', fname);
+                formData.append('lname', lname);
+                formData.append('email', email);
+                formData.append('password', password);
+                formData.append('license', license);
+                formData.append('specializations', specializations.join(','));
+                formData.append('profileImg', profileImg, profileImg.filename);
+
+                try {
+                    const response = await fetch('http://localhost:5000/registerTherapist', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    if (response.ok) {
+                        const data = await response.json()
                         localStorage.setItem('userID', data.therapistID);
+                        localStorage.setItem('realUserID', data.userID)
+                        localStorage.setItem('userType', 'Therapist');
                         navigate('/dashboard');
-                    })
-                    .catch(err => console.error('Error updating rental:', err));
+                        return true;
+                    } else {
+                        alert("Therapist Registration Failed. Try Again!");
+                        return false;
+                    }
+                } catch (err) {
+                    console.error('Error duing therapist registration:', err);
+                    return false;  // In case of error (e.g., network issues)
+                }
+
+                // fetch('http://localhost:5000/registerTherapist', {
+                //     method: 'POST',
+                //     body: formData,
+                // })
+                //     .then((res) => {
+                //         if (res.ok) {
+                //             localStorage.setItem('userType', 'Therapist');
+                //             navigate('/dashboard');
+                //         }
+                //         return res.json();
+                //     })
+                //     .then(data => {
+                //         // console.log("UserID: ", data.userID);
+                //         localStorage.setItem('userID', data.therapistID);
+                //         localStorage.setItem('realUserID', data.userID)
+
+                //     })
+                //     .catch(err => console.error('Error updating rental:', err));
             }
         }
         else {
@@ -262,11 +350,17 @@ function Register() {
         const file = event.target.files[0]; // Get the first file
         if (file) {
             // Create a URL for the selected file
+            console.log(file);
             const fileURL = URL.createObjectURL(file);
+            console.log(fileURL)
             if (user === 'Patient') {
-                setPatientProfilePic(fileURL);
+                setUpdatedPatientProfilePic(true);
+                setPatientProfilePicURL(fileURL)
+                setPatientProfilePic(file);
             } else {
-                setTherapistProfilePic(fileURL);
+                setUpdatedTherapistProfilePic(true);
+                setTherapistProfilePicURL(fileURL)
+                setTherapistProfilePic(file);
             }
         }
     };
@@ -321,7 +415,7 @@ function Register() {
                             </div>
                             <div className='profile-pic-container'>
                                 <div className="img-circle-mask">
-                                    <img src={patientProfilePic} alt='PROFILE PIC' height={100} width={100} className="profile-pic" />
+                                    <img src={patientProfilePicURL} alt='PROFILE PIC' height={100} width={100} className="profile-pic" />
                                 </div>
                                 <div>Upload Profile Picture</div>
                                 <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} />
@@ -435,7 +529,7 @@ function Register() {
                         </div>
                         <div className='profile-pic-container'>
                             <div className="img-circle-mask">
-                                <img src={therapistProfilePic} alt='PROFILE PIC' height={100} width={100} className='profile-pic' />
+                                <img src={therapistProfilePicURL} alt='PROFILE PIC' height={100} width={100} className='profile-pic' />
                             </div>
                             <div>Upload Profile Picture</div>
                             <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Therapist')} />

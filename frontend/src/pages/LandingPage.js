@@ -14,7 +14,7 @@ function LandingPage() {
     const [testimonials, setTestimonials] = useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/testimonials')  
+        fetch('http://127.0.0.1:5000/testimonials')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -30,7 +30,7 @@ function LandingPage() {
             })
             .catch(error => {
                 console.error('Error fetching testimonials:', error);
-                setTestimonials([]); 
+                setTestimonials([]);
             });
     }, []);
 

@@ -57,8 +57,8 @@ function Chat() {
             const therapist = updatedUsers.filter(therap => therap.therapistID === 1);
             // console.log(therapist[0]);
             // setChatHistory(JSON.parse(therapist[0].content).chats);
-            handleTherapistSelect(therapist[0]);
-
+            const updatedTherapist = { ...therapist[0], requestStatus: 'Inactive' };
+            handleTherapistSelect(updatedTherapist);
 
             // setSelectedTherapist((prevSelected) =>
             //     prevSelected ? { ...prevSelected, chatStatus: "Active" } : null
@@ -110,7 +110,7 @@ function Chat() {
             if (chatBoxRef.current) {
                 chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
             }
-        });        
+        });
 
         return () => {
             socket.emit("rem-socket-comm", { "userID": realUserID });
@@ -289,6 +289,13 @@ function Chat() {
                 .catch(err => console.error('Error fetching data:', err));
             console.log("Ended  cat");
             handleStatus('Inactive', 'chat');
+            setSelectedTherapist({
+                therapistID: selectedTherapist?.therapistID,
+                patientID: chooseId,
+                therapistName: selectedTherapist.therapistName,
+                chatStatus: 'Inactive',
+                requestStatus: 'Inactive',
+            });
         }
     }
 

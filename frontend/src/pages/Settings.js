@@ -73,28 +73,24 @@ function SettingsPage() {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
 
-        if (userNameUpd !== "" && emailUpd !== "" && pfpUpd !== "") {
-            // alert(userNameUpd);
-            // alert(emailUpd);
-            // alert(pfpUpd);
-            fetch('http://localhost:5000/settingsUpdDetails', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ userId: userId, userType: userType, userNameUpd: userNameUpd, emailUpd: emailUpd, pfpUpd: pfpUpd }),
+        fetch('http://localhost:5000/settingsUpdDetails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: userId, userType: userType, userNameUpd: userNameUpd === "" ? userName : userNameUpd,
+                emailUpd: emailUpd === "" ? email : emailUpd, pfpUpd: pfpUpd === "" ? pfp : pfpUpd
+            }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                setUserName(data.userName);
+                setEmail(data.email);
+                setPfp("Not yet implemented");
+                popupRef.current.className = 'hidden popUp-background';
             })
-                .then(res => res.json())
-                .then(data => {
-                    setUserName(userNameUpd);
-                    setEmail(emailUpd);
-                    setPfp(pfpUpd);
-                    popupRef.current.className = 'hidden popUp-background';
-                })
-                .catch(err => console.error('Error fetching data:', err));
-        } else {
-            alert("all boxes are required");
-        }
+            .catch(err => console.error('Error fetching data:', err));
     }
 
     const privacyHandler = (event) => {
@@ -132,14 +128,10 @@ function SettingsPage() {
             .then(res => res.json())
             .then(data => {
                 console.log(data);
-                localStorage.removeItem("userID");
-                localStorage.removeItem("userType");
-                localStorage.setItem('logout', 1);
-                console.log("settings", localStorage.getItem('logout'));
+                localStorage.setItem("userID", 0);
+                navigate('/')
             })
             .catch(err => console.error('Error fetching data:', err));
-
-        navigate('/');
     }
 
     return (
@@ -175,9 +167,9 @@ function SettingsPage() {
             <div ref={popupRef} className="hidden popUp-background">
                 <div className="settings-popUp flex-row flex-centered">
                     <form onSubmit={(event) => saveDetails(event)}>
-                        <input type="text" id="nameBox" name="nameBox" placeholder="Name" defaultValue={userName} onChange={(event) => setUserNameUpd(event.target.value)} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
-                        <input type="text" id="emailBox" name="emailBox" placeholder="Email" defaultValue={email} onChange={(event) => setEmailUpd(event.target.value)} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
-                        <input type="text" id="pfpBox" name="pfpBox" placeholder="PFP URL" defaultValue={pfp} onChange={(event) => setPfpUpd(event.target.value)} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
+                        <input type="text" id="nameBox" name="nameBox" placeholder="Name" defaultValue={userName} onChange={(event) => event.target.value !== '' ? setUserNameUpd(event.target.value) : setUserNameUpd('')} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
+                        <input type="text" id="emailBox" name="emailBox" placeholder="Email" defaultValue={email} onChange={(event) => event.target.value !== '' ? setEmailUpd(event.target.value) : setEmailUpd('')} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
+                        <input type="text" id="pfpBox" name="pfpBox" placeholder="PFP URL" defaultValue={pfp} onChange={(event) => event.target.value !== '' ? setPfpUpd(event.target.value) : setPfpUpd('')} style={{ "width": "100%", "marginBottom": "5px" }} /><br />
                         <div className="flex-centered">
                             &nbsp;&nbsp;<input type="submit" value="Save Details" />&nbsp;&nbsp;
                             <button type="button" onClick={() => cancelEditDetails()}>Cancel Details</button>

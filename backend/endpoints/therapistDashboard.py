@@ -24,7 +24,7 @@ def theraPatListFunc():
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
         cursor.execute(f'''
-                       SELECT users.userName, feedback.feedback FROM feedback
+                       SELECT users.userName, feedback.feedback, users.userID FROM feedback
                        INNER JOIN patients ON feedback.patientID = patients.patientID
                        INNER JOIN users ON patients.userID = users.userID
                        WHERE patients.mainTherapistID = {userId}

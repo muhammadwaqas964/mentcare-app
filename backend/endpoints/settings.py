@@ -60,9 +60,20 @@ def settingsUpdDetailsFunc():
             cursor.close()
             return jsonify({"inserted" : -1}), 200
         mysql.connection.commit()
-        if(cursor.rowcount > 0): # We ensure the table was modified
+        # if(cursor.rowcount > 0): # We ensure the table was modified
+        #     cursor.close()
+        #     return jsonify({"inserted" : 1}), 200
+        cursor.execute(f'''
+                SELECT userName, email FROM users, patients
+                WHERE users.userID = patients.userID AND patients.patientID = {userId}
+                ''')  # TODO: add getting pfp to this
+        data = cursor.fetchone()
+        if data:
+            userName = data[0]
+            email = data[1]
             cursor.close()
-            return jsonify({"inserted" : 1}), 200
+            return jsonify({"inserted" : 1, "userName" : userName, "email" : email}), 200
+
         else:
             cursor.close()
             return jsonify({"inserted" : 0}), 200

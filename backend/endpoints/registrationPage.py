@@ -21,32 +21,48 @@ def validateEmailFunc():
 @registrationPageData.route("/registerPatient", methods=['POST'])
 def registerPatientFunc():
     try:
-        fname = request.json.get('fname')
-        lname = request.json.get('lname')
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
         fullname = fname + ' ' + lname
-        email = request.json.get('email')
-        password = request.json.get('password')
+        email = request.form.get('email')
+        password = request.form.get('password')
 
-        #   SET INSURANCE VARIABLE TO NULL IF EMPTY
-        insuranceCompany = request.json.get('company')
-        insuranceID = request.json.get('insuranceId')
-        insuranceTier = request.json.get('tier')
+        print("\nBEFORE REQUEST FILES profileIMG")
+        profileImgBinary = None
 
-        weight = request.json.get('weight')
-        height = request.json.get('height')
-        calories = request.json.get('calories')
-        water = request.json.get('water')
-        exercise = request.json.get('exercise')
-        sleep = request.json.get('sleep')
-        energy = request.json.get('energy')
-        stress = request.json.get('stress')
+        # Check if a file was uploaded
+        if 'profileImg' in request.files:
+            print("\nPROFILE IMAGE EXISTS\n")
+            profileImg = request.files['profileImg']
 
+            # Optional: Validate file type (example: image/jpeg, image/png)
+            if profileImg:
+                profileImgBinary = profileImg.read()  # Read the binary data of the image
+                print("Image binary:", profileImgBinary)
+            else:
+                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
+
+        insuranceCompany = request.form.get('company')
+        insuranceID = request.form.get('insuranceId')
+        insuranceTier = request.form.get('tier')
+
+        weight = request.form.get('weight')
+        height = request.form.get('height')
+        calories = request.form.get('calories')
+        water = request.form.get('water')
+        exercise = request.form.get('exercise')
+        sleep = request.form.get('sleep')
+        energy = request.form.get('energy')
+        stress = request.form.get('stress')
+
+        print("\nGOT HERE BEFORE INSERT INTO\n")
         cursor = mysql.connection.cursor()
         cursor.execute('''
-                INSERT INTO users (userName, email, pass, userType)
-                VALUES (%s, %s, %s, 'Patient')
-                ''', (fullname, email, password))
+                INSERT INTO users (userName, email, pass, userType, profileImg)
+                VALUES (%s, %s, %s, 'Patient', %s)
+                ''', (fullname, email, password, profileImgBinary))
         mysql.connection.commit()
+        print("\nSUCCESSFULLY ADDED USER!\n")
 
         #   Retrive userID of newly created user
         cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
@@ -69,27 +85,43 @@ def registerPatientFunc():
         patientID = data[0]
 
         cursor.close()
-        return jsonify({"message" : "User successfully registered", "patientID" : patientID}), 200
+        return jsonify({"message" : "User successfully registered", "patientID" : patientID, "userID" : userID}), 200
     except Exception as err:
-        return {"error":  f"{err}"}
+        return jsonify({"error":  f"{err}"}), 400
     
 @registrationPageData.route("/registerTherapist", methods=['POST'])
 def registerTherapistFunc():
     try:
-        fname = request.json.get('fname')
-        lname = request.json.get('lname')
+        fname = request.form.get('fname')
+        lname = request.form.get('lname')
         fullname = fname + ' ' + lname
-        email = request.json.get('email')
-        password = request.json.get('password')
-        license = request.json.get('license')
-        specsArray = ','.join(request.json.get('specializations'))
+        email = request.form.get('email')
+        password = request.form.get('password')
+        license = request.form.get('license')
+        specsArray = request.form.get('specializations')
+
+        print("\nBEFORE REQUEST FILES profileIMG")
+        profileImgBinary = None
+
+        # Check if a file was uploaded
+        if 'profileImg' in request.files:
+            print("\nPROFILE IMAGE EXISTS\n")
+            profileImg = request.files['profileImg']
+
+            # Optional: Validate file type (example: image/jpeg, image/png)
+            if profileImg:
+                profileImgBinary = profileImg.read()  # Read the binary data of the image
+                # print("Image binary:", profileImgBinary)
+            else:
+                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
+    
         content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
 
         cursor = mysql.connection.cursor()
         cursor.execute('''
-                INSERT INTO users (userName, email, pass, userType)
-                VALUES (%s, %s, %s, 'Therapist')
-                ''', (fullname, email, password))
+                INSERT INTO users (userName, email, pass, userType, profileImg)
+                VALUES (%s, %s, %s, 'Therapist', %s)
+                ''', (fullname, email, password, profileImgBinary))
         mysql.connection.commit()
 
         #   Retrive userID of newly created user
@@ -113,6 +145,6 @@ def registerTherapistFunc():
 
         cursor.close()
 
-        return jsonify({"message" : "User successfully registered", "therapistID" : therapistID}), 200
+        return jsonify({"message" : "User successfully registered", "therapistID" : therapistID, "userID" : userID}), 200
     except Exception as err:
-        return {"error":  f"{err}"}
+        return jsonify({"error":  f"{err}"}), 400

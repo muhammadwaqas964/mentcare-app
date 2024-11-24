@@ -59,3 +59,25 @@
         cursor: pointer;
     }
 }
+
+.pd-questions-container {
+    &>h2 {
+        text-transform: uppercase;
+        font-size: 24pt;
+    }
+}
+
+.pd-question-container {
+    padding: 10px;
+
+    &>label {
+        font-size: 16pt;
+    }
+
+    &>.pd-textarea {
+        resize: none;
+        border-radius: 5px;
+        border: none;
+        font-size: 14pt;
+    }
+}

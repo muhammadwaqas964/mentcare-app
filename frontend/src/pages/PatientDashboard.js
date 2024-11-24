@@ -1,17 +1,129 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { DashboardCard } from '../components/DashboardCards.js';
-import './styles/PatientDashboard.css'
+import Pagination from '../components/Pagination.js';
+import './styles/PatientDashboard.css';
+import '../components/Pagination.css';
 
 function PatientDashboard() {
     const [callCount, setCallCount] = useState(0);
     const [journals, setJournals] = useState([]);
-    const [feedback, setFeedback] = useState([]);
+    const [feedback, setFeedback] = useState(null);
     const [dailySurveys, setDailySurveys] = useState([]);
     const [incompleteTherapistSurveys, setIncompleteTherapistSurveys] = useState([]);
     const [completeTherapistSurveys, setCompleteTherapistSurveys] = useState([]);
-    const [invoices, setInvoices] = useState([]);
+    const [invoices, setInvoices] = useState(null);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const PageSize = 4;
+
+    //  ---------------------- USED FOR POP UP DAILY SURVEYS ----------------------
+    const [clickedDailySurveys, setClickedDailySurveys] = useState(null);
+    const [dailySurveyAnswers, setDailySurveyAnswers] = useState({});
+    const { paginatedDailySurvey, tableLength } = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * PageSize;
+        const lastPageIndex = firstPageIndex + PageSize;
+        // let newDailySurveys = dailySurveys.slice();
+
+        const questions = ['weight', 'height', 'calories', 'water', 'exercise', 'sleep', 'energy', 'stress'];
+        const transformSurveysToQuestions = (dailySurveys) => {
+            return dailySurveys.map(survey => {
+                return questions.map((question, index) => ({
+                    [`question${index + 1}`]: survey[question]  // Dynamically assigning the question number (question1, question2, etc.)
+                }));
+            });
+        };
+
+        const transformedSurveys = transformSurveysToQuestions(dailySurveys);
+        // console.log("Every survey: ", transformedSurveys);
+        // console.log(dailySurveys.slice());
+        // console.log(newDailySurveys.slice(firstPageIndex, lastPageIndex));
+        let index;
+        if (clickedDailySurveys) {
+            //console.log(clickedDailySurveys)
+            index = parseInt(clickedDailySurveys) - 1;
+            // console.log("Content on Current page: ", transformedSurveys[index].slice(firstPageIndex, lastPageIndex));
+        }
+        else {
+            return false;
+        }
+
+        return {
+            paginatedDailySurvey: transformedSurveys[index].slice(firstPageIndex, lastPageIndex),
+            tableLength: transformedSurveys[index].length,
+        };
+    }, [currentPage, clickedDailySurveys, dailySurveys]);
+    //  ---------------------------------------------------------------------
+
+    //  ---------------------- USED FOR POP UP INCOMPLETE THERAPIST SURVEYS ----------------------
+    const [clickedTherapistSurveys, setClickedTherapistSurveys] = useState(null);
+    const [therapistSurveyAnswers, setTherapistSurveyAnswers] = useState({});
+    const { paginatedTherapistSurvey, tableLength2 } = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * PageSize;
+        const lastPageIndex = firstPageIndex + PageSize;
+        const transformSurveysToQuestions = (incompleteTherapistSurveys) => {
+            // const survey = incompleteTherapistSurveys['survey'];
+            return incompleteTherapistSurveys.map(survey => {
+                const questions = JSON.parse(survey.survey);
+                return questions.map((question, index) => ({
+                    [`question${index + 1}`]: question.question  // Dynamically assigning the question number (question1, question2, etc.)
+                }));
+            });
+        };
+
+        const transformedSurveys = transformSurveysToQuestions(incompleteTherapistSurveys);
+        let index;
+        if (clickedTherapistSurveys) {
+            index = parseInt(clickedTherapistSurveys) - 1;
+        }
+        else {
+            return false;
+        }
+        return {
+            paginatedTherapistSurvey: transformedSurveys[index].slice(firstPageIndex, lastPageIndex),
+            tableLength2: transformedSurveys[index].length,
+        };
+    }, [currentPage, clickedTherapistSurveys, incompleteTherapistSurveys]);
+    //  ---------------------------------------------------------------------
+
+    //  ---------------------- USED FOR POP UP COMPLETE THERAPIST SURVEYS ----------------------
+    const [clickedCompTherapistSurveys, setClickedCompTherapistSurveys] = useState(null);
+    const { paginatedCompletedTherapistSurvey, tableLength3 } = useMemo(() => {
+        const firstPageIndex = (currentPage - 1) * PageSize;
+        const lastPageIndex = firstPageIndex + PageSize;
+        const transformSurveysToQuestions = (completeTherapistSurveys) => {
+            // const survey = incompleteTherapistSurveys['survey'];
+            console.log(completeTherapistSurveys);
+            return completeTherapistSurveys.map(survey => {
+                const questions = JSON.parse(survey.questions);
+                const answers = JSON.parse(survey.answers);
+                return questions.map((question, index) => ({
+                    [`question${index + 1}`]: {
+                        question: question.question,
+                        answer: answers[index][`q${index + 1}`]
+                    }
+                }));
+            });
+        };
+
+        const transformedSurveys = transformSurveysToQuestions(completeTherapistSurveys);
+        console.log(transformedSurveys);
+        let index;
+        if (clickedCompTherapistSurveys) {
+            index = parseInt(clickedCompTherapistSurveys) - 1;
+        }
+        else {
+            return false;
+        }
+        return {
+            paginatedCompletedTherapistSurvey: transformedSurveys[index].slice(firstPageIndex, lastPageIndex),
+            tableLength3: transformedSurveys[index].length,
+        };
+    }, [currentPage, clickedCompTherapistSurveys, completeTherapistSurveys]);
+    //  ---------------------------------------------------------------------
+
+
 
     const navigate = useNavigate();
 
@@ -46,12 +158,30 @@ function PatientDashboard() {
                 //console.log(data[3]);
                 //console.log(data[4]);
                 //console.log(data[5]);
-                setJournals(data[0]);
-                setFeedback(data[1]);
-                setDailySurveys(data[2]);
-                setIncompleteTherapistSurveys(data[3]);
-                setCompleteTherapistSurveys(data[4]);
-                setInvoices(data[5]);
+                if (data[0] !== "Nothing") { // need both if and else, do not remove else
+                    setJournals(data[0]);
+                }
+                // else {
+                //     console.log(data[0])
+                //     setJournals([]);
+                // }
+                if (data[1] !== "Nothing") {
+                    setFeedback(data[1]);
+                }
+                if (data[2] !== "Nothing") {
+                    setDailySurveys(data[2]);
+                }
+                if (data[3] !== "Nothing") {
+                    setIncompleteTherapistSurveys(data[3]);
+                    // console.log(data[3]);
+                }
+                if (data[4] !== "Nothing") {
+                    setCompleteTherapistSurveys(data[4]);
+                    // console.log(data[4]);
+                }
+                if (data[5] !== "Nothing") {
+                    setInvoices(data[5]);
+                }
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -90,38 +220,62 @@ function PatientDashboard() {
         };
     }, [callCount]);
 
-    function sleep(ms) {
+    function systemSleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async function displayPopUp(e, x) {
+    async function displayPopUp(e, x, surveyID, type) {
+        if (type === 'Daily') {
+            setClickedDailySurveys(surveyID);
+        }
+        else if (type === 'Incomplete') {
+            setClickedTherapistSurveys(surveyID);
+        }
+        else if (type === 'Complete') {
+            setClickedCompTherapistSurveys(surveyID);
+        }
+
+        // if (dailySurveyID) {
+        //     setClickedDailySurveys(dailySurveyID);
+        // }
+        // if (therapistSurveyID) {
+        //     setClickedTherapistSurveys(therapistSurveyID);
+        // }
+
         if (x === 2) {
-            await sleep(100);
+            await systemSleep(100);
         }
         const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[e.target.parentElement.children.length - 2].children[1];
         divParent.className = 'visible popUp-background';
     }
 
     function hidePopUp(e, x) {
+        setCurrentPage(1);
         if (x === 1) {
-            setCallCount(callCount + 1);
+            //setCallCount(callCount + 1);
             const divParent = e.target.parentElement.parentElement.parentElement;
-            console.log(divParent);
+            // console.log(divParent);
             divParent.className = 'hidden popUp-background';
         }
-        else {
-            setCallCount(callCount + 1);
+        else if (x === 2) {
+            //setCallCount(callCount + 1);
             const divParent = e.target.parentElement.parentElement;
-            console.log(divParent);
+            // console.log(divParent);
             divParent.className = 'hidden popUp-background';
         }
-
+        else if (x === 3) {
+            //setCallCount(callCount + 1);
+            const divParent = e.target;
+            // console.log(divParent);
+            divParent.className = 'hidden popUp-background';
+        }
     }
 
     function saveJournal(e) {
         const newEntry = e.target.parentElement.parentElement.children[2];
         const patientId = localStorage.getItem("userID");
         const journalId = e.target.getAttribute('journalid');
+        console.log("JOURNAL ID: ", journalId);
 
         fetch('http://localhost:5000/saveJournal', {
             method: 'POST',
@@ -139,7 +293,14 @@ function PatientDashboard() {
 
     function createJournal(e) {
         const newJournal = { journalID: null, journalEntry: '', timeDone: new Date().toISOString() };
-        setJournals([...journals, newJournal]);
+        // setJournals([...journals, newJournal]);
+        //console.log("setJ", journals);
+        if (journals) {
+            setJournals([...journals, newJournal]);
+        }
+        else {
+            setJournals([newJournal]);
+        }
         displayPopUp(e, 2);
     }
 
@@ -148,6 +309,17 @@ function PatientDashboard() {
 
         const patientId = localStorage.getItem("userID");
         const dailySurveyID = e.target.getAttribute('dailysurveyid');
+        console.log('Survey Answers:', dailySurveyAnswers);
+
+        const weight = dailySurveyAnswers['0'] ? dailySurveyAnswers['0'] : "";
+        const height = dailySurveyAnswers['1'] ? dailySurveyAnswers['1'] : "";
+        const calories = dailySurveyAnswers['2'] ? dailySurveyAnswers['2'] : "";
+        const water = dailySurveyAnswers['3'] ? dailySurveyAnswers['3'] : "";
+        const exercise = dailySurveyAnswers['4'] ? dailySurveyAnswers['4'] : "";
+        const sleep = dailySurveyAnswers['5'] ? dailySurveyAnswers['5'] : "";
+        const energy = dailySurveyAnswers['6'] ? dailySurveyAnswers['6'] : "";
+        const stress = dailySurveyAnswers['7'] ? dailySurveyAnswers['7'] : "";
+
         //console.log("DAILY SURVEY ID: ", dailySurveyID);
 
         fetch('http://localhost:5000/completeDailySurvey', {
@@ -157,10 +329,7 @@ function PatientDashboard() {
             },
             body: JSON.stringify({
                 "fakeUserID": patientId, "dailySurveyID": dailySurveyID,
-                "weight": dailySurveyRefs.current.weight.value, "height": dailySurveyRefs.current.height.value,
-                "calories": dailySurveyRefs.current.calories.value, "water": dailySurveyRefs.current.water.value,
-                "exercise": dailySurveyRefs.current.exercise.value, "sleep": dailySurveyRefs.current.sleep.value,
-                "energy": dailySurveyRefs.current.energy.value, "stress": dailySurveyRefs.current.stress.value
+                weight, height, calories, water, exercise, sleep, energy, stress
             }),
         })
             .then(res => res.json())
@@ -168,7 +337,7 @@ function PatientDashboard() {
                 //console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
-        sleep(100)
+        systemSleep(100)
         setCallCount(callCount + 1);
         hidePopUp(e, x);
     }
@@ -182,13 +351,30 @@ function PatientDashboard() {
         navigate('/payment', { type: 'invoice', id: e.target.getAttribute('invoiceid') })
     }
 
+    const handleInputChange = (questionIndex, value, type) => {
+        if (type === 'Daily') {
+            setDailySurveyAnswers(prevState => ({
+                ...prevState,
+                [questionIndex]: value,
+            }));
+            console.log(dailySurveyAnswers);
+        }
+        else {
+            setTherapistSurveyAnswers(prevState => ({
+                ...prevState,
+                [questionIndex]: value,
+            }));
+            console.log(therapistSurveyAnswers);
+        }
+    };
+
     return (
         <div className='patient-dashboard-container'>
             <h1>Welcome to your Patient Dashboard!</h1>
             {/* Display patient-specific content */}
 
             <div className="cards-container">
-                <DashboardCard title="JOURNALS">
+                <DashboardCard title="JOURNALS" extraClasses="patient-card">
                     {journals && journals.map((row, index) => {
                         return (
                             <div key={`journal-${index}`}>
@@ -210,7 +396,7 @@ function PatientDashboard() {
                     <input className='card-buttons' type='button' value={'CREATE NEW JOURNAL'} onClick={(e) => createJournal(e)}></input>
                 </DashboardCard>
 
-                <DashboardCard title="FEEDBACK">
+                <DashboardCard title="FEEDBACK" extraClasses="patient-card">
                     {feedback && feedback.map((row, index) => {
                         return (
                             <div key={`feedback-${index}`}>
@@ -230,7 +416,7 @@ function PatientDashboard() {
                     })}
                 </DashboardCard>
 
-                <DashboardCard title="DAILY SURVEYS">
+                <DashboardCard title="DAILY SURVEYS" extraClasses="patient-card">
                     {dailySurveys && dailySurveys.slice().reverse().map((row, index) => {
                         return (
                             <div key={`daily-survey-${index}`}>
@@ -239,107 +425,70 @@ function PatientDashboard() {
                                     className='card-buttons'
                                     dailysurveyid={row.dailySurveyID}
                                     value={row.weight !== null ? `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}` : `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
-                                    onClick={(e) => displayPopUp(e, 1)}
+                                    onClick={(e) => displayPopUp(e, 1, row.dailySurveyID, 'Daily')}
                                 />
-                                <div className='hidden popUp-background'>
-                                    <div className='popUp'>
+                                <form className='hidden popUp-background' dailysurveyid={row.dailySurveyID} onSubmit={(e) => submitDailySurvey(e, 3)}>
+                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
                                         <h2>Daily Survey #{index + 1}</h2>
                                         <h3>Date: {new Date(row.dateCreated).toDateString()}</h3>
+                                        {paginatedDailySurvey && paginatedDailySurvey.length > 0 ? (
+                                            paginatedDailySurvey.map((newRow, newIndex) => {
+                                                const rowProperties = ['weight', 'height', 'calories', 'water', 'exercise', 'sleep', 'energy', 'stress'];
+                                                const propertyToShow = rowProperties[newIndex % rowProperties.length];
+                                                return (
+                                                    row.weight !== null ? (
+                                                        <div className='flex-col pd-question-container' key={`question-${row.dailySurveyID}-${newIndex}`} style={{ width: "100%" }}>
+                                                            <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                            <textarea
+                                                                className='pd-textarea'
+                                                                disabled
+                                                                value={newRow[`question${(newIndex + 1) + (4 * (currentPage - 1))}`] ? newRow[`question${(newIndex + 1) + (4 * (currentPage - 1))}`] : ""}
+                                                            >
+                                                            </textarea>
+                                                        </div>
+                                                    ) : (
+                                                        <div className='questions-container' key={`questions-${row.dailySurveyID}-${newIndex}`} style={{ width: "100%" }}>
+                                                            <div className='flex-col pd-question-container' style={{ width: "100%" }}>
+                                                                <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                                <textarea
+                                                                    className='pd-textarea'
+                                                                    required
+                                                                    placeholder='Answer here...'
+                                                                    ref={el => (dailySurveyRefs.current[`${newRow[propertyToShow]}`] = el)}
+                                                                    value={dailySurveyAnswers[(newIndex) + (4 * (currentPage - 1))] || ''}
+                                                                    onChange={(e) => handleInputChange((newIndex) + (4 * (currentPage - 1)), e.target.value, 'Daily')}
+                                                                >
+                                                                </textarea>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                );
+                                            })
 
-                                        {row.weight !== null ? (
-                                            <div className='flex-col'>
-                                                <div className='questions-container'>
-                                                    <div className='flex-col'>
-                                                        <div>
-                                                            <p>QUESTION #1: </p>
-                                                            <input type='text' disabled value={row.weight}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #2: </p>
-                                                            <input type='text' disabled value={row.height}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #3: </p>
-                                                            <input type='text' disabled value={row.calories}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #4: </p>
-                                                            <input type='text' disabled value={row.water}></input>
-                                                        </div>
-                                                    </div>
-                                                    <div className='flex-col'>
-                                                        <div>
-                                                            <p>QUESTION #5: </p>
-                                                            <input type='text' disabled value={row.exercise}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #6: </p>
-                                                            <input type='text' disabled value={row.sleep}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #7: </p>
-                                                            <input type='text' disabled value={row.energy}></input>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #8: </p>
-                                                            <input type='text' disabled value={row.stress}></input>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
-                                            </div>
                                         ) : (
-                                            <form className='flex-col' dailysurveyid={row.dailySurveyID} onSubmit={(e) => submitDailySurvey(e, 2)}>
-                                                <div className='questions-container'>
-                                                    <div className='flex-col'>
-                                                        <div>
-                                                            <p>QUESTION #1: Weight</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.weight = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #2: Height </p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.height = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #3: Calories</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.calories = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #4: Water</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.water = el)}></textarea>
-                                                        </div>
-                                                    </div>
-                                                    <div className='flex-col'>
-                                                        <div>
-                                                            <p>QUESTION #5: Exercise</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.exercise = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #6: Sleep</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.sleep = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #7: Energy</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.energy = el)}></textarea>
-                                                        </div>
-                                                        <div>
-                                                            <p>QUESTION #8: Stress</p>
-                                                            <textarea required ref={el => (dailySurveyRefs.current.stress = el)}></textarea>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
-                                                <input className='card-buttons' type='submit' value={'SUBMIT'}></input>
-                                            </form>
+                                            <></>
                                         )}
+                                        <div className='flex-row'>
+                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                            <Pagination
+                                                currentPage={currentPage}
+                                                totalCount={tableLength}
+                                                pageSize={PageSize}
+                                                onPageChange={page => setCurrentPage(page)}
+                                                className={'card-buttons'}
+                                            />
+                                            {row.weight === null && currentPage === 2 && (
+                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </form>
                             </div>
                         );
                     })}
                 </DashboardCard>
 
-                <DashboardCard title="INVOICES">
+                <DashboardCard title="INVOICES" extraClasses="patient-card">
                     {invoices && invoices.map((row, index) => {
                         return (
                             <input
@@ -355,42 +504,126 @@ function PatientDashboard() {
                     })}
                 </DashboardCard>
 
-                <DashboardCard title="THERAPIST SURVEYS">
-                    {incompleteTherapistSurveys && incompleteTherapistSurveys.map((surveyObj, index) => {
+                <DashboardCard title="THERAPIST SURVEYS" extraClasses="patient-card">
+                    {incompleteTherapistSurveys && incompleteTherapistSurveys.map((row, index) => {
                         // Parse the 'survey' JSON string into an array of questions
-                        const questions = JSON.parse(surveyObj.survey);
+                        const questions = JSON.parse(row.survey);
 
                         return (
                             <div key={`incompleted-survey-${index}`}>
-                                <input className='card-buttons' type='button' value={`(NEW) Survey ${new Intl.DateTimeFormat('en-US').format(new Date(surveyObj.dateCreated))}`} onClick={(e) => displayPopUp(e, 1)}></input>
-                                <div className='hidden popUp-background'>
-                                    <div className='popUp'>
-                                        <h2>{surveyObj.userName}'s Survey</h2>
-                                        {questions.map((question, questionIndex) => (
-                                            <div key={questionIndex} className='flex-col'>
-                                                <label>{question.question}</label>
-                                                <input type='text' placeholder={question.questionType}></input>
-                                            </div>
-                                        ))}
-                                        <div>
+                                <input
+                                    type='button'
+                                    className='card-buttons'
+                                    incomptherapistsurveyid={row.surveyID}
+                                    value={`(NEW) Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
+                                    onClick={(e) => displayPopUp(e, 1, row.surveyID, 'Incomplete')}
+                                />
+                                <form className='hidden popUp-background' incomptherapistsurveyid={row.surveyID} onSubmit={(e) => submitTherapistSurvey(e, 3)}>
+                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
+                                        <h2>{row.userName}'s Survey</h2>
+                                        {/* <h3>Date: {new Date(row.dateCreated).toDateString()}</h3> */}
+                                        {paginatedTherapistSurvey && paginatedTherapistSurvey.length > 0 ? (
+                                            paginatedTherapistSurvey.map((newRow, newIndex) => {
+                                                return (
+                                                    <div className='questions-container' key={`therapist-questions-${row.surveyID}-${newIndex}`} style={{ width: "100%" }}>
+                                                        <div className='flex-col pd-question-container' style={{ width: "100%" }}>
+                                                            <label>{newRow[`question${(newIndex + 1) + (4 * (currentPage - 1))}`]}</label>
+                                                            <textarea
+                                                                className='pd-textarea'
+                                                                required
+                                                                placeholder='Answer here...'
+                                                                value={therapistSurveyAnswers[(newIndex) + (4 * (currentPage - 1))] || ''}
+                                                                onChange={(e) => handleInputChange((newIndex) + (4 * (currentPage - 1)), e.target.value, 'Therapist Survey')}
+                                                            >
+                                                            </textarea>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+
+                                        ) : (
+                                            <></>
+                                        )}
+                                        <div className='flex-row'>
                                             <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
-                                            <input className='card-buttons' type='button' therapistsurveyid={surveyObj.surveyID} value={'SUBMIT'} onClick={(e) => submitTherapistSurvey(e)}></input>
+                                            <Pagination
+                                                currentPage={currentPage}
+                                                totalCount={tableLength2}
+                                                pageSize={PageSize}
+                                                onPageChange={page => setCurrentPage(page)}
+                                                className={'card-buttons'}
+                                            />
+                                            {currentPage === 2 && (
+                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
+                                            )}
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        );
+                    })}
+                    {completeTherapistSurveys && completeTherapistSurveys.map((row, index) => {
+                        return (
+                            <div key={`completed-survey-${index}`}>
+                                <input
+                                    type='button'
+                                    className='card-buttons'
+                                    incomptherapistsurveyid={row.completionID}
+                                    value={`COMPLETED Survey (Done: ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateDone))})`}
+                                    onClick={(e) => displayPopUp(e, 1, row.completionID, 'Complete')}
+                                />
+                                <div className='hidden popUp-background' comptherapistsurveyid={row.completionID}>
+                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
+                                        <h2>{row.userName}'s Survey</h2>
+                                        {/* <h3>Date: {new Date(row.dateCreated).toDateString()}</h3> */}
+                                        {paginatedCompletedTherapistSurvey && paginatedCompletedTherapistSurvey.length > 0 ? (
+                                            paginatedCompletedTherapistSurvey.map((newRow, newIndex) => {
+                                                return (
+                                                    <div className='questions-container' key={`therapist-questions-${row.completionID}-${newIndex}`} style={{ width: "100%" }}>
+                                                        <div className='flex-col pd-question-container' style={{ width: "100%" }}>
+                                                            <label>{newRow[`question${(newIndex + 1) + (4 * (currentPage - 1))}`][`question`]}</label>
+                                                            <textarea
+                                                                className='pd-textarea'
+                                                                disabled
+                                                                value={newRow[`question${(newIndex + 1) + (4 * (currentPage - 1))}`][`answer`]}
+                                                            >
+                                                            </textarea>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+
+                                        ) : (
+                                            <></>
+                                        )}
+                                        <div className='flex-row'>
+                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                            <Pagination
+                                                currentPage={currentPage}
+                                                totalCount={tableLength3}
+                                                pageSize={PageSize}
+                                                onPageChange={page => setCurrentPage(page)}
+                                                className={'card-buttons'}
+                                            />
+                                            {currentPage === 2 && (
+                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         );
                     })}
-                    {completeTherapistSurveys && completeTherapistSurveys.map((surveyObj, index) => {
-                        const questions = JSON.parse(surveyObj.questions);
-                        const answers = JSON.parse(surveyObj.answers);
+                    {/* {completeTherapistSurveys && completeTherapistSurveys.map((row, index) => {
+                        const questions = JSON.parse(row.questions);
+                        const answers = JSON.parse(row.answers);
 
                         return (
                             <div key={`completed-survey-${index}`}>
-                                <input className='card-buttons' type='button' value={`COMPLETED Survey ${new Intl.DateTimeFormat('en-US').format(new Date(surveyObj.dateDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
+                                <input className='card-buttons' type='button' value={`COMPLETED Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
                                     <div className='popUp'>
-                                        <h2>{surveyObj.userName}'s Survey</h2>
+                                        <h2>{row.userName}'s Survey</h2>
                                         {questions && questions.map((question, questionIndex) => (
                                             <div key={questionIndex} className='flex-col'>
                                                 <label>{question.question}</label>
@@ -404,10 +637,10 @@ function PatientDashboard() {
                                 </div>
                             </div>
                         );
-                    })}
+                    })} */}
                 </DashboardCard>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
