@@ -20,11 +20,12 @@ def get_therapists():
     
     # Fetching therapists with their profile details and testimonials
     cursor.execute("""
-        SELECT Users.Username, Therapists.LicenseNumber, Therapists.Specializations,
+        SELECT Users.Username, Therapists.Intro, Therapists.Education, Therapists.LicenseNumber, Therapists.Specializations,
+        Therapists.DaysHours, Therapists.Price,
         Testimonials.Content AS Patient_Testimonial
         FROM Users
         JOIN Therapists ON Users.UserID = Therapists.UserID
-        LEFT JOIN Testimonials ON Users.UserID = Testimonials.UserID
+        LEFT JOIN Testimonials ON Therapists.TherapistID = Testimonials.TherapistID
         WHERE Users.UserType = 'Therapist'
     """)
     therapists = cursor.fetchall()
