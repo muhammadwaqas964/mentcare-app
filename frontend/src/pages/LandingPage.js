@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/LandingPage.css';
 
-import profileImage1 from './assets/images/img2_alex.png';
-import profileImage2 from './assets/images/img3_mary.png';
+
 import missionImage1 from './assets/images/img4_mission.png';
 import missionImage2 from './assets/images/img5_mission.png';
 import missionImage3 from './assets/images/img6_mission.png';
@@ -58,7 +57,7 @@ function LandingPage() {
                 {testimonials.length > 0 ? (
                     testimonials.map((testimonial, index) => (
                         <div key={index} className="testimonial">
-                            <img src={profileImage1} alt={`${testimonial.Username}`} className="profile-picture" />
+                            
                             <p>"{testimonial.Content}" — {testimonial.Username}</p>
                         </div>
                     ))
@@ -66,6 +65,8 @@ function LandingPage() {
                     <p>No testimonials available.</p>
                 )}
             </section>
+
+            
 
             <section className="faqs">
                 <h1>FAQs</h1>
