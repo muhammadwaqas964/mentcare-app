@@ -224,7 +224,7 @@ const Navbar = () => {
             <div className="right-section">
                 {!isLoggedIn ? (
                     <Link to={`/login`} onClick={() => handleTabClick(`/login`)}>
-                        <h2>Login</h2>
+                        <h2 className="navbar-tab">Login</h2>
                     </Link>
                 ) : (
                     <>

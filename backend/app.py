@@ -327,4 +327,104 @@ def send_message():
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
+#   Send the newly completed therapist survey to patient & therapist (therapist is WIP)
+@app.route("/completeTherapistSurvey", methods=['POST'])
+def sendTherapistSurveyFunc():
+    try:
+        userID = request.json.get('userID')
+        patientID = request.json.get('patientID')
+        surveyID = request.json.get('surveyID')
 
+        questions = request.json.get('questions')
+        surveyQuestions= json.dumps({"survey": questions})
+        print("")
+        print(surveyQuestions)
+        print("")
+        answers = request.json.get('answers')
+        surveyAnswers = json.dumps({"answers" : answers})
+        print("")
+        print(surveyAnswers)
+        print("")
+        currentDate = datetime.now()
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT therapistID FROM surveys WHERE surveyID = %s', (surveyID, ))
+        therapistID = cursor.fetchone()
+        
+        if therapistID is None:
+            print("TherapistID not found for surveyID:", surveyID)
+            return jsonify({"error": "Therapist not found for this survey."}), 404
+        
+        therapistID = therapistID[0]
+
+        cursor.execute('''
+            INSERT INTO completedSurveys (patientID, therapistID, questions, answers, dateDone)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (patientID, therapistID, surveyQuestions, surveyAnswers, currentDate))
+        mysql.connection.commit()
+
+        # Log success after inserting
+        print("Survey inserted successfully.")
+        
+        cursor.execute('''
+                DELETE FROM surveys WHERE surveyID = %s    
+                ''', (surveyID, ))
+        mysql.connection.commit()
+
+        cursor.close()
+        # Emit the event to the connected socket clients
+        # print("SENDING TO ROOM FOR USERID: ", userID)
+        # print("SOCKETS AVAILABLE: ", sockets)
+        # print("ROOM: ", sockets[str(userID)])
+        if str(userID) in sockets:
+            print("\nthe room exists!\n")
+            socketio.emit('submit-therapist-survey', room=sockets[str(userID)])
+        # Return a success response
+        return jsonify({"message": "Success"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    
+@app.route("/completeDailySurvey", methods=['POST'])
+def sendDailySurveyFunc():
+    try:
+        print("GOT HERE IN APP.ROUTE")
+        
+        data = request.get_json()
+        
+        fakeUserID = data.get('patientID')
+        realUserID = data.get('userID')
+        dailySurveyID = data.get('dailySurveyID')
+        weight = data.get('weight')
+        height = data.get('height')
+        calories = data.get('calories')
+        water = data.get('water')
+        exercise = data.get('exercise')
+        sleep = data.get('sleep')
+        energy = data.get('energy')
+        stress = data.get('stress')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                INSERT INTO completedDailySurveys (dailySurveyID, patientID, weight, height, calories, water, exercise, sleep, energy, stress)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (dailySurveyID, fakeUserID, weight, height, calories, water, exercise, sleep, energy, stress))
+        mysql.connection.commit()
+        cursor.close()
+
+        # Emit the event to the connected socket clients
+        socketio.emit('submit-daily-survey', {
+            'patientID': fakeUserID,
+            'dailySurveyID': dailySurveyID,
+            'weight': weight,
+            'height': height,
+            'calories': calories,
+            'water': water,
+            'exercise': exercise,
+            'sleep': sleep,
+            'energy': energy,
+            'stress': stress
+        }, room=sockets[realUserID])
+
+        return jsonify({"message": "Survey data submitted successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500

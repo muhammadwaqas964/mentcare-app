@@ -22,12 +22,16 @@ function PatientDashboard() {
     const [clickedDailySurveys, setClickedDailySurveys] = useState(null);
     const [dailySurveyAnswers, setDailySurveyAnswers] = useState({});
     const { paginatedDailySurvey, tableLength } = useMemo(() => {
+        if (dailySurveys === "Nothing") {
+            return { paginatedDailySurvey: [], tableLength: 0 }; // Return default values if it's null or undefined
+        }
+
         const firstPageIndex = (currentPage - 1) * PageSize;
         const lastPageIndex = firstPageIndex + PageSize;
         // let newDailySurveys = dailySurveys.slice();
 
         const questions = ['weight', 'height', 'calories', 'water', 'exercise', 'sleep', 'energy', 'stress'];
-        const transformSurveysToQuestions = (dailySurveys) => {
+        const transformDailySurveysToQuestions = (dailySurveys) => {
             return dailySurveys.map(survey => {
                 return questions.map((question, index) => ({
                     [`question${index + 1}`]: survey[question]  // Dynamically assigning the question number (question1, question2, etc.)
@@ -35,7 +39,7 @@ function PatientDashboard() {
             });
         };
 
-        const transformedSurveys = transformSurveysToQuestions(dailySurveys);
+        const transformedSurveys = transformDailySurveysToQuestions(dailySurveys);
         // console.log("Every survey: ", transformedSurveys);
         // console.log(dailySurveys.slice());
         // console.log(newDailySurveys.slice(firstPageIndex, lastPageIndex));
@@ -58,8 +62,14 @@ function PatientDashboard() {
 
     //  ---------------------- USED FOR POP UP INCOMPLETE THERAPIST SURVEYS ----------------------
     const [clickedTherapistSurveys, setClickedTherapistSurveys] = useState(null);
-    const [therapistSurveyAnswers, setTherapistSurveyAnswers] = useState({});
+    const [therapistSurveyQuestions, setTherapistSurveyQuestions] = useState([]);
+    const [therapistSurveyAnswers, setTherapistSurveyAnswers] = useState([]);
     const { paginatedTherapistSurvey, tableLength2 } = useMemo(() => {
+        // console.log(clickedTherapistSurveys);
+        if (incompleteTherapistSurveys === "Nothing" || incompleteTherapistSurveys.length === 0) {
+            return { paginatedTherapistSurvey: [], tableLength2: 0 }; // Return default values if it's null or undefined
+        }
+
         const firstPageIndex = (currentPage - 1) * PageSize;
         const lastPageIndex = firstPageIndex + PageSize;
         const transformSurveysToQuestions = (incompleteTherapistSurveys) => {
@@ -90,14 +100,19 @@ function PatientDashboard() {
     //  ---------------------- USED FOR POP UP COMPLETE THERAPIST SURVEYS ----------------------
     const [clickedCompTherapistSurveys, setClickedCompTherapistSurveys] = useState(null);
     const { paginatedCompletedTherapistSurvey, tableLength3 } = useMemo(() => {
+        if (completeTherapistSurveys === "Nothing" || completeTherapistSurveys.length === 0) {
+            return { paginatedCompletedTherapistSurvey: [], tableLength3: 0 }; // Return default values if it's null or undefined
+        }
+
         const firstPageIndex = (currentPage - 1) * PageSize;
         const lastPageIndex = firstPageIndex + PageSize;
         const transformSurveysToQuestions = (completeTherapistSurveys) => {
             // const survey = incompleteTherapistSurveys['survey'];
-            console.log(completeTherapistSurveys);
+            //console.log(completeTherapistSurveys);
             return completeTherapistSurveys.map(survey => {
                 const questions = JSON.parse(survey.questions);
                 const answers = JSON.parse(survey.answers);
+                //console.log(completeTherapistSurveys);
                 return questions.map((question, index) => ({
                     [`question${index + 1}`]: {
                         question: question.question,
@@ -108,10 +123,11 @@ function PatientDashboard() {
         };
 
         const transformedSurveys = transformSurveysToQuestions(completeTherapistSurveys);
-        console.log(transformedSurveys);
+        // console.log(transformedSurveys);
         let index;
         if (clickedCompTherapistSurveys) {
             index = parseInt(clickedCompTherapistSurveys) - 1;
+            //console.log("Inside transform complete survey, clickedCompTherap... = ", index);
         }
         else {
             return false;
@@ -158,13 +174,9 @@ function PatientDashboard() {
                 //console.log(data[3]);
                 //console.log(data[4]);
                 //console.log(data[5]);
-                if (data[0] !== "Nothing") { // need both if and else, do not remove else
+                if (data[0] !== "Nothing") {
                     setJournals(data[0]);
                 }
-                // else {
-                //     console.log(data[0])
-                //     setJournals([]);
-                // }
                 if (data[1] !== "Nothing") {
                     setFeedback(data[1]);
                 }
@@ -172,12 +184,21 @@ function PatientDashboard() {
                     setDailySurveys(data[2]);
                 }
                 if (data[3] !== "Nothing") {
+                    //console.log("IM HERE")
                     setIncompleteTherapistSurveys(data[3]);
-                    // console.log(data[3]);
+                    setTherapistSurveyQuestions(JSON.parse(data[3][0].survey));
+                    //console.log(JSON.parse(data[3][0].survey));
+                }
+                else {
+                    setIncompleteTherapistSurveys([]);
+                    setTherapistSurveyQuestions([]);
                 }
                 if (data[4] !== "Nothing") {
                     setCompleteTherapistSurveys(data[4]);
                     // console.log(data[4]);
+                }
+                else {
+                    setCompleteTherapistSurveys([]);
                 }
                 if (data[5] !== "Nothing") {
                     setInvoices(data[5]);
@@ -188,7 +209,7 @@ function PatientDashboard() {
         //  Connection
         socket.on('connect', () => {
             console.log('Connected to server');
-            console.log(patientId)
+            // console.log(patientId)
             socket.emit("init-socket-comm", { "userID": patientId });
         });
         //  Disconnect
@@ -196,9 +217,15 @@ function PatientDashboard() {
             console.log('Disconnected from server');
         });
 
-        // Update surveys list
+        // Update daily surveys list
         socket.on('submit-daily-survey', () => {
-            console.log('SURVEY SUCCESSFULLY SUBMITTED');
+            console.log('DAILY SURVEY SUCCESSFULLY SUBMITTED');
+        })
+
+        // Update therapist surveys list
+        socket.on('submit-therapist-survey', () => {
+            //setIncompleteTherapistSurveys([]);
+            console.log('THERAPIST SURVEY SUCCESSFULLY SUBMITTED');
         })
 
         // Listen for new feedback from therapist
@@ -225,14 +252,15 @@ function PatientDashboard() {
     }
 
     async function displayPopUp(e, x, surveyID, type) {
+        //console.log("CLICKED INDEX: ", surveyID);
         if (type === 'Daily') {
-            setClickedDailySurveys(surveyID);
+            setClickedDailySurveys(surveyID + 1);
         }
         else if (type === 'Incomplete') {
-            setClickedTherapistSurveys(surveyID);
+            setClickedTherapistSurveys(surveyID + 1);
         }
         else if (type === 'Complete') {
-            setClickedCompTherapistSurveys(surveyID);
+            setClickedCompTherapistSurveys(surveyID + 1);
         }
 
         // if (dailySurveyID) {
@@ -269,13 +297,14 @@ function PatientDashboard() {
             // console.log(divParent);
             divParent.className = 'hidden popUp-background';
         }
+        console.log(therapistSurveyQuestions);
     }
 
     function saveJournal(e) {
         const newEntry = e.target.parentElement.parentElement.children[2];
         const patientId = localStorage.getItem("userID");
         const journalId = e.target.getAttribute('journalid');
-        console.log("JOURNAL ID: ", journalId);
+        // console.log("JOURNAL ID: ", journalId);
 
         fetch('http://localhost:5000/saveJournal', {
             method: 'POST',
@@ -304,12 +333,13 @@ function PatientDashboard() {
         displayPopUp(e, 2);
     }
 
-    function submitDailySurvey(e, x) {
+    async function submitDailySurvey(e, x) {
         e.preventDefault();
 
         const patientId = localStorage.getItem("userID");
+        const userID = localStorage.getItem("realUserID");
         const dailySurveyID = e.target.getAttribute('dailysurveyid');
-        console.log('Survey Answers:', dailySurveyAnswers);
+        // console.log('Survey Answers:', dailySurveyAnswers);
 
         const weight = dailySurveyAnswers['0'] ? dailySurveyAnswers['0'] : "";
         const height = dailySurveyAnswers['1'] ? dailySurveyAnswers['1'] : "";
@@ -328,7 +358,7 @@ function PatientDashboard() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                "fakeUserID": patientId, "dailySurveyID": dailySurveyID,
+                "userID": userID, "patientID": patientId, "dailySurveyID": dailySurveyID,
                 weight, height, calories, water, exercise, sleep, energy, stress
             }),
         })
@@ -337,13 +367,39 @@ function PatientDashboard() {
                 //console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
-        systemSleep(100)
+        await systemSleep(100)
         setCallCount(callCount + 1);
         hidePopUp(e, x);
     }
 
-    function submitTherapistSurvey(e) {
+    async function submitTherapistSurvey(e, x) {
+        e.preventDefault();
+        const patientId = localStorage.getItem("userID");
+        const userID = localStorage.getItem("realUserID");
+        const surveyID = e.target.getAttribute('incomptherapistsurveyid');
+        console.log(therapistSurveyQuestions);
+        console.log(therapistSurveyAnswers);
+
+
+        fetch('http://localhost:5000/completeTherapistSurvey', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "userID": userID, "patientID": patientId, "surveyID": surveyID,
+                "questions": therapistSurveyQuestions, "answers": therapistSurveyAnswers
+            }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                //console.log("Successfully saved the journal");
+            })
+            .catch(err => console.error('Error fetching data:', err));
+
+        await systemSleep(100)
         setCallCount(callCount + 1);
+        hidePopUp(e, x);
     }
 
     function payInvoice(e) {
@@ -357,14 +413,36 @@ function PatientDashboard() {
                 ...prevState,
                 [questionIndex]: value,
             }));
-            console.log(dailySurveyAnswers);
+            //console.log(dailySurveyAnswers);
         }
         else {
-            setTherapistSurveyAnswers(prevState => ({
-                ...prevState,
-                [questionIndex]: value,
-            }));
-            console.log(therapistSurveyAnswers);
+            // if (questionIndex + 1 > therapistSurveyQuestions.length) {
+            //     const surveyData = JSON.parse(incompleteTherapistSurveys[0].survey);
+            //     const newQuestion = { 'question': surveyData[questionIndex]['question'] };
+            //     if (newQuestion) {
+            //         let questions = [...therapistSurveyQuestions];
+            //         questions.push(newQuestion);
+            //         setTherapistSurveyQuestions(questions);
+            //         // console.log(questions);
+            //     }
+            // }
+
+            // console.log(questionIndex);
+            // console.log(therapistSurveyAnswers.length);
+            if (parseInt(questionIndex) + 1 > therapistSurveyAnswers.length) {
+                const answer = { [`q${questionIndex + 1}`]: value };
+                let answers = therapistSurveyAnswers;
+                answers.push(answer);
+                // console.log(answers)
+                setTherapistSurveyAnswers(answers);
+            }
+            else {
+                // console.log("Answer exists: ", questionIndex)
+                let answers = therapistSurveyAnswers;
+                answers[`q${questionIndex + 1}`] = value;
+                setTherapistSurveyAnswers(answers);
+            }
+            // console.log(therapistSurveyAnswers);
         }
     };
 
@@ -425,7 +503,7 @@ function PatientDashboard() {
                                     className='card-buttons'
                                     dailysurveyid={row.dailySurveyID}
                                     value={row.weight !== null ? `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}` : `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
-                                    onClick={(e) => displayPopUp(e, 1, row.dailySurveyID, 'Daily')}
+                                    onClick={(e) => displayPopUp(e, 1, index, 'Daily')}
                                 />
                                 <form className='hidden popUp-background' dailysurveyid={row.dailySurveyID} onSubmit={(e) => submitDailySurvey(e, 3)}>
                                     <div className='popUp pd-questions-container' style={{ width: "400px" }}>
@@ -454,7 +532,7 @@ function PatientDashboard() {
                                                                     className='pd-textarea'
                                                                     required
                                                                     placeholder='Answer here...'
-                                                                    ref={el => (dailySurveyRefs.current[`${newRow[propertyToShow]}`] = el)}
+                                                                    //ref={el => (dailySurveyRefs.current[`${newRow[propertyToShow]}`] = el)}
                                                                     value={dailySurveyAnswers[(newIndex) + (4 * (currentPage - 1))] || ''}
                                                                     onChange={(e) => handleInputChange((newIndex) + (4 * (currentPage - 1)), e.target.value, 'Daily')}
                                                                 >
@@ -516,7 +594,7 @@ function PatientDashboard() {
                                     className='card-buttons'
                                     incomptherapistsurveyid={row.surveyID}
                                     value={`(NEW) Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
-                                    onClick={(e) => displayPopUp(e, 1, row.surveyID, 'Incomplete')}
+                                    onClick={(e) => displayPopUp(e, 1, index, 'Incomplete')}
                                 />
                                 <form className='hidden popUp-background' incomptherapistsurveyid={row.surveyID} onSubmit={(e) => submitTherapistSurvey(e, 3)}>
                                     <div className='popUp pd-questions-container' style={{ width: "400px" }}>
@@ -532,8 +610,8 @@ function PatientDashboard() {
                                                                 className='pd-textarea'
                                                                 required
                                                                 placeholder='Answer here...'
-                                                                value={therapistSurveyAnswers[(newIndex) + (4 * (currentPage - 1))] || ''}
-                                                                onChange={(e) => handleInputChange((newIndex) + (4 * (currentPage - 1)), e.target.value, 'Therapist Survey')}
+                                                                value={therapistSurveyAnswers[`q${(newIndex) + (4 * (currentPage - 1))}`]}
+                                                                onChange={(e) => handleInputChange((newIndex) + (4 * (currentPage - 1)), e.target.value, 'Therapist')}
                                                             >
                                                             </textarea>
                                                         </div>
@@ -553,7 +631,7 @@ function PatientDashboard() {
                                                 onPageChange={page => setCurrentPage(page)}
                                                 className={'card-buttons'}
                                             />
-                                            {currentPage === 2 && (
+                                            {currentPage === Math.ceil(tableLength2 / PageSize) && (
                                                 <input className='card-buttons' type='submit' value={'SUBMIT'} />
                                             )}
                                         </div>
@@ -570,7 +648,7 @@ function PatientDashboard() {
                                     className='card-buttons'
                                     incomptherapistsurveyid={row.completionID}
                                     value={`COMPLETED Survey (Done: ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateDone))})`}
-                                    onClick={(e) => displayPopUp(e, 1, row.completionID, 'Complete')}
+                                    onClick={(e) => displayPopUp(e, 1, index, 'Complete')}
                                 />
                                 <div className='hidden popUp-background' comptherapistsurveyid={row.completionID}>
                                     <div className='popUp pd-questions-container' style={{ width: "400px" }}>
@@ -605,9 +683,6 @@ function PatientDashboard() {
                                                 onPageChange={page => setCurrentPage(page)}
                                                 className={'card-buttons'}
                                             />
-                                            {currentPage === 2 && (
-                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
-                                            )}
                                         </div>
                                     </div>
                                 </div>

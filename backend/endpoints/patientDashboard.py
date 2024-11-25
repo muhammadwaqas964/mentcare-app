@@ -1,5 +1,6 @@
 from flask import request, jsonify, json, Blueprint #,render_template, request
 from app import mysql, socketio, sockets
+import json
 from datetime import datetime
 # If you need socketio stuff maybe uncomment the below line.
 # from flask_socketio import SocketIO, join_room, leave_room, send, emit
@@ -20,10 +21,11 @@ def patientDashFunc():
                 ''', (patientId, ))
         data = cursor.fetchall()
         if data:
-            print("DATA: ", data)
+            #print("DATA: ", data)
             columns = [column[0] for column in cursor.description]
             results = [dict(zip(columns, row)) for row in data]
-            print("RESULTS: ", results)
+            #print("RESULTS: ", results)
+            print("JOURNALS SUCCESSFUL")
             totalResults.append(results)
         else:
             totalResults.append("Nothing")
@@ -35,7 +37,8 @@ def patientDashFunc():
         if feedback_data:
             feedback_columns = [column[0] for column in cursor.description]
             feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
-            print("Feedback RESULTS: ", feedback_results)
+            #print("Feedback RESULTS: ", feedback_results)
+            print("FEEDBACK SUCCESSFUL")
             totalResults.append(feedback_results)
         else:
             totalResults.append("Nothing")
@@ -63,7 +66,8 @@ def patientDashFunc():
         if daily_survey_data:
             daily_survey_columns = [column[0] for column in cursor.description]
             daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
-            print("Daily Survey RESULTS: ", daily_survey_results)
+            # print("Daily Survey RESULTS: ", daily_survey_results)
+            print("DAILY SURVEYS SUCCESSFUL")
             totalResults.append(daily_survey_results)
         else:
             totalResults.append("Nothing")
@@ -86,7 +90,8 @@ def patientDashFunc():
             if (incomp_surveys_data):
                 incomp_surveys_columns = [column[0] for column in cursor.description]
                 incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
-                print("Incomplete Survey RESULTS: ", incomp_surveys_results)
+                #print("Incomplete Survey RESULTS: ", incomp_surveys_results)
+                print("INCOMPLETE THERAPIST SURVEYS SUCCESSFUL")
                 totalResults.append(incomp_surveys_results)
             else:
                 totalResults.append("Nothing")
@@ -101,15 +106,15 @@ def patientDashFunc():
                     JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone , completedSurveys.completionID,
                     completedSurveys.dateDone
                     FROM completedSurveys
-                    INNER JOIN surveys ON completedSurveys.surveyID = surveys.surveyID
-                    INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                    INNER JOIN therapists ON completedSurveys.therapistID = therapists.therapistID
                     INNER JOIN users ON therapists.userID = users.userID
-                    WHERE completedSurveys.patientID = %s and surveys.therapistID = %s;
+                    WHERE completedSurveys.patientID = %s and therapists.therapistID = %s;
                     ''', (patientId, therapistId))
             comp_surveys_data = cursor.fetchall()
             if comp_surveys_data:
                 comp_surveys_columns = [column[0] for column in cursor.description]
                 comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
+                print("COMPLETE THERAPIST SURVEYS SUCCESSFUL")
                 totalResults.append(comp_surveys_results)
             else:
                 totalResults.append("Nothing")
@@ -127,7 +132,8 @@ def patientDashFunc():
         if invoices_data:
             invoices_columns = [column[0] for column in cursor.description]
             invoices_results = [dict(zip(invoices_columns, row)) for row in invoices_data]
-            print("Invoices RESULTS: ", invoices_results)
+            #print("Invoices RESULTS: ", invoices_results)
+            print("INVOICES SUCCESSFUL")
             totalResults.append(invoices_results)
         else:
             totalResults.append("Nothing")
@@ -163,51 +169,7 @@ def save():
         return jsonify({"message" : "Journal saved successfully"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
-
-@PatientDashboardData.route("/completeDailySurvey", methods=['POST'])
-def sendDailySurveyFunc():
-    try:
-        print("GOT HERE IN APP.ROUTE")
-        
-        data = request.get_json()
-        
-        fakeUserID = data.get('fakeUserID')
-        dailySurveyID = data.get('dailySurveyID')
-        weight = data.get('weight')
-        height = data.get('height')
-        calories = data.get('calories')
-        water = data.get('water')
-        exercise = data.get('exercise')
-        sleep = data.get('sleep')
-        energy = data.get('energy')
-        stress = data.get('stress')
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('''
-                INSERT INTO completedDailySurveys (dailySurveyID, patientID, weight, height, calories, water, exercise, sleep, energy, stress)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (dailySurveyID, fakeUserID, weight, height, calories, water, exercise, sleep, energy, stress))
-        mysql.connection.commit()
-        cursor.close()
-
-        # Emit the event to the connected socket clients
-        socketio.emit('submit-daily-survey', {
-            'patientID': fakeUserID,
-            'dailySurveyID': dailySurveyID,
-            'weight': weight,
-            'height': height,
-            'calories': calories,
-            'water': water,
-            'exercise': exercise,
-            'sleep': sleep,
-            'energy': energy,
-            'stress': stress
-        }, room=sockets[fakeUserID])
-
-        return jsonify({"message": "Survey data submitted successfully!"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-
+    
 @PatientDashboardData.route("/sendFeedback", methods=['POST'])
 def sendFeedbackFunc():
     try:

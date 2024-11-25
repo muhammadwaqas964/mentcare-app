@@ -7,7 +7,7 @@ nav {
 }
 
 li,
-h2 {
+.navbar-tab {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-weight: bold;
     color: white;
