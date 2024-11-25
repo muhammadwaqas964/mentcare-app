@@ -52,6 +52,13 @@ app.register_blueprint(paymentPageData)
 from endpoints.settings import settingsPageData
 app.register_blueprint(settingsPageData)
 
+from endpoints.therapist_Profile import therapist_routes
+app.register_blueprint(therapist_routes, url_prefix='/api/therapists')
+
+from endpoints.landingPage import landing_page 
+app.register_blueprint(landing_page, url_prefix='/') 
+
+
 @app.route("/")
 def defaultFunc():
     return {"status": "Backend is alive"}
