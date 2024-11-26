@@ -402,9 +402,9 @@ function PatientDashboard() {
         hidePopUp(e, x);
     }
 
-    function payInvoice(e) {
+    function payInvoice(invoiceID, amountDue, therapistName) {
         //console.log(e.target.getAttribute('invoiceid'));
-        navigate('/payment', { type: 'invoice', id: e.target.getAttribute('invoiceid') })
+        navigate('/payment', { state: { invoiceID: invoiceID, amountDue: amountDue, therapistName: therapistName } })
     }
 
     const handleInputChange = (questionIndex, value, type) => {
@@ -575,7 +575,7 @@ function PatientDashboard() {
                                 invoiceid={row.invoiceID}
                                 type='button'
                                 value={`$${row.amountDue} Invoice to ${row.userName}`}
-                                onClick={(e) => payInvoice(e)}
+                                onClick={() => payInvoice(row.invoiceID, row.amountDue, row.userName)}
                             >
                             </input>
                         );
