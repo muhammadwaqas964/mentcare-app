@@ -36,6 +36,7 @@
     text-align: center;
     width: 400px;
     position: relative;
+    height: 100%;
 }
 
 .patient-card {

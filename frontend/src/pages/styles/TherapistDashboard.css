@@ -80,6 +80,11 @@
     height: 56px;
     width: 300px;
     color: black;
+
+    &:hover {
+        cursor: pointer;
+        filter: brightness(0.8);
+    }
 }
 
 .td-btn {
@@ -95,6 +100,7 @@
 
     &:hover {
         cursor: pointer;
+        filter: brightness(0.8);
     }
 }
 
@@ -109,4 +115,50 @@
     margin-top: 10px;
 }
 
-.td-question-remove-btn {}
+.td-question-remove-btn {
+    font-size: 12pt;
+    padding: 0 10px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.td-active-patients {
+    gap: 50px;
+}
+
+.td-patient-text {
+    font-size: 16pt;
+}
+
+.td-clickable-active-patient {
+    align-items: center;
+    border: 2px solid black;
+    gap: 10px;
+
+    border-radius: 25px;
+    padding: 0px 20px;
+    text-align: center;
+    width: 500px;
+    max-width: 500px;
+    position: relative;
+    height: 50px;
+
+    &:hover {
+        cursor: pointer;
+    }
+
+    text-overflow: ellipsis;
+}
+
+.td-nowrap-text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.td-right-wall {
+    padding: 10px;
+    border-right: 2px solid black;
+}

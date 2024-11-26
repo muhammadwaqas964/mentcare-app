@@ -150,8 +150,8 @@ function TherapistDashboard() {
         setSurveyQuestions(updatedQuestions);
     };
 
-    const goToOverviewPage = (realUserID) => {
-        navigate(`/patient-overview/${realUserID}`);
+    const goToOverviewPage = (userID) => {
+        navigate(`/patient-overview/${userID}`, { state: { userID: userID } });
     }
 
     return (
@@ -181,20 +181,19 @@ function TherapistDashboard() {
 
                 <div className="flex-col flex-centered">
                     <h1 style={{ textAlign: 'center' }}>Active Patients</h1>
-                    <div className="">
+                    <div className='td-active-patients flex-col'>
                         {patients && patients.map((item, index) => (
-                            <DashboardCardTitleless key={`patient-${index}`} extraClasses="margined">
-                                <div onClick={() => goToOverviewPage(item[2])}>
-                                    <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
-                                </div>
-                            </DashboardCardTitleless>
+                            <div key={`patient-${index}`} className='flex-row td-clickable-active-patient' onClick={() => goToOverviewPage(item[2])}>
+                                <div className='td-patient-text td-right-wall td-nowrap-text' style={{ width: "40%" }}>Name: {item[0]}</div>
+                                <div className='td-patient-text td-nowrap-text' style={{ width: "50%" }}>FB: {item[1]}</div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </div>
             <div ref={popupRef} className="hidden popUp-background">
-                <div className="popUp flex-row flex-centered main-container">
-                    <h1>Editing Survey</h1>
+                <div className="popUp flex-row flex-centered main-container" style={{ padding: "40px" }}>
+                    <h1>EDITING SURVEY</h1>
                     <form onSubmit={(event) => saveSurvey(event)}>
                         {surveyQuestions && surveyQuestions.map((item, index) => (
                             <div className='flex-row td-new-questions-container' key={`edit-question-${index}`}>
@@ -215,11 +214,11 @@ function TherapistDashboard() {
                                 <input type="radio" id={"boolean" + index} name={"button" + index} defaultChecked={'boolean' === item.questionType} value="boolean" />
                                 <label htmlFor={"boolean" + index}>&nbsp;True or False</label>
                                 </div> */}
-                                <button className='td-question-remove-btn' type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
+                                <button className='td-question-remove-btn' type="button" onClick={() => removeSurveyElement(item.question)}>Remove</button>
                             </ div>
                         ))}
                         <br />
-                        <div className="flex-row flex-centered main-container">
+                        <div className="flex-row flex-centered main-container" style={{ gap: "10px" }}>
                             <button className='td-btn' type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
                             <input className='td-btn' type="submit" value="Save Survey"></input>&nbsp;
                             <button className='td-btn' type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
