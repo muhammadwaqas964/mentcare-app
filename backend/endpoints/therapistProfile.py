@@ -1,69 +1,85 @@
 from flask import request, jsonify, json, Blueprint
 from app import mysql
-import os
 
 # Define the Blueprint
 therapist_routes = Blueprint('therapist_routes', __name__)
 
-# Fetch all therapists with pagination
-@therapist_routes.route('/api/therapists/', methods=['GET'])
-def get_therapists():
-    try:
-        page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 10))
-        offset = (page - 1) * per_page
-
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
-            SELECT Users.UserID, Users.Username, Therapists.Intro, Therapists.Education, 
-                   Therapists.LicenseNumber, Therapists.DaysHours, Therapists.Price, 
-                   Therapists.Specializations
-            FROM Users
-            JOIN Therapists ON Users.UserID = Therapists.UserID
-            WHERE Users.UserType = 'Therapist'
-            LIMIT %s OFFSET %s
-        """, (per_page, offset))
-        therapists = cursor.fetchall()
-
-        # Ensure all fields are JSON-serializable
-        for therapist in therapists:
-            if isinstance(therapist.get("Specializations"), set):
-                therapist["Specializations"] = list(therapist["Specializations"])
-
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return jsonify({"error": "Failed to fetch therapists"}), 500
-    finally:
-        cursor.close()
-
-    return jsonify({"Therapists": therapists, "page": page, "per_page": per_page})
-
 # Fetch a specific therapist by UserID
-@therapist_routes.route('/api/therapists/<int:user_id>', methods=['GET'])
-def get_therapist_by_id(user_id):
+@therapist_routes.route('/therapistProfileInfo', methods=['POST'])
+def thersProfInfoFunc():
     try:
+        realUserID = request.json.get('realUserId')
+
         cursor = mysql.connection.cursor()
         cursor.execute("""
-            SELECT Users.UserID, Users.Username, Therapists.Intro, Therapists.Education, 
-                   Therapists.LicenseNumber, Therapists.DaysHours, Therapists.Price, 
-                   Therapists.Specializations
-            FROM Users
-            JOIN Therapists ON Users.UserID = Therapists.UserID
-            WHERE Users.UserID = %s AND Users.UserType = 'Therapist'
-        """, (user_id,))
-        therapist = cursor.fetchone()
+            SELECT users.userName, therapists.Intro, therapists.Education, 
+                   therapists.DaysHours, therapists.Price, 
+                   therapists.specializations
+            FROM users
+            JOIN therapists ON users.userID = therapists.userID
+            WHERE users.userID = %s AND users.userType = 'Therapist'
+        """, (realUserID,))
+        therapistInfo = cursor.fetchone()
 
-        if not therapist:
+        if not therapistInfo:
             return jsonify({"error": "Therapist not found"}), 404
 
-        # Ensure all fields are JSON-serializable
-        if isinstance(therapist.get("Specializations"), set):
-            therapist["Specializations"] = list(therapist["Specializations"])
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {realUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
 
-    except mysql.connector.Error as err:
+        cursor.execute(f"""
+            SELECT reviews.stars
+            FROM reviews
+            WHERE reviews.therapistID = {therapistID}
+        """)
+        reviews = cursor.fetchall()
+
+        counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+        for review in reviews:
+            counts[review[0]] = counts[review[0]] + 1
+
+    except Exception as err:
         print(f"Error: {err}")
-        return jsonify({"error": "Failed to fetch therapist details"}), 500
+        return jsonify({"error": err}), 500
     finally:
         cursor.close()
 
-    return jsonify({"Therapist": therapist})
+    return jsonify({"Therapist": therapistInfo, "fives": counts[5], "fours": counts[4], "threes": counts[3], "twos": counts[2], "ones": counts[1]})
+
+@therapist_routes.route('/therapistReviewInfo', methods=['POST'])
+def theraReviewFunc():
+    try:
+        realUserID = request.json.get('realUserId')
+        page = request.json.get('page')
+
+        cursor = mysql.connection.cursor()
+
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {realUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
+
+        cursor.execute(f"""
+            SELECT reviews.content, reviews.stars, reviews.dateDone, users.userName
+            FROM reviews, patients, users
+            WHERE reviews.therapistID = {therapistID}
+            AND reviews.patientID = patients.patientID
+            AND patients.userID = users.userID
+            LIMIT 4
+            OFFSET {4*(int(page) - 1)}
+        """)
+        reviews = cursor.fetchall()
+
+
+    except Exception as err:
+        return jsonify({"error": err}), 500
+    finally:
+        cursor.close()
+
+    return jsonify({"reviews": reviews})
