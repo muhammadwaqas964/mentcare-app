@@ -11,6 +11,7 @@ import TherapistProfile from './pages/TherapistProfile';
 import Chat from './pages/Chat';
 import TherapistListPage from './pages/TherapistListPage';
 import SettingsPage from './pages/Settings';
+import TherapistList from './pages/TherapistList';
 import PatientOverview from './pages/PatientOverview';
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
         <Route path="/therapistlist" element={<TherapistListPage />} />
         <Route path='/settings' element={<SettingsPage />} />
         <Route path="/patient-overview/:userID" element={<PatientOverview />} />
+        <Route path="/therapistprofilelist" element={<TherapistList />} />
+        <Route path="/therapistprofile/:userId" element={<TherapistProfile />} />
       </Routes>
     </Router>
   );
