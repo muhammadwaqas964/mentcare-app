@@ -15,6 +15,7 @@ import SettingsPage from './pages/Settings';
 import TherapistList from './pages/TherapistList';
 import PatientOverview from './pages/PatientOverview';
 import Payment from './pages/Payment';
+import Deactivated from './pages/Deactivated';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/therapistprofilelist" element={<TherapistList />} />
         <Route path="/therapistprofile/:userId" element={<TherapistProfile />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/deactivated" element={<Deactivated />} />
       </Routes>
     </Router>
   );

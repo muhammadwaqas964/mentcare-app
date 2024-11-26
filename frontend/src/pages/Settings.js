@@ -58,8 +58,7 @@ function SettingsPage() {
                 setInsComp(data.insComp);
                 setInsID(data.insID);
                 setInsTier(data.insTier);
-
-                // setAccountActive(data.accountActive);  // TODO: add active status to table
+                setAccountActive(data.isActive);
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -192,7 +191,7 @@ function SettingsPage() {
             .catch(err => console.error('Error fetching data:', err));
     }
 
-    const accountChangeHandler = () => {
+    const accountChangeHandler = (words) => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
 
@@ -206,6 +205,16 @@ function SettingsPage() {
             .then(res => res.json())
             .then(data => {
                 console.log(data);
+                if (userType === 'Therapist' && words === 'Deactivate') {
+                    localStorage.setItem("isActive", data.isActive);
+                    navigate('/deactivated');
+                    return;
+                }
+                else if (userType === 'Therapist' && words === 'Activate') {
+                    localStorage.setItem("isActive", data.isActive);
+                    navigate('/settings');
+                    return;
+                }
                 localStorage.setItem("userID", 0);
                 navigate('/')
             })
@@ -217,17 +226,17 @@ function SettingsPage() {
             <div className="flex-col flex-centered main-container">
                 <br /><br />
                 <DashboardCardTitleless>
-                    <div>
+                    <div className='flex-col flex-centered'>
                         <h1>Account Details</h1>
                         <p>Name: {userName}</p>
                         <p>Email: {email}</p>
                         {pfp ? (
-                            <div className="centered">
-                                <img src={pfp} alt="Profile" className="navbar-profile-pic" />
+                            <div className="centered settings-img-circle-mask">
+                                <img src={pfp} alt="Profile" className="settings-profile-pic" />
                             </div>
                         ) : (
-                            <div className="centered">
-                                <img src={defaultProfilePic} alt="Profile" className="navbar-profile-pic" />
+                            <div className="centered settings-img-circle-mask">
+                                <img src={defaultProfilePic} alt="Profile" className="settings-profile-pic" />
                             </div>
                         )}
                         <button type="button" onClick={() => editAccDetails()}>Edit Details</button>
@@ -255,7 +264,7 @@ function SettingsPage() {
                     </select>
                 </DashboardCardTitleless>
                 <br /><br />
-                <button type="button" onClick={() => accountChangeHandler()}>{words} Account</button> {/* TODO: Make this a big red button */}
+                <button type="button" onClick={() => accountChangeHandler(words)}>{words} Account</button> {/* TODO: Make this a big red button */}
             </div>
 
             <div ref={accDeetsPopupRef} className="hidden popUp-background">

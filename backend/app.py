@@ -84,7 +84,7 @@ def navbarDataFunc():
                     ''', (fakeUserId, ))
         elif userType == 'Therapist':
             cursor.execute('''
-                    SELECT users.userID, userName, userType FROM users
+                    SELECT users.userID, userName, userType, therapists.isActive FROM users
                     INNER JOIN therapists ON users.userID = therapists.userID
                     WHERE therapists.therapistID = %s
                     ''', (fakeUserId, ))

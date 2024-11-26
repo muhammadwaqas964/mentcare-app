@@ -40,12 +40,42 @@ function Login() {
             .then(res => res.json())
             .then(data => {
                 console.log(data.userType);
-                if (data.userType === 'Patient' || data.userType === 'Therapist') {
+                console.log(data.realUserID);
+                console.log(data.userID);
+                // if (data.userType === 'Patient' || data.userType === 'Therapist') {
+                //     if (data.userType === 'Therapist') {
+                //         localStorage.setItem('isActive', data.isActive);
+                //         if (data.isActive === 0) {
+                //             navigate('/deactivated');
+                //             return;
+                //         }
+                //     }
+                //     localStorage.setItem('userType', data.userType);
+                //     localStorage.setItem('userID', data.userID);
+                //     localStorage.setItem('realUserID', data.realUserID)
+                //     console.log(localStorage.getItem('userID'));
+                //     navigate('/dashboard');
+                // }
+
+
+                if (data.userType === 'Patient') {
                     localStorage.setItem('userType', data.userType);
                     localStorage.setItem('userID', data.userID);
                     localStorage.setItem('realUserID', data.realUserID)
                     console.log(localStorage.getItem('userID'));
                     navigate('/dashboard');
+                }
+                else if (data.userType === 'Therapist') {
+                    localStorage.setItem('userType', data.userType);
+                    localStorage.setItem('userID', data.userID);
+                    localStorage.setItem('realUserID', data.realUserID)
+                    localStorage.setItem('isActive', data.isActive);
+                    if (data.isActive === 0) {
+                        navigate('/deactivated');
+                    }
+                    else {
+                        navigate('/dashboard');
+                    }
                 }
             })
             .catch(err => console.error('Error fetching data:', err));

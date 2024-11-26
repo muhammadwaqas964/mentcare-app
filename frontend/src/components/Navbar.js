@@ -11,6 +11,7 @@ const Navbar = () => {
     const [notifications, setNotifications] = useState(null);
     const [bellImage, setBellImage] = useState(NotificationBellImg);
     const [profileImgUrl, setProfileImgUrl] = useState(null);
+    const [isActive, setIsActive] = useState(null);
 
     //  Routing makes window.location not update on tab clicks
     const location = useLocation();
@@ -21,6 +22,11 @@ const Navbar = () => {
 
     let isLoggedIn;
     const fakeUserID = localStorage.getItem("userID");
+    // const isActive = localStorage.getItem("isActive");
+
+    // if (isActive) {
+    //     setTherapistIsActive(isActive)
+    // }
 
     if (fakeUserID && fakeUserID !== "0") {
         isLoggedIn = true;
@@ -39,12 +45,17 @@ const Navbar = () => {
         setSelectedTab(path.toLowerCase());
     }
 
+    // useEffect(() => {
+    //     setIsActive(parseInt(localStorage.getItem("isActive")));
+    // }, [localStorage.getItem("isActive")]);
+
     useEffect(() => {
         console.log(localStorage.getItem("userID"));
         if (localStorage.getItem("userID") !== "0") {
             const fakeUserID = localStorage.getItem("userID");
             const realUserID = localStorage.getItem("realUserID");
             const userType = localStorage.getItem("userType");
+            // const isActive = localStorage.getItem("isActive");
 
 
             fetch("http://localhost:5000/navbarData", {
@@ -66,6 +77,9 @@ const Navbar = () => {
                 .then((data) => {
                     setUserData(data[0][0]);
                     setNotifications(data[1]);
+                    if (userType === 'Therapist') {
+                        setIsActive(data[0][0]['isActive'])
+                    }
                     handleTabClick(location.pathname);
                 })
                 .catch((err) => console.error("Error fetching data:", err));
@@ -105,7 +119,7 @@ const Navbar = () => {
             setNotifications(null);
             handleTabClick('/');
         }
-    }, [localStorage.getItem("userID")]);
+    }, [localStorage.getItem("userID"), localStorage.getItem("isActive")]);
 
     //  Use to update notifications
     useEffect(() => {
@@ -157,6 +171,8 @@ const Navbar = () => {
         }).catch((err) => console.error("Error fetching data:", err));
     }
 
+    console.log(isLoggedIn);
+
     return (
         <nav>
             <div className="left-section">
@@ -168,7 +184,7 @@ const Navbar = () => {
             <div className="mid-section">
                 {userData && (
                     <div className="flex-row" style={{ gap: "20px" }}>
-                        <Link
+                        {/* <Link
                             to={`/dashboard`}
                             onClick={() => handleTabClick(`/dashboard`)}
                         >
@@ -178,45 +194,73 @@ const Navbar = () => {
                             >
                                 Dashboard
                             </h2>
-                        </Link>
+                        </Link> */}
 
                         {userData.userType === "Patient" && (
-                            <Link
-                                to={`/therapistlist`}
-                                onClick={() => handleTabClick(`/therapistlist`)}
-                            >
-                                <h2
-                                    className={`navbar-tab ${selectedTab === "/therapistlist"
-                                        ? "active-tab"
-                                        : "selectable-tab"
-                                        }`}
+                            <>
+                                <Link
+                                    to={`/dashboard`}
+                                    onClick={() => handleTabClick(`/dashboard`)}
                                 >
-                                    Therapist List
-                                </h2>
-                            </Link>
+                                    <h2
+                                        className={`navbar-tab ${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"
+                                            }`}
+                                    >
+                                        Dashboard
+                                    </h2>
+                                </Link>
+                                <Link
+                                    to={`/therapistlist`}
+                                    onClick={() => handleTabClick(`/therapistlist`)}
+                                >
+                                    <h2
+                                        className={`navbar-tab ${selectedTab === "/therapistlist"
+                                            ? "active-tab"
+                                            : "selectable-tab"
+                                            }`}
+                                    >
+                                        Therapist List
+                                    </h2>
+                                </Link>
+                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                                    <h2
+                                        className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"
+                                            }`}
+                                    >
+                                        Chats
+                                    </h2>
+                                </Link>
+                            </>
                         )}
 
-                        {userData.userType === "Therapist" && (
-                            <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile`)}>
-                                <h2
-                                    className={`navbar-tab ${selectedTab === "/therapistprofile"
-                                        ? "active-tab"
-                                        : "selectable-tab"
-                                        }`}
-                                >
-                                    Profile
-                                </h2>
-                            </Link>
-                        )}
+                        {userData.userType === "Therapist" && isActive ? (
+                            <>
+                                <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+                                    <h2 className={`navbar-tab ${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
+                                        Dashboard
+                                    </h2>
+                                </Link>
+                                <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile`)}>
+                                    <h2 className={`navbar-tab ${selectedTab === "/therapistprofile" ? "active-tab" : "selectable-tab"}`}>
+                                        Profile
+                                    </h2>
+                                </Link>
+                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                                    <h2 className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
+                                        Chats
+                                    </h2>
+                                </Link>
+                            </>
+                        ) : null}
 
-                        <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                        {/* <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
                             <h2
                                 className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"
                                     }`}
                             >
                                 Chats
                             </h2>
-                        </Link>
+                        </Link> */}
                     </div>
                 )}
             </div>
@@ -305,7 +349,7 @@ const Navbar = () => {
                                         />
                                     </div>
 
-                                    {notifications ? (
+                                    {notifications && isActive ? (
                                         <div
                                             className="notifs-dropdown-items hidden"
                                             ref={bellRef}

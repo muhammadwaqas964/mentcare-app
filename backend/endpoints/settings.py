@@ -21,6 +21,7 @@ def settingsPageDataFunc():
         data1 = cursor.fetchall()
 
         data2 = [[[],[],[],[]]]
+        isActive = 0  # <-------- Using this for Deactivation/Activation of Therapist Account
         if(userType == "Patient"):
             cursor.execute(f'''
                 SELECT allRecordsViewable, insuranceCompany, insuranceID, insuranceTier
@@ -28,12 +29,17 @@ def settingsPageDataFunc():
                 WHERE patients.patientID = {userId};
                 ''')
             data2 = cursor.fetchall()
+        elif userType == "Therapist":
+            cursor.execute(f'''
+                SELECT isActive FROM therapists WHERE therapistID = {userId};''')
+            data3 = cursor.fetchall()
+            isActive = int(data3[0][0])
         cursor.close()
 
-        print({"userName" : data1[0][0], "email" : data1[0][1], "patientPrivacy" : data2[0][0], "insuranceCompany" : data2[0][1], "insuranceID" : data2[0][2], "insuranceTier" : data2[0][3] })
+        print({"userName" : data1[0][0], "email" : data1[0][1], "patientPrivacy" : data2[0][0], "insuranceCompany" : data2[0][1], "insuranceID" : data2[0][2], "insuranceTier" : data2[0][3], "isActive" : isActive })
         
         return jsonify({"userName" : data1[0][0], "email" : data1[0][1],
-                        "patientPrivacy" : data2[0][0], "insComp" : data2[0][1], "insID" : data2[0][2], "insTier" : data2[0][3] }), 200
+                        "patientPrivacy" : data2[0][0], "insComp" : data2[0][1], "insID" : data2[0][2], "insTier" : data2[0][3], "isActive" : isActive }), 200
     
     except Exception as err:
         return {"error":  f"{err}"}
@@ -184,8 +190,22 @@ def settingsRemAccFunc():
                 DELETE FROM patients WHERE userID = {realUserId}''')
             cursor.execute(f'''
                 DELETE FROM users WHERE userID = {realUserId}''')
+            mysql.connection.commit()
+            return jsonify({"deletion" : "successful"}), 200
         elif (userType == "Therapist"):
-            pass
+            cursor.execute(f'''
+                UPDATE therapists 
+                SET isActive = CASE 
+                    WHEN isActive = TRUE THEN FALSE 
+                    ELSE TRUE 
+                END
+                WHERE therapistID = {userId}
+                            ''')
+            mysql.connection.commit()
+            cursor.execute(f'SELECT isActive FROM therapists WHERE therapistID = {userId}')
+            isActive = cursor.fetchone()[0]
+
+            return jsonify({"isActive" : isActive}), 200
         else:
             cursor.close()
             return jsonify({"deletion" : "cant delete, patient owes money"}), 200

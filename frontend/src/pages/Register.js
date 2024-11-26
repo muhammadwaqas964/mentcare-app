@@ -218,6 +218,7 @@ function Register() {
                         localStorage.setItem('userID', data.therapistID);
                         localStorage.setItem('realUserID', data.userID)
                         localStorage.setItem('userType', 'Therapist');
+                        localStorage.setItem('isActive', true);
                         navigate('/dashboard');
                         return true;
                     } else {
