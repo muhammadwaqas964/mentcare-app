@@ -33,8 +33,8 @@ app.register_blueprint(paymentPageData)
 from endpoints.landingPage import landingPageData
 app.register_blueprint(landingPageData)
 
-from endpoints.therapistProfile import TherapistProfileData
-app.register_blueprint(TherapistProfileData)
+from endpoints.therapistProfile import therapist_routes
+app.register_blueprint(therapist_routes)
 
 # anish
 
@@ -43,7 +43,6 @@ app.register_blueprint(therapistListData)
 
 from endpoints.patientProfile import PatientProfileData
 app.register_blueprint(PatientProfileData)
-
 
 # fausto
 
@@ -63,17 +62,6 @@ app.register_blueprint(TherapistDashboardData)
 
 from endpoints.settings import settingsPageData
 app.register_blueprint(settingsPageData)
-
-<<<<<<< Updated upstream
-from endpoints.therapist_Profile import therapist_routes
-app.register_blueprint(therapist_routes, url_prefix='/api/therapists')
-
-from endpoints.landingPage import landing_page 
-app.register_blueprint(landing_page, url_prefix='/') 
-
-=======
-# other stuff
->>>>>>> Stashed changes
 
 @app.route("/")
 def defaultFunc():
