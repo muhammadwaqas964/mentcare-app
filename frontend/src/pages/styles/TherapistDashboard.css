@@ -69,3 +69,44 @@
 .blue {
     background-color: blue;
 }
+
+.acceptanceBtn {
+    padding: 20px;
+    font-size: 14pt;
+    border-radius: 10px;
+    border: 0px;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    height: 56px;
+    width: 300px;
+    color: black;
+}
+
+.td-btn {
+    background-color: rgba(87, 216, 194);
+    padding: 14px 18px;
+    text-transform: uppercase;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    font-size: 12pt;
+    height: 44px;
+    border-radius: 10px;
+    border: 0px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.td-question-input {
+    flex-grow: 1;
+    height: 30px;
+    font-size: 12pt;
+}
+
+.td-new-questions-container {
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.td-question-remove-btn {}

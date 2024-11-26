@@ -197,7 +197,7 @@ const Navbar = () => {
                         )}
 
                         {userData.userType === "Therapist" && (
-                            <Link to={`/therapistprofile`} onClick={() => handleTabClick(`/therapistprofile`)}>
+                            <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile`)}>
                                 <h2
                                     className={`navbar-tab ${selectedTab === "/therapistprofile"
                                         ? "active-tab"

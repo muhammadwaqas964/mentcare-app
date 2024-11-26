@@ -15,7 +15,7 @@ TherapistProfileData = Blueprint('TherapistProfileData', __name__)
 @TherapistProfileData.route('/endpointOne', methods=['GET'])
 
 
-@app.route('/therapists')
+@TherapistProfileData.route('/therapists')
 def get_therapists():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)

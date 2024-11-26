@@ -156,48 +156,49 @@ function TherapistDashboard() {
 
     return (
         <>
-            <table style={{ width: '100%' }}>
-                <tbody>
-                    <tr>
-                        <td style={{ width: '50%' }}>
-                            <div className="flex-row flex-centered main-container">
-                                <div className="">
-                                    <DashboardCardTitleless extraClasses="margined">
-                                        <p onClick={() => changeAcceptance()}>{acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS</p>
-                                    </DashboardCardTitleless>
-                                    <DashboardCard title="Your Survey Questions" extraClasses="margined">
-                                        {surveyQuestions && surveyQuestions.map((item, index) => (
-                                            <p key={`question-${index}`}>{item.question}</p>
-                                        ))}
-                                        <button type="button" onClick={() => editSurvey()}>Edit Survey</button>
-                                    </DashboardCard>
+            <div className='flex-row' style={{ justifyContent: "space-evenly" }}>
+                <div className="flex-row flex-centered">
+                    <div className="">
+                        <DashboardCardTitleless extraClasses="margined">
+                            <input
+                                type='button'
+                                className='acceptanceBtn'
+                                onClick={() => changeAcceptance()}
+                                value={`${acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS`}
+                                style={{ backgroundColor: acceptingStatus ? "#f44336" : "#66bb6a" }}
+                            >
+                            </input>
+                        </DashboardCardTitleless>
+                        <DashboardCard title="Your Survey Questions" extraClasses="margined">
+                            {surveyQuestions && surveyQuestions.map((item, index) => (
+                                <p key={`question-${index}`}>{item.question}</p>
+                            ))}
+                            <button type="button" className='td-btn' onClick={() => editSurvey()}>Edit Survey</button>
+                        </DashboardCard>
+                    </div>
+                </div>
+
+
+                <div className="flex-col flex-centered">
+                    <h1 style={{ textAlign: 'center' }}>Active Patients</h1>
+                    <div className="">
+                        {patients && patients.map((item, index) => (
+                            <DashboardCardTitleless key={`patient-${index}`} extraClasses="margined">
+                                <div onClick={() => goToOverviewPage(item[2])}>
+                                    <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
                                 </div>
-                            </div>
-                        </td>
-                        <td style={{ width: '50%' }}>
-                            <h1 style={{ textAlign: 'center' }}>Active Patients</h1>
-                            <div className="flex-row flex-centered main-container">
-                                <div className="">
-                                    {patients && patients.map((item, index) => (
-                                        <DashboardCardTitleless key={`patient-${index}`} extraClasses="margined">
-                                            <div onClick={() => goToOverviewPage(item[2])}>
-                                                <p>Name: {item[0]}</p><p>FB: {item[1]}</p>
-                                            </div>
-                                        </DashboardCardTitleless>
-                                    ))}
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </DashboardCardTitleless>
+                        ))}
+                    </div>
+                </div>
+            </div>
             <div ref={popupRef} className="hidden popUp-background">
                 <div className="popUp flex-row flex-centered main-container">
                     <h1>Editing Survey</h1>
                     <form onSubmit={(event) => saveSurvey(event)}>
                         {surveyQuestions && surveyQuestions.map((item, index) => (
-                            <div key={`edit-question-${index}`}>
-                                <input type="text" id="{index}" name="{index}" value={item.question} onChange={(event) => handleChange(event, item.question)} />
+                            <div className='flex-row td-new-questions-container' key={`edit-question-${index}`}>
+                                <input className='td-question-input' type="text" id="{index}" name="{index}" value={item.question} onChange={(event) => handleChange(event, item.question)} />
                                 {/* <div className="flex-row">
                                 <input type="radio" id={"string_" + index} name={"button" + index} defaultChecked={'string' === item.questionType} value="string" />
                                 <label htmlFor={"string_" + index}>&nbsp;String</label>
@@ -214,15 +215,14 @@ function TherapistDashboard() {
                                 <input type="radio" id={"boolean" + index} name={"button" + index} defaultChecked={'boolean' === item.questionType} value="boolean" />
                                 <label htmlFor={"boolean" + index}>&nbsp;True or False</label>
                                 </div> */}
-                                &nbsp;<button type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
-                                <br />
+                                <button className='td-question-remove-btn' type="button" onClick={() => removeSurveyElement(item.question)}>Remove Question</button>
                             </ div>
                         ))}
                         <br />
                         <div className="flex-row flex-centered main-container">
-                            <button type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
-                            <input type="submit" value="Save Survey"></input>&nbsp;
-                            <button type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
+                            <button className='td-btn' type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
+                            <input className='td-btn' type="submit" value="Save Survey"></input>&nbsp;
+                            <button className='td-btn' type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
                         </div>
                     </form>
                 </div>
