@@ -1,36 +1,19 @@
-from flask import Blueprint, request, jsonify
-import mysql.connector
+from flask import request, jsonify, json, Blueprint
+from app import mysql
 import os
 
 # Define the Blueprint
 therapist_routes = Blueprint('therapist_routes', __name__)
 
-# Database connection helper
-def get_db_connection():
-    try:
-        return mysql.connector.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            database=os.getenv('DB_NAME', 'mentcare1'),
-            user=os.getenv('DB_USER', 'root'),
-            password=os.getenv('DB_PASSWORD', 'root')
-        )
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        return None
-
 # Fetch all therapists with pagination
-@therapist_routes.route('/', methods=['GET'])
+@therapist_routes.route('/api/therapists/', methods=['GET'])
 def get_therapists():
-    page = int(request.args.get('page', 1))
-    per_page = int(request.args.get('per_page', 10))
-    offset = (page - 1) * per_page
-
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
     try:
-        cursor = conn.cursor(dictionary=True)
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 10))
+        offset = (page - 1) * per_page
+
+        cursor = mysql.connection.cursor()
         cursor.execute("""
             SELECT Users.UserID, Users.Username, Therapists.Intro, Therapists.Education, 
                    Therapists.LicenseNumber, Therapists.DaysHours, Therapists.Price, 
@@ -52,19 +35,14 @@ def get_therapists():
         return jsonify({"error": "Failed to fetch therapists"}), 500
     finally:
         cursor.close()
-        conn.close()
 
     return jsonify({"Therapists": therapists, "page": page, "per_page": per_page})
 
 # Fetch a specific therapist by UserID
-@therapist_routes.route('/<int:user_id>', methods=['GET'])
+@therapist_routes.route('/api/therapists/<int:user_id>', methods=['GET'])
 def get_therapist_by_id(user_id):
-    conn = get_db_connection()
-    if conn is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = mysql.connection.cursor()
         cursor.execute("""
             SELECT Users.UserID, Users.Username, Therapists.Intro, Therapists.Education, 
                    Therapists.LicenseNumber, Therapists.DaysHours, Therapists.Price, 
@@ -87,6 +65,5 @@ def get_therapist_by_id(user_id):
         return jsonify({"error": "Failed to fetch therapist details"}), 500
     finally:
         cursor.close()
-        conn.close()
 
     return jsonify({"Therapist": therapist})

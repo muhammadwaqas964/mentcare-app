@@ -34,7 +34,7 @@ from endpoints.landingPage import landingPageData
 app.register_blueprint(landingPageData)
 
 from endpoints.therapistProfile import therapist_routes
-app.register_blueprint(therapist_routes, url_prefix='/api/therapists')
+app.register_blueprint(therapist_routes)
 
 # anish
 
@@ -43,7 +43,6 @@ app.register_blueprint(therapistListData)
 
 from endpoints.patientProfile import PatientProfileData
 app.register_blueprint(PatientProfileData)
-
 
 # fausto
 
