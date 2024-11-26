@@ -7,6 +7,7 @@ from app import mysql # , socketio, sockets
 
 examplePageStuff = Blueprint('examplePageStuff', __name__)
 
+# these endpoints heed to have unique names across the entire app (i.e there can only be one "/endpointOne" anywhere)
 @examplePageStuff.route('/endpointOne', methods=['POST'])
 def endpointNumberOneFunc():
     try:

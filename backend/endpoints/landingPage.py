@@ -1,24 +1,14 @@
-from flask import Flask, jsonify
-import mysql.connector
-from flask_cors import CORS
+from flask import request, jsonify, json, Blueprint #,render_template, request
+from app import mysql
 
-app = Flask(__name__)
-CORS(app)  # Enables CORS for all domains on all routes
+# Feel free to add more imports above
 
+landingPageData = Blueprint('landingPageData', __name__)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host='localhost',
-        database='mentcare1',
-        user='root',
-        password='root'
-    )
-
-@app.route('/testimonials')
+# these endpoints heed to have unique names across the entire app (i.e there can only be one "/testimonials" anywhere)
+@landingPageData.route('/testimonials')
 def index():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    
+    cursor = mysql.connection.cursor()
     # Fetching combined data of users and their testimonials
     cursor.execute("""
         SELECT Users.Username, Testimonials.Content
@@ -28,9 +18,5 @@ def index():
     testimonials = cursor.fetchall()
     
     cursor.close()
-    conn.close()
     
     return jsonify({"Testimonials": testimonials})
-
-if __name__ == '__main__':
-    app.run(debug=True)

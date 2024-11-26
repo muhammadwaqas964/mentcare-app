@@ -20,44 +20,60 @@ mysql = MySQL(app)
 from endpoints.example import examplePageStuff
 app.register_blueprint(examplePageStuff)
 
+# adrian
+
+from endpoints.chatPage import chatPageData
+app.register_blueprint(chatPageData)
+
+from endpoints.paymentPage import paymentPageData
+app.register_blueprint(paymentPageData)
+
+# akul
+
+from endpoints.landingPage import landingPageData
+app.register_blueprint(landingPageData)
+
+from endpoints.therapistProfile import TherapistProfileData
+app.register_blueprint(TherapistProfileData)
+
+# anish
+
+from endpoints.therapistListPage import therapistListData
+app.register_blueprint(therapistListData)
+
+from endpoints.patientProfile import PatientProfileData
+app.register_blueprint(PatientProfileData)
+
+
+# fausto
+
 from endpoints.loginPage import loginPageData
 app.register_blueprint(loginPageData)
 
 from endpoints.registrationPage import registrationPageData
 app.register_blueprint(registrationPageData)
 
-from endpoints.therapistDashboard import TherapistDashboardData
-app.register_blueprint(TherapistDashboardData)
-
-# As I do not know Socket IO, I will not be completing this. I copied in everything but the Socket IO stuff.
 from endpoints.patientDashboard import PatientDashboardData
 app.register_blueprint(PatientDashboardData)
 
-from endpoints.therapistProfile import TherapistProfileData
-app.register_blueprint(TherapistProfileData)
+# joel
 
-from endpoints.patientProfile import PatientProfileData
-app.register_blueprint(PatientProfileData)
-
-# As I do not know Socket IO, I will not be completing this 
-from endpoints.chatPage import chatPageData
-app.register_blueprint(chatPageData)
-
-from endpoints.therapistListPage import therapistListData
-app.register_blueprint(therapistListData)
-
-from endpoints.paymentPage import paymentPageData
-app.register_blueprint(paymentPageData)
+from endpoints.therapistDashboard import TherapistDashboardData
+app.register_blueprint(TherapistDashboardData)
 
 from endpoints.settings import settingsPageData
 app.register_blueprint(settingsPageData)
 
+<<<<<<< Updated upstream
 from endpoints.therapist_Profile import therapist_routes
 app.register_blueprint(therapist_routes, url_prefix='/api/therapists')
 
 from endpoints.landingPage import landing_page 
 app.register_blueprint(landing_page, url_prefix='/') 
 
+=======
+# other stuff
+>>>>>>> Stashed changes
 
 @app.route("/")
 def defaultFunc():

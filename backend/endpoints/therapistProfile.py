@@ -1,24 +1,21 @@
 from flask import request, jsonify, json, Blueprint #,render_template, request
-from app import mysql # , socketio, sockets
-from flask import Flask, request, jsonify, json #,render_template, request
-from flask_mysqldb import MySQL
-from flask_cors import CORS, cross_origin
-
-# If you need socketio stuff maybe uncomment the below line. 100% uncomment the stuff directly above
-# from flask_socketio import SocketIO, join_room, leave_room, send, emit
-
+from app import mysql
 # Feel free to add more imports
 
 
 TherapistProfileData = Blueprint('TherapistProfileData', __name__)
 
+<<<<<<< Updated upstream
 @TherapistProfileData.route('/endpointOne', methods=['GET'])
 
 
 @TherapistProfileData.route('/therapists')
+=======
+# these endpoints heed to have unique names across the entire app (i.e there can only be one "/therapists" anywhere)
+@TherapistProfileData.route('/therapists', methods=['GET'])
+>>>>>>> Stashed changes
 def get_therapists():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = mysql.connection.cursor()
     
     # Fetching therapists with their profile details and testimonials
     cursor.execute("""
@@ -33,7 +30,6 @@ def get_therapists():
     therapists = cursor.fetchall()
     
     cursor.close()
-    conn.close()
     
     return jsonify({"Therapists": therapists})
     

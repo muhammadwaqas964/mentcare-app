@@ -1,41 +1,45 @@
-from flask import request, jsonify, json, Blueprint #,render_template, request
+from flask import request, jsonify, json, Blueprint, send_file #,render_template, request
 from app import mysql
+from io import BytesIO
 
 settingsPageData = Blueprint('settingsPageData', __name__)
 
 @settingsPageData.route('/settingsAccountData', methods=['POST'])
 def settingsPageDataFunc():
     try:
-        userId = request.json.get('userId')
+        realUserId = int(request.json.get('realUserID'))
+        userId = request.json.get('userID')
         userType = request.json.get('userType')
 
         cursor = mysql.connection.cursor()
 
-        if userType == "Patient":
+        cursor.execute(f'''
+            SELECT userName, email
+            FROM users
+            WHERE users.userID = {realUserId}
+            ''')
+        data1 = cursor.fetchall()
+
+        data2 = [[[],[],[],[]]]
+        if(userType == "Patient"):
             cursor.execute(f'''
-                SELECT users.userName, users.email
-                FROM users, patients
-                WHERE patients.patientID = {userId}
-                AND patients.userID = users.userID
-                ''') # TODO: add getting pfp to this
-        elif userType == "Therapist":
-            cursor.execute(f'''
-                SELECT users.userName, users.email
-                FROM users, therapists
-                WHERE therapists.therapistID = {userId}
-                AND therapists.userID = users.userID
-                ''') # TODO: add getting pfp to this
-        else:
-            return jsonify({"userName" : "Unknown UserType", "email" : "Unknown UserType", "pfp" : "Not Yet Implemented" }), 200
-        data = cursor.fetchall()
+                SELECT allRecordsViewable, insuranceCompany, insuranceID, insuranceTier
+                FROM patients
+                WHERE patients.patientID = {userId};
+                ''')
+            data2 = cursor.fetchall()
         cursor.close()
+
+        print({"userName" : data1[0][0], "email" : data1[0][1], "patientPrivacy" : data2[0][0], "insuranceCompany" : data2[0][1], "insuranceID" : data2[0][2], "insuranceTier" : data2[0][3] })
         
-        return jsonify({"userName" : data[0][0], "email" : data[0][1], "pfp" : "Not Yet Implemented" }), 200
+        return jsonify({"userName" : data1[0][0], "email" : data1[0][1],
+                        "patientPrivacy" : data2[0][0], "insComp" : data2[0][1], "insID" : data2[0][2], "insTier" : data2[0][3] }), 200
+    
     except Exception as err:
         return {"error":  f"{err}"}
 
-@settingsPageData.route('/settingsUpdDetails', methods=['POST'])
-def settingsUpdDetailsFunc():
+@settingsPageData.route('/settingsUpdAccDetails', methods=['POST'])
+def settingsUpdAccDetailsFunc():
     try:
         userId = request.json.get('userId')
         userType = request.json.get('userType')
@@ -60,9 +64,7 @@ def settingsUpdDetailsFunc():
             cursor.close()
             return jsonify({"inserted" : -1}), 200
         mysql.connection.commit()
-        # if(cursor.rowcount > 0): # We ensure the table was modified
-        #     cursor.close()
-        #     return jsonify({"inserted" : 1}), 200
+
         cursor.execute(f'''
                 SELECT userName, email FROM users, patients
                 WHERE users.userID = patients.userID AND patients.patientID = {userId}
@@ -74,6 +76,42 @@ def settingsUpdDetailsFunc():
             cursor.close()
             return jsonify({"inserted" : 1, "userName" : userName, "email" : email}), 200
 
+        else:
+            cursor.close()
+            return jsonify({"inserted" : 0}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@settingsPageData.route('/settingsUpdInsDetails', methods=['POST'])
+def settingsUpdInsDetailsFunc():
+    try:
+        userId = request.json.get('userId')
+        userType = request.json.get('userType')
+        newInsComp = request.json.get('insCompUpd')
+        newInsID = request.json.get('insIDUpd')
+        newInsTier = request.json.get('insTierUpd')
+        
+        cursor = mysql.connection.cursor()
+        
+        cursor.execute(f'''
+                UPDATE patients
+                SET insuranceCompany = "{newInsComp}", insuranceID = "{newInsID}", insuranceTier = "{newInsTier}"
+                WHERE patientID = {userId};
+                ''')
+        mysql.connection.commit()
+
+        cursor.execute(f'''
+                SELECT insuranceCompany, insuranceID, insuranceTier
+                FROM patients
+                WHERE patientID = {userId};
+                ''')
+        data = cursor.fetchone()
+        if data:
+            insComp = data[0]
+            insID = data[1]
+            insTier = data[2]
+            cursor.close()
+            return jsonify({"inserted" : 1, "insComp" : insComp, "insID" : insID, "insTier" : insTier}), 200
         else:
             cursor.close()
             return jsonify({"inserted" : 0}), 200
