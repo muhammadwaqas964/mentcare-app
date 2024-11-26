@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
@@ -13,11 +14,13 @@ import TherapistListPage from './pages/TherapistListPage';
 import SettingsPage from './pages/Settings';
 import TherapistList from './pages/TherapistList';
 import PatientOverview from './pages/PatientOverview';
+import Payment from './pages/Payment';
 
 function App() {
   return (
     <Router>
       <Navbar />
+      <ToastContainer />
       <Routes>
         <Route index element={<LandingPage />} />
         <Route path='/login' element={<Login />} />
@@ -30,6 +33,7 @@ function App() {
         <Route path="/patient-overview/:userID" element={<PatientOverview />} />
         <Route path="/therapistprofilelist" element={<TherapistList />} />
         <Route path="/therapistprofile/:userId" element={<TherapistProfile />} />
+        <Route path="/payment" element={<Payment />} />
       </Routes>
     </Router>
   );
