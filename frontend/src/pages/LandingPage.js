@@ -22,7 +22,12 @@ function LandingPage() {
             })
             .then(data => {
                 if (data.Testimonials && data.Testimonials.length > 0) {
-                    setTestimonials(data.Testimonials);
+                    // Transform the array of arrays into array of objects
+                    const formattedTestimonials = data.Testimonials.map(item => ({
+                        Username: item[0],
+                        Content: item[1],
+                    }));
+                    setTestimonials(formattedTestimonials);
                 } else {
                     console.error('No testimonials found or empty array in the response');
                 }
@@ -32,6 +37,7 @@ function LandingPage() {
                 setTestimonials([]);
             });
     }, []);
+    
 
     return (
         <div className="landing-page">
