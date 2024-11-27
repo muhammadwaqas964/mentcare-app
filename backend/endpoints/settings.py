@@ -47,25 +47,33 @@ def settingsPageDataFunc():
 @settingsPageData.route('/settingsUpdAccDetails', methods=['POST'])
 def settingsUpdAccDetailsFunc():
     try:
-        userId = request.json.get('userId')
-        userType = request.json.get('userType')
-        newName = request.json.get('userNameUpd')
-        newEmail = request.json.get('emailUpd')
-        newPFP = request.json.get('pfpUpd')
+        userId = request.form.get('userId')
+        userType = request.form.get('userType')
+        newName = request.form.get('userNameUpd')
+        newEmail = request.form.get('emailUpd')
+
+        profileImgBinary = None
+
+        if 'profileImg' in request.files:
+            profileImg = request.files['pfpUpd']
+            if profileImg:
+                profileImgBinary = profileImg.read()
+            else:
+                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
 
         cursor = mysql.connection.cursor()
         if userType == "Patient":
             cursor.execute(f'''
                 UPDATE users, patients
-                SET users.userName = "{newName}", users.email = "{newEmail}"
+                SET users.userName = "{newName}", users.email = "{newEmail}", users.profileImg = {profileImgBinary}
                 WHERE users.userID = patients.userID AND patients.patientID = {userId};
-                ''') # TODO: add getting pfp to this
+                ''')
         elif userType == "Therapist":
             cursor.execute(f'''
                 UPDATE users, therapists
-                SET users.userName = "{newName}", users.email = "{newEmail}"
+                SET users.userName = "{newName}", users.email = "{newEmail}", users.profileImg = {profileImgBinary}
                 WHERE users.userID = therapists.userID AND therapists.therapistID = {userId};
-                ''') # TODO: add getting pfp to this
+                ''')
         else:
             cursor.close()
             return jsonify({"inserted" : -1}), 200
@@ -74,7 +82,7 @@ def settingsUpdAccDetailsFunc():
         cursor.execute(f'''
                 SELECT userName, email FROM users, patients
                 WHERE users.userID = patients.userID AND patients.patientID = {userId}
-                ''')  # TODO: add getting pfp to this
+                ''')
         data = cursor.fetchone()
         if data:
             userName = data[0]

@@ -22,7 +22,7 @@
     /* padding: 100px; */
 }
 
-.popUp-background {
+.settings-popUp-background {
     position: fixed;
     top: 0;
     left: 0;
@@ -45,7 +45,7 @@
     z-index: 1000;
 
     background-color: #e0e0e0;
-    padding: 20px;
+    padding: 40px;
     border-radius: 25px;
     z-index: 999;
 
@@ -71,17 +71,96 @@
 }
 
 .settings-img-circle-mask {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     mask-image: url('../assets/images/circle_mask.png');
     mask-repeat: no-repeat;
     mask-size: cover;
     mask-position: center;
     overflow: hidden;
+    border-radius: 50%;
 }
 
 .settings-profile-pic {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.settings-main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100%;
+}
+
+.settings-text-input {
+    height: 30px;
+    padding: 0;
+    flex-grow: 1;
+    font-size: 12pt;
+}
+
+.settings-upd-details-container {
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.settings-undo-btn-container {
+    height: 100%;
+    object-fit: cover;
+}
+
+.settings-btn {
+    background-color: rgba(87, 216, 194);
+    padding: 14px 18px;
+    text-transform: uppercase;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    font-size: 12pt;
+    height: 44px;
+    border-radius: 10px;
+    border: 0px;
+
+    &:hover {
+        cursor: pointer;
+        filter: brightness(0.8);
+    }
+}
+
+.settings-acc-action-btn {
+    background-color: #ccc;
+    padding: 14px 18px;
+    text-transform: uppercase;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 500;
+    font-size: 12pt;
+    height: 44px;
+    border-radius: 10px;
+    border: 0px;
+
+    &:hover {
+        cursor: pointer;
+        filter: brightness(0.8);
+    }
+}
+
+.settings-red-btn {
+    background-color: #e74c4c;
+}
+
+.settings-green-btn {
+    background-color: #4ce74c;
+}
+
+.settings-undo-btn-container {
+    height: 100%;
+    background-color: #b8b8b8;
+    padding: 2px;
+
+    &:hover {
+        cursor: pointer;
+        background-color: #969696;
+    }
 }

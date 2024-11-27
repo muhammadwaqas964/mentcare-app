@@ -84,10 +84,10 @@
 }
 
 .selected-spec {
-    background-color: #e74a3b;
+    background-color: #ff7a00;
 
     &:active {
-        background-color: #df2817;
+        background-color: #c76000;
     }
 }
 

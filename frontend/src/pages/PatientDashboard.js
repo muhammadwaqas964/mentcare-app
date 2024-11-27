@@ -455,16 +455,16 @@ function PatientDashboard() {
                 <DashboardCard title="JOURNALS" extraClasses="patient-card">
                     {journals && journals.map((row, index) => {
                         return (
-                            <div key={`journal-${index}`}>
+                            <div key={`journal-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={`Journal ${new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
                                     <div className='popUp'>
                                         <h2>Journal Entry #{index + 1}</h2>
                                         <h3>Date Created: {new Date(row.timeDone).toDateString()}</h3>
                                         <textarea defaultValue={row.journalEntry}></textarea>
-                                        <div>
-                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
-                                            <input className='card-buttons' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
+                                        <div className="flex-row" style={{ gap: "10px" }}>
+                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                            <input className='pd-action-btn' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
                                         </div>
                                     </div>
                                 </div>
@@ -477,7 +477,7 @@ function PatientDashboard() {
                 <DashboardCard title="FEEDBACK" extraClasses="patient-card">
                     {feedback && feedback.map((row, index) => {
                         return (
-                            <div key={`feedback-${index}`}>
+                            <div key={`feedback-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={row.feedback} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
                                     <div className='popUp'>
@@ -485,7 +485,7 @@ function PatientDashboard() {
                                         <h3>Date Sent: {new Date(row.feedbackDate).toDateString()}</h3>
                                         <p>{row.feedback}</p>
                                         <div>
-                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                         </div>
                                     </div>
                                 </div>
@@ -497,7 +497,7 @@ function PatientDashboard() {
                 <DashboardCard title="DAILY SURVEYS" extraClasses="patient-card">
                     {dailySurveys && dailySurveys.slice().reverse().map((row, index) => {
                         return (
-                            <div key={`daily-survey-${index}`}>
+                            <div key={`daily-survey-${index}`} style={{ width: "100%" }}>
                                 <input
                                     type='button'
                                     className='card-buttons'
@@ -546,17 +546,17 @@ function PatientDashboard() {
                                         ) : (
                                             <></>
                                         )}
-                                        <div className='flex-row'>
-                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                        <div className='flex-row' style={{ gap: "10px" }}>
+                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                             <Pagination
                                                 currentPage={currentPage}
                                                 totalCount={tableLength}
                                                 pageSize={PageSize}
                                                 onPageChange={page => setCurrentPage(page)}
-                                                className={'card-buttons'}
+                                                className={'pd-action-btn'}
                                             />
                                             {row.weight === null && currentPage === 2 && (
-                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
+                                                <input className='pd-action-btn' type='submit' value={'SUBMIT'} />
                                             )}
                                         </div>
                                     </div>
@@ -588,7 +588,7 @@ function PatientDashboard() {
                         const questions = JSON.parse(row.survey);
 
                         return (
-                            <div key={`incompleted-survey-${index}`}>
+                            <div key={`incompleted-survey-${index}`} style={{ width: "100%" }}>
                                 <input
                                     type='button'
                                     className='card-buttons'
@@ -622,8 +622,8 @@ function PatientDashboard() {
                                         ) : (
                                             <></>
                                         )}
-                                        <div className='flex-row'>
-                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                        <div className='flex-row' style={{ gap: "10px" }}>
+                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                             <Pagination
                                                 currentPage={currentPage}
                                                 totalCount={tableLength2}
@@ -632,7 +632,7 @@ function PatientDashboard() {
                                                 className={'card-buttons'}
                                             />
                                             {currentPage === Math.ceil(tableLength2 / PageSize) && (
-                                                <input className='card-buttons' type='submit' value={'SUBMIT'} />
+                                                <input className='pd-action-btn' type='submit' value={'SUBMIT'} />
                                             )}
                                         </div>
                                     </div>
@@ -642,7 +642,7 @@ function PatientDashboard() {
                     })}
                     {completeTherapistSurveys && completeTherapistSurveys.map((row, index) => {
                         return (
-                            <div key={`completed-survey-${index}`}>
+                            <div key={`completed-survey-${index}`} style={{ width: "100%" }}>
                                 <input
                                     type='button'
                                     className='card-buttons'
@@ -674,8 +674,8 @@ function PatientDashboard() {
                                         ) : (
                                             <></>
                                         )}
-                                        <div className='flex-row'>
-                                            <input className='card-buttons' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                        <div className='flex-row' style={{ gap: "10px" }}>
+                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                             <Pagination
                                                 currentPage={currentPage}
                                                 totalCount={tableLength3}

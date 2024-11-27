@@ -1,6 +1,7 @@
 import React from 'react';
 // import classnames from 'classnames';
 import './Pagination.css';
+import '../pages/styles/PatientDashboard.css'
 
 const Pagination = (props) => {
     const {
@@ -20,7 +21,7 @@ const Pagination = (props) => {
                 // className={classnames('pagination-item', {
                 //     selected: (i + 1) === currentPage
                 // })}
-                className={`pagination-item`}
+                className={className}
                 onClick={() => onPageChange(2)}
             >
                 {'NEXT'}
@@ -34,7 +35,7 @@ const Pagination = (props) => {
                 // className={classnames('pagination-item', {
                 //     selected: (i + 1) === currentPage
                 // })}
-                className={`pagination-item`}
+                className={className}
                 onClick={() => onPageChange(currentPage - 1)}
             >
                 {'BACK'}
@@ -46,7 +47,7 @@ const Pagination = (props) => {
                 // className={classnames('pagination-item', {
                 //     selected: (i + 1) === currentPage
                 // })}
-                className={`pagination-item`}
+                className={className}
                 onClick={() => onPageChange(currentPage + 1)}
             >
                 {'NEXT'}
@@ -60,7 +61,7 @@ const Pagination = (props) => {
                 // className={classnames('pagination-item', {
                 //     selected: (i + 1) === currentPage
                 // })}
-                className={`pagination-item`}
+                className={className}
                 onClick={() => onPageChange(currentPage - 1)}
             >
                 {'BACK'}
