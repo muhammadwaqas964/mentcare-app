@@ -5,42 +5,36 @@ const TherapistListPage = () => {
   const [therapists, setTherapists] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortCriteria, setSortCriteria] = useState("specialty");
+  const [maxPrice, setMaxPrice] = useState(""); 
   const [currentPage, setCurrentPage] = useState(1);
   const [therapistsPerPage, setTherapistsPerPage] = useState(1);
 
+  // Fetch therapists data
   useEffect(() => {
-    // TODO: Replace mock data with API call to fetch therapists data
-    const mockTherapists = Array.from({ length: 100 }, (_, i) => ({
-      id: i + 1,
-      name:
-        i % 7 === 0
-          ? `Dr. Therapist ${i + 1}`
-          : [
-              "Dr. Elizabeth Montgomery",
-              "Dr. John Smith",
-              "Dr. Ayesha Patel",
-              "Dr. William Thompson",
-              "Dr. Stephanie O'Connor",
-              "Dr. Grace Kim",
-              "Dr. Alexander von Humboldt",
-            ][i % 7],
-      specialty: [
-        "Cognitive Behavioral Therapy",
-        "Family Therapy",
-        "Trauma Therapy",
-        "Child Psychology",
-        "Behavioral Psychology",
-        "Art Therapy",
-        "Couples Counseling",
-        "Addiction Counseling",
-        "Grief Counseling",
-        "Stress Management",
-        "Long-Term Psychodynamic Therapy",
-      ][i % 11],
-      profilePic: mockProfilePic,
-    }));
-    setTherapists(mockTherapists);
+    const fetchTherapists = async () => {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/getTherapists");
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const formattedTherapists = data.map((therapist) => ({
+          id: therapist.therapistID,
+          name: therapist.name,
+          specialty: therapist.specializations.join(", ") || "No specialty provided",
+          profilePic: therapist.profileImg || mockProfilePic, 
+          gender: therapist.gender || "Not specified", 
+          price: therapist.price || "Contact for pricing", 
+        }));
+        setTherapists(formattedTherapists);
+      } catch (error) {
+        console.error("Failed to fetch therapists:", error);
+      }
+    };
+
+    fetchTherapists();
   }, []);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -65,9 +59,15 @@ const TherapistListPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+
   const handleSort = (criteria) => {
     setSortCriteria(criteria);
     const sortedTherapists = [...therapists].sort((a, b) => {
+      if (criteria === "price") {
+        const priceA = parseFloat(a.price.replace(/[^0-9.-]+/g, "")) || 0;
+        const priceB = parseFloat(b.price.replace(/[^0-9.-]+/g, "")) || 0;
+        return priceA - priceB; 
+      }
       if (a[criteria] < b[criteria]) return -1;
       if (a[criteria] > b[criteria]) return 1;
       return 0;
@@ -75,12 +75,15 @@ const TherapistListPage = () => {
     setTherapists(sortedTherapists);
   };
 
+
   const filteredTherapists = therapists.filter(
     (therapist) =>
-      therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase())
+      (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
 
+ 
   const indexOfLastTherapist = currentPage * therapistsPerPage;
   const indexOfFirstTherapist = indexOfLastTherapist - therapistsPerPage;
   const currentTherapists = filteredTherapists.slice(
@@ -133,6 +136,20 @@ const TherapistListPage = () => {
             boxSizing: "border-box",
           }}
         />
+        <input
+          type="number"
+          placeholder="Max Price"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          style={{
+            width: "30%",
+            padding: "10px",
+            border: "2px solid #34c4a9",
+            borderRadius: "5px",
+            margin: "10px",
+            boxSizing: "border-box",
+          }}
+        />
         <div>
           <label htmlFor="sort-dropdown" style={{ marginRight: "10px" }}>
             Sort By:
@@ -152,6 +169,8 @@ const TherapistListPage = () => {
           >
             <option value="specialty">Specialty</option>
             <option value="name">Name</option>
+            <option value="price">Price</option>
+            <option value="gender">Gender</option>
           </select>
         </div>
       </div>
@@ -203,65 +222,19 @@ const TherapistListPage = () => {
             >
               {therapist.name}
             </h2>
-
-            {/* Specialization Section */}
-            <div
-              style={{
-                margin: "10px 0",
-                textAlign: "center",
-                fontFamily: "Arial, sans-serif",
-                maxHeight: "40px",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "14px",
-                  color: "black",
-                  fontWeight: "normal",
-                }}
-              >
-                Specialization:
-              </p>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "15px",
-                  color: "black",
-                  fontWeight: "bold",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                }}
-              >
-                {therapist.specialty}
-              </p>
-            </div>
-
-            <div style={{ flexGrow: 1 }}></div>
-            <button
-              onClick={() => {
-                // TODO: Implement navigation to therapist's profile page
-              }}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#34c4a9",
-                border: "none",
-                borderRadius: "5px",
-                color: "white",
-                cursor: "pointer",
-                marginTop: "10px",
-              }}
-            >
-              View Profile
-            </button>
+            <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
+            Gender: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.gender}</span>
+            </p>
+            <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
+            Price: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>${therapist.price}</span>
+            </p>
+            <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
+            Specialization: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.specialty}</span>
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Pagination Controls */}
       <div
         style={{
           marginTop: "20px",
@@ -330,6 +303,10 @@ const TherapistListPage = () => {
 };
 
 export default TherapistListPage;
+
+
+
+
 
 
 
