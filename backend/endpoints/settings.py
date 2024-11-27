@@ -1,5 +1,6 @@
 from flask import request, jsonify, json, Blueprint, send_file #,render_template, request
 from app import mysql
+import app
 from io import BytesIO
 
 settingsPageData = Blueprint('settingsPageData', __name__)
@@ -47,15 +48,19 @@ def settingsPageDataFunc():
 @settingsPageData.route('/settingsUpdAccDetails', methods=['POST'])
 def settingsUpdAccDetailsFunc():
     try:
-        userId = request.form.get('userId')
+        realUserId = request.form.get('realUserID')
+        userId = request.form.get('userID')
         userType = request.form.get('userType')
         newName = request.form.get('userNameUpd')
         newEmail = request.form.get('emailUpd')
+        print("New Name: ", newName)
+        print("New Email: ", newEmail)
 
         profileImgBinary = None
 
-        if 'profileImg' in request.files:
-            profileImg = request.files['pfpUpd']
+        if 'pfpFile' in request.files:
+            print("pfpFile is IN request.files")
+            profileImg = request.files['pfpFile']
             if profileImg:
                 profileImgBinary = profileImg.read()
             else:
@@ -63,33 +68,51 @@ def settingsUpdAccDetailsFunc():
 
         cursor = mysql.connection.cursor()
         if userType == "Patient":
-            cursor.execute(f'''
-                UPDATE users, patients
-                SET users.userName = "{newName}", users.email = "{newEmail}", users.profileImg = {profileImgBinary}
-                WHERE users.userID = patients.userID AND patients.patientID = {userId};
-                ''')
+            print("IN HERE")
+            if profileImgBinary == None:
+                cursor.execute('''
+                    UPDATE users, patients
+                    SET users.userName = %s, users.email = %s
+                    WHERE users.userID = patients.userID AND patients.patientID = %s;
+                    ''', (newName, newEmail, userId))
+                mysql.connection.commit()
+            else:
+                cursor.execute('''
+                    UPDATE users, patients
+                    SET users.userName = %s, users.email = %s, users.profileImg = %s
+                    WHERE users.userID = patients.userID AND patients.patientID = %s;
+                    ''', (newName, newEmail, profileImgBinary, userId))
+                mysql.connection.commit()
         elif userType == "Therapist":
-            cursor.execute(f'''
-                UPDATE users, therapists
-                SET users.userName = "{newName}", users.email = "{newEmail}", users.profileImg = {profileImgBinary}
-                WHERE users.userID = therapists.userID AND therapists.therapistID = {userId};
-                ''')
+            if profileImgBinary == None:
+                cursor.execute('''
+                    UPDATE users, therapists
+                    SET users.userName = %s, users.email = %s
+                    WHERE users.userID = therapists.userID AND therapists.therapistID = %s;
+                    ''', (newName, newEmail, userId))
+                mysql.connection.commit()
+            else:
+                cursor.execute('''
+                    UPDATE users, therapists
+                    SET users.userName = %s, users.email = %s, users.profileImg = %s
+                    WHERE users.userID = therapists.userID AND therapists.therapistID = %s;
+                ''', (newName, newEmail, profileImgBinary, userId))
+                mysql.connection.commit()
         else:
             cursor.close()
             return jsonify({"inserted" : -1}), 200
-        mysql.connection.commit()
-
+        
         cursor.execute(f'''
-                SELECT userName, email FROM users, patients
-                WHERE users.userID = patients.userID AND patients.patientID = {userId}
+                SELECT userName, email FROM users
+                WHERE users.userID = {realUserId}
                 ''')
         data = cursor.fetchone()
         if data:
             userName = data[0]
             email = data[1]
             cursor.close()
+            app.socketio.emit('update-navbar', room=app.socketsNavbar[realUserId])
             return jsonify({"inserted" : 1, "userName" : userName, "email" : email}), 200
-
         else:
             cursor.close()
             return jsonify({"inserted" : 0}), 200

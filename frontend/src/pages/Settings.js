@@ -161,20 +161,29 @@ function SettingsPage() {
         const userType = localStorage.getItem("userType");
 
         const formData = new FormData();
+        formData.append('realUserID', realUserID);
         formData.append('userID', userId);
         formData.append('userType', userType);
         formData.append('userNameUpd', userNameUpd === "" ? userName : userNameUpd);
         formData.append('emailUpd', emailUpd === "" ? email : emailUpd);
-        formData.append('pfpUpd', pfpFile, pfpFile.filename);
+        if (pfpFile) {
+            formData.append('pfpFile', pfpFile, pfpFile.filename);
+        }
+        else {
+            formData.append('pfpFile', null);
+        }
 
-        fetch('http://localhost:5000/settingsUpdAccDetails', {
+
+        await fetch('http://localhost:5000/settingsUpdAccDetails', {
             method: 'POST',
             body: formData,
         })
             .then(res => res.json())
             .then(data => {
                 setUserName(data.userName);
+                setUserNameUpd(data.userName);
                 setEmail(data.email);
+                setEmailUpd(data.email);
                 // setPfp("Not yet implemented");
                 accDeetsPopupRef.current.className = 'hidden settings-popUp-background';
             })

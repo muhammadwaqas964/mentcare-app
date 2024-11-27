@@ -5,6 +5,7 @@ from flask_mysqldb import MySQL
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
+import app
 #app = Flask(__name__)
 # If you need socketio stuff maybe uncomment the below line.
 # from flask_socketio import SocketIO, join_room, leave_room, send, emit
@@ -57,49 +58,6 @@ def send_invoice():
     except Exception as err:
         return jsonify({"error": str(err)}), 500
 
-# @chatPageData.route("/sendMessage", methods=['POST'])
-# def send_message():
-#     try:
-#         patient_id = request.json.get('patientId')
-#         therapist_id = request.json.get('therapistId')
-#         message = request.json.get('message')
-#         sender = request.json.get('sender')
-
-#         if not all([patient_id, therapist_id, message, sender]):
-#             return jsonify({"error": "Missing params"}), 400
-
-#         cursor = mysql.connection.cursor()
-#         cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
-#         chat_data = cursor.fetchone()
-
-#         if chat_data:
-#             try:
-#                 content = json.loads(chat_data[0])
-#                 if "chats" not in content:
-#                     raise ValueError("Err Json")
-#             except Exception as e:
-#                 return jsonify({"error": f"Err: {str(e)}"}), 500
-
-#             content['chats'].append({"msg": message, "sender": sender})
-
-#             cursor.execute(
-#                 'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
-#                 (json.dumps(content), patient_id, therapist_id)
-#             )
-#         else:
-#             new_content = {"chats": [{"msg": message, "sender": sender}]}
-#             cursor.execute(
-#                 'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
-#                 (patient_id, therapist_id, json.dumps(new_content), datetime.now())
-#             )
-
-#         mysql.connection.commit()
-#         cursor.close()
-#         return jsonify({"message": "Success"}), 200
-
-#     except Exception as err:
-#         return jsonify({"error": str(err)}), 500
-
 @chatPageData.route("/userChats", methods=['POST'])
 def get_user_chats():
     try:
@@ -135,24 +93,122 @@ def get_user_chats():
         return jsonify(results), 200
     except Exception as err:
         return jsonify({"error": str(err)}), 500
+    
+@chatPageData.route('/startChat', methods=['POST'])
+def startChatFunc():
+    try:
+        patientID = request.json.get('patientId')
 
-# @chatPageData.route('/startChat', methods=['POST'])
-# def startChatFunc():
-#     try:
-#         patientID = request.json.get('patientId')
-#         print(sockets)
-#         print(patientID)
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
+        data = cursor.fetchone()
+        userID = data[0]
 
-#         cursor = mysql.connection.cursor()
-#         cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
-#         data = cursor.fetchone()
-#         userID = data[0]
+        # Emit the event to the connected socket clients
+        socketio.emit('start-chat-for-patient', {
+            'message':'active'
+        }, room=app.sockets[str(userID)])
 
-#         # Emit the event to the connected socket clients
-#         socketio.emit('start-chat-for-patient', {
-#             'message':'active'
-#         }, room=sockets[str(userID)])
+        return jsonify({"message": "Chat started successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
 
-#         return jsonify({"message": "Chat started successfully!"}), 200
-#     except Exception as err:
-#         return jsonify({"error": str(err)}), 500
+@chatPageData.route('/endChat', methods=['POST'])
+def endChatFunc():
+    try:
+        patientID = request.json.get('patientId')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        # Emit the event to the connected socket clients
+        socketio.emit('end-chat-for-patient', {
+            'message':'inactive'
+        }, room=app.sockets[str(userID)])
+
+        return jsonify({"message": "Chat ended successfully!"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    
+@chatPageData.route('/requestChat', methods=['POST'])
+def requestChatFunc():
+    try:
+        therapistID = request.json.get('therapistId')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapistID, ))
+        data = cursor.fetchone()
+        userID = data[0]
+
+        # Emit the event to the connected socket clients
+        socketio.emit('request-chat', {
+            'message':'active'
+        }, room=app.sockets[str(userID)])
+
+        return jsonify({"message": "Requested"}), 200
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+    
+@chatPageData.route("/sendMessage", methods=['POST'])
+def send_message():
+    try:
+
+        patient_id = request.json.get('patientId')
+        therapist_id = request.json.get('therapistId')
+        message = request.json.get('message')
+        sender = request.json.get('sender')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
+        chat_data = cursor.fetchone()
+
+        if chat_data:
+            try:
+                content = json.loads(chat_data[0])
+                if "chats" not in content:
+                    raise ValueError("Err Json")
+            except Exception as e:
+                return jsonify({"error": f"Err: {str(e)}"}), 500
+
+            content['chats'].append({"msg": message, "sender": sender})
+
+            cursor.execute(
+                'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
+                (json.dumps(content), patient_id, therapist_id)
+            )
+        else:
+            new_content = {"chats": [{"msg": message, "sender": sender}]}
+            cursor.execute(
+                'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
+                (patient_id, therapist_id, json.dumps(new_content), datetime.now())
+            )
+
+        mysql.connection.commit()
+        cursor.close()
+
+        if sender == 'P':
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapist_id, ))
+            data = cursor.fetchone()
+            userID = data[0]
+        else:
+            cursor = mysql.connection.cursor()
+            cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patient_id, ))
+            data = cursor.fetchone()
+            userID = data[0]
+        print(userID)
+        print(therapist_id)
+        print(sender)
+        print(message)
+        print(patient_id)
+        room = app.sockets[str(userID)]
+        print(room)
+        socketio.emit('new-message', { 'patientId': patient_id, 'therapistId': therapist_id, 'message': message, 'sender': sender }, room=room)
+        print("New message sent to room " + room + " - " + message)
+
+        return jsonify({"message": "Success"}), 200
+
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500

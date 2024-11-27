@@ -13,7 +13,7 @@ function LandingPage() {
     const [testimonials, setTestimonials] = useState([]);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:5000/testimonials')
+        fetch('http://localhost:5000/testimonials')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,7 +37,7 @@ function LandingPage() {
                 setTestimonials([]);
             });
     }, []);
-    
+
 
     return (
         <div className="landing-page">
@@ -63,7 +63,7 @@ function LandingPage() {
                 {testimonials.length > 0 ? (
                     testimonials.map((testimonial, index) => (
                         <div key={index} className="testimonial">
-                            
+
                             <p>"{testimonial.Content}" — {testimonial.Username}</p>
                         </div>
                     ))
@@ -72,7 +72,7 @@ function LandingPage() {
                 )}
             </section>
 
-            
+
 
             <section className="faqs">
                 <h1>FAQs</h1>

@@ -9,6 +9,7 @@ CORS(app, origins="http://localhost:3000")
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"])
 
 sockets = {}
+socketsNavbar = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config["MYSQL_USER"] = "root"
@@ -159,30 +160,49 @@ def delNotifFunc():
 if __name__ == '__app__':
     socketio.run(app)
 
+#   Initiate socket connection (for whatever page users goes into)
 @socketio.on('init-socket-comm')
 def initializeSocketCommunication(data):
-    #   Here, userID is NOT the actual userID from users table
-    #   It is the patientID OR therapistID from patients/therapists tables
-    #   I'm naming it userID because this authenticate will be used for either patient or therapist
+    #   In this case, userID is the ACTUAL userID
     userId = data.get('userID')
     socketId = request.sid
     sockets[userId] = socketId
     print("CURRENT SOCKETS CONNECTIONS: ", sockets)
     print(f"Added socketId {socketId} for userId {userId}")
 
+#   Removes socket connection (for the page user was just in)
 @socketio.on('rem-socket-comm')
 def removeSocketCommunication(data):
-    #   Here, userID is NOT the actual userID from users table
-    #   It is the patientID OR therapistID from patients/therapists tables
-    #   I'm naming it userID because this authenticate will be used for either patient or therapist
+    #   In this case, userID is the ACTUAL userID
     userId = data.get('userID')
     if userId in sockets:
         socketId = sockets.pop(userId)
-        print(f"Removed socketId {socketId} for userId {userId}")
+        print(f"Removed socketId {socketId} for userId {userId} to sockets")
     else:
         print(f"userId {userId} not found in sockets dictionary")
 
-#   Sent from Patient Overview Page to a Patient's Dashboard Page
+#   Initiate socket connection for the user's navbar
+@socketio.on('init-socket-navbar-comm')
+def initializeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
+    userId = data.get('userID')
+    socketId = request.sid
+    socketsNavbar[userId] = socketId
+    print("CURRENT SOCKETS CONNECTIONS: ", socketsNavbar)
+    print(f"Added socketId {socketId} for userId {userId} to socketsNavbar")
+
+#   Removes socket connection for the user's navbar
+@socketio.on('rem-socket-navbar-comm')
+def removeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
+    userId = data.get('userID')
+    if userId in sockets:
+        socketId = sockets.pop(userId)
+        print(f"Removed socketId {socketId} for userId {userId} to sockets")
+    else:
+        print(f"userId {userId} not found in sockets dictionary")
+
+#   (WIP) Sent from Patient Overview Page to a Patient's Dashboard Page
 @socketio.on('send-new-feedback')
 def sendFeedback(data):
     patientId = data.get('patientID')
@@ -190,252 +210,3 @@ def sendFeedback(data):
 
     if patientId in sockets:
         socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
-
-
-#   To be used for chatting (Just a basic layout)
-@socketio.on('join')
-def on_join(data):
-    userId = data['userID']
-    room = data['room']
-    join_room(room)
-    send(userId + ' has entered the room.', to=room)
-
-#   To be used for chatting (Just a basic layout)
-@socketio.on('leave')
-def on_leave(data):
-    userId = data['userID']
-    room = data['room']
-    leave_room(room)
-    send(userId + ' has left the room.', to=room)
-
-
-
-#   CHAT PAGE CODE DOWN HERE
-@app.route('/startChat', methods=['POST'])
-def startChatFunc():
-    try:
-        patientID = request.json.get('patientId')
-        print(sockets)
-        print(patientID)
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
-        data = cursor.fetchone()
-        userID = data[0]
-
-        # Emit the event to the connected socket clients
-        socketio.emit('start-chat-for-patient', {
-            'message':'active'
-        }, room=sockets[str(userID)])
-
-        return jsonify({"message": "Chat started successfully!"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-    
-@app.route('/endChat', methods=['POST'])
-def endChatFunc():
-    try:
-        patientID = request.json.get('patientId')
-        print("IN END CHAT")
-        print(sockets)
-        print(patientID)
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
-        data = cursor.fetchone()
-        userID = data[0]
-
-        # Emit the event to the connected socket clients
-        socketio.emit('end-chat-for-patient', {
-            'message':'inactive'
-        }, room=sockets[str(userID)])
-
-        return jsonify({"message": "Chat ended successfully!"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-    
-@app.route('/requestChat', methods=['POST'])
-def requestChatFunc():
-    try:
-        therapistID = request.json.get('therapistId')
-        print("Request chat'")
-        print(sockets)
-        print(therapistID)
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapistID, ))
-        data = cursor.fetchone()
-        userID = data[0]
-
-        # Emit the event to the connected socket clients
-        socketio.emit('request-chat', {
-            'message':'active'
-        }, room=sockets[str(userID)])
-
-        return jsonify({"message": "Requested"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-    
-@app.route("/sendMessage", methods=['POST'])
-def send_message():
-    try:
-
-        patient_id = request.json.get('patientId')
-        therapist_id = request.json.get('therapistId')
-        message = request.json.get('message')
-        sender = request.json.get('sender')
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT content FROM chats WHERE patientID = %s AND therapistID = %s', (patient_id, therapist_id))
-        chat_data = cursor.fetchone()
-
-        if chat_data:
-            try:
-                content = json.loads(chat_data[0])
-                if "chats" not in content:
-                    raise ValueError("Err Json")
-            except Exception as e:
-                return jsonify({"error": f"Err: {str(e)}"}), 500
-
-            content['chats'].append({"msg": message, "sender": sender})
-
-            cursor.execute(
-                'UPDATE chats SET content = %s WHERE patientID = %s AND therapistID = %s',
-                (json.dumps(content), patient_id, therapist_id)
-            )
-        else:
-            new_content = {"chats": [{"msg": message, "sender": sender}]}
-            cursor.execute(
-                'INSERT INTO chats (patientID, therapistID, content, startTime) VALUES (%s, %s, %s, %s)',
-                (patient_id, therapist_id, json.dumps(new_content), datetime.now())
-            )
-
-        mysql.connection.commit()
-        cursor.close()
-
-        if sender == 'P':
-            cursor = mysql.connection.cursor()
-            cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapist_id, ))
-            data = cursor.fetchone()
-            userID = data[0]
-        else:
-            cursor = mysql.connection.cursor()
-            cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patient_id, ))
-            data = cursor.fetchone()
-            userID = data[0]
-        print(userID)
-        print(therapist_id)
-        print(sender)
-        print(message)
-        print(patient_id)
-        room = sockets[str(userID)]
-        print(room)
-        socketio.emit('new-message', { 'patientId': patient_id, 'therapistId': therapist_id, 'message': message, 'sender': sender }, room=room)
-        print("New message sent to room " + room + " - " + message)
-
-        return jsonify({"message": "Success"}), 200
-
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-
-#   Send the newly completed therapist survey to patient & therapist (therapist is WIP)
-@app.route("/completeTherapistSurvey", methods=['POST'])
-def sendTherapistSurveyFunc():
-    try:
-        userID = request.json.get('userID')
-        patientID = request.json.get('patientID')
-        surveyID = request.json.get('surveyID')
-
-        questions = request.json.get('questions')
-        surveyQuestions= json.dumps({"survey": questions})
-        print("")
-        print(surveyQuestions)
-        print("")
-        answers = request.json.get('answers')
-        surveyAnswers = json.dumps({"answers" : answers})
-        print("")
-        print(surveyAnswers)
-        print("")
-        currentDate = datetime.now()
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT therapistID FROM surveys WHERE surveyID = %s', (surveyID, ))
-        therapistID = cursor.fetchone()
-        
-        if therapistID is None:
-            print("TherapistID not found for surveyID:", surveyID)
-            return jsonify({"error": "Therapist not found for this survey."}), 404
-        
-        therapistID = therapistID[0]
-
-        cursor.execute('''
-            INSERT INTO completedSurveys (patientID, therapistID, questions, answers, dateDone)
-            VALUES (%s, %s, %s, %s, %s)
-        ''', (patientID, therapistID, surveyQuestions, surveyAnswers, currentDate))
-        mysql.connection.commit()
-
-        # Log success after inserting
-        print("Survey inserted successfully.")
-        
-        cursor.execute('''
-                DELETE FROM surveys WHERE surveyID = %s    
-                ''', (surveyID, ))
-        mysql.connection.commit()
-
-        cursor.close()
-        # Emit the event to the connected socket clients
-        # print("SENDING TO ROOM FOR USERID: ", userID)
-        # print("SOCKETS AVAILABLE: ", sockets)
-        # print("ROOM: ", sockets[str(userID)])
-        if str(userID) in sockets:
-            print("\nthe room exists!\n")
-            socketio.emit('submit-therapist-survey', room=sockets[str(userID)])
-        # Return a success response
-        return jsonify({"message": "Success"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500
-    
-@app.route("/completeDailySurvey", methods=['POST'])
-def sendDailySurveyFunc():
-    try:
-        print("GOT HERE IN APP.ROUTE")
-        
-        data = request.get_json()
-        
-        fakeUserID = data.get('patientID')
-        realUserID = data.get('userID')
-        dailySurveyID = data.get('dailySurveyID')
-        weight = data.get('weight')
-        height = data.get('height')
-        calories = data.get('calories')
-        water = data.get('water')
-        exercise = data.get('exercise')
-        sleep = data.get('sleep')
-        energy = data.get('energy')
-        stress = data.get('stress')
-
-        cursor = mysql.connection.cursor()
-        cursor.execute('''
-                INSERT INTO completedDailySurveys (dailySurveyID, patientID, weight, height, calories, water, exercise, sleep, energy, stress)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (dailySurveyID, fakeUserID, weight, height, calories, water, exercise, sleep, energy, stress))
-        mysql.connection.commit()
-        cursor.close()
-
-        # Emit the event to the connected socket clients
-        socketio.emit('submit-daily-survey', {
-            'patientID': fakeUserID,
-            'dailySurveyID': dailySurveyID,
-            'weight': weight,
-            'height': height,
-            'calories': calories,
-            'water': water,
-            'exercise': exercise,
-            'sleep': sleep,
-            'energy': energy,
-            'stress': stress
-        }, room=sockets[realUserID])
-
-        return jsonify({"message": "Survey data submitted successfully!"}), 200
-    except Exception as err:
-        return jsonify({"error": str(err)}), 500

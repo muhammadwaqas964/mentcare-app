@@ -57,10 +57,16 @@ def registerPatientFunc():
 
         print("\nGOT HERE BEFORE INSERT INTO\n")
         cursor = mysql.connection.cursor()
-        cursor.execute('''
-                INSERT INTO users (userName, email, pass, userType, profileImg)
-                VALUES (%s, %s, %s, 'Patient', %s)
-                ''', (fullname, email, password, profileImgBinary))
+        if profileImgBinary == None:
+            cursor.execute('''
+                    INSERT INTO users (userName, email, pass, userType, profileImg)
+                    VALUES (%s, %s, %s, 'Patient', %s)
+                    ''', (fullname, email, password, profileImgBinary))
+        else:
+            cursor.execute('''
+                    INSERT INTO users (userName, email, pass, userType)
+                    VALUES (%s, %s, %s, 'Patient', %s)
+                    ''', (fullname, email, password))
         mysql.connection.commit()
         print("\nSUCCESSFULLY ADDED USER!\n")
 
@@ -118,10 +124,16 @@ def registerTherapistFunc():
         content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
 
         cursor = mysql.connection.cursor()
-        cursor.execute('''
-                INSERT INTO users (userName, email, pass, userType, profileImg)
-                VALUES (%s, %s, %s, 'Therapist', %s)
-                ''', (fullname, email, password, profileImgBinary))
+        if profileImgBinary == None:
+            cursor.execute('''
+                    INSERT INTO users (userName, email, pass, userType)
+                    VALUES (%s, %s, %s, 'Therapist')
+                    ''', (fullname, email, password))
+        else:
+            cursor.execute('''
+                    INSERT INTO users (userName, email, pass, userType, profileImg)
+                    VALUES (%s, %s, %s, 'Therapist', %s)
+                    ''', (fullname, email, password, profileImgBinary))
         mysql.connection.commit()
 
         #   Retrive userID of newly created user
@@ -133,8 +145,8 @@ def registerTherapistFunc():
         print(specsArray)
 
         cursor.execute('''
-                INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content, isActive)
+                VALUES (%s, %s, %s, %s, %s, 1)
                 ''', (userID, license, specsArray, 1, content))
         mysql.connection.commit()
 
