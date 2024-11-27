@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/LandingPage.css';
 
-
 import missionImage1 from './assets/images/img4_mission.png';
 import missionImage2 from './assets/images/img5_mission.png';
 import missionImage3 from './assets/images/img6_mission.png';
@@ -11,47 +10,42 @@ import missionImage3 from './assets/images/img6_mission.png';
 function LandingPage() {
     const navigate = useNavigate();
     const [testimonials, setTestimonials] = useState([]);
+    const [mission, setMission] = useState("");
+    const [faqs, setFaqs] = useState([]);
 
+    // Fetch Testimonials
     useEffect(() => {
-        fetch('http://localhost:5000/testimonials')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
+        fetch('http://127.0.0.1:5000/testimonials')
+            .then(response => response.json())
             .then(data => {
-                if (data.Testimonials && data.Testimonials.length > 0) {
-                    // Transform the array of arrays into array of objects
-                    const formattedTestimonials = data.Testimonials.map(item => ({
-                        Username: item[0],
-                        Content: item[1],
-                    }));
-                    setTestimonials(formattedTestimonials);
-                } else {
-                    console.error('No testimonials found or empty array in the response');
+                if (data.Testimonials) {
+                    setTestimonials(data.Testimonials);
                 }
             })
-            .catch(error => {
-                console.error('Error fetching testimonials:', error);
-                setTestimonials([]);
-            });
+            .catch(error => console.error('Error fetching testimonials:', error));
     }, []);
 
+    // Fetch Company Data (Mission and FAQs)
+    useEffect(() => {
+        fetch('http://127.0.0.1:5000/companydata')
+            .then(response => response.json())
+            .then(data => {
+                if (data.Mission) {
+                    setMission(data.Mission);
+                }
+                if (data.FAQs) {
+                    setFaqs(data.FAQs);
+                }
+            })
+            .catch(error => console.error('Error fetching company data:', error));
+    }, []);
 
     return (
         <div className="landing-page">
             <section className="statement">
                 <div className="statement">
                     <h1>Mission Statement</h1>
-                    <p>
-                        MentCare is a mental-health care organization dedicated to helping people access some of the best therapists around the world. These therapists conduct mental diagnostic tests and provide personalized health-care tools, resources, and treatment to patients.
-                        <br /><br />The mental health care cycle encompasses several key stages to ensure comprehensive support for individuals:
-                        <br /><br /><strong>Access to Care:</strong> This initial phase involves recognizing the need for mental health services and overcoming barriers to obtain them.
-                        <br /><br /><strong>Assessment and Diagnosis:</strong> Mental health professionals conduct thorough evaluations to understand an individual's psychological state, leading to accurate diagnoses.
-                        <br /><br /><strong>Treatment Planning and Implementation:</strong> Based on the assessment, a personalized treatment plan is developed, includes mental therapy, and healthy lifestyle changes.
-                        <br /><br /><strong>Monitoring and Evaluation: </strong> Continuous monitoring of the individual's progress allows for adjustments to the treatment plan as needed.
-                    </p>
+                    <p>{mission}</p>
                     <img src={missionImage2} alt="MentCare Mission" className="about-image" />
                     <img src={missionImage1} alt="MentCare Mission" className="about-image" />
                     <img src={missionImage3} alt="MentCare Mission" className="about-image" />
@@ -63,7 +57,6 @@ function LandingPage() {
                 {testimonials.length > 0 ? (
                     testimonials.map((testimonial, index) => (
                         <div key={index} className="testimonial">
-
                             <p>"{testimonial.Content}" — {testimonial.Username}</p>
                         </div>
                     ))
@@ -72,22 +65,18 @@ function LandingPage() {
                 )}
             </section>
 
-
-
             <section className="faqs">
                 <h1>FAQs</h1>
-                <div className="faq-item">
-                    <strong>Q:</strong> What is MentCare, and how does it work?<br />
-                    <strong>A:</strong> MentCare is a mental health care organization that connects patients with top therapists worldwide. Our therapists provide mental diagnostic tests, personalized health tools, and treatment plans to help patients on their mental health journey. Through our app, you can find and connect with therapists, track progress, and access resources from anywhere.
-                </div>
-                <div className="faq-item">
-                    <strong>Q:</strong> How can I find a therapist that’s right for me?<br />
-                    <strong>A:</strong> MentCare uses a detailed matching process to connect you with a therapist suited to your unique needs. During registration, you'll fill out a questionnaire about your preferences and challenges. Based on your responses, we suggest therapists who specialize in areas relevant to you.
-                </div>
-                <div className="faq-item">
-                    <strong>Q:</strong> Is my information secure with MentCare?<br />
-                    <strong>A:</strong> Yes, MentCare is committed to maintaining the privacy and confidentiality of all users. We use advanced security protocols to protect your personal information and comply with industry standards for data security and privacy.
-                </div>
+                {faqs.length > 0 ? (
+                    faqs.map((faq, index) => (
+                        <div key={index} className="faq-item">
+                            <strong>Q:</strong> {faq.Question}<br />
+                            <strong>A:</strong> {faq.Answer}
+                        </div>
+                    ))
+                ) : (
+                    <p>No FAQs available.</p>
+                )}
             </section>
 
             <section className="contact-us">
@@ -98,4 +87,4 @@ function LandingPage() {
     );
 }
 
-export default LandingPage
+export default LandingPage;
