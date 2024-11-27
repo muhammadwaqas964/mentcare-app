@@ -113,7 +113,6 @@ function Register() {
             const sleep = answersRefs.current.sleep.value;
             const energy = answersRefs.current.energy.value;
             const stress = answersRefs.current.stress.value;
-            const profileImg = hasUpdatedPatientProfilePic ? patientProfilePic : null;
 
             const formData = new FormData();
             formData.append('fname', fname);
@@ -131,8 +130,9 @@ function Register() {
             formData.append('sleep', sleep);
             formData.append('energy', energy);
             formData.append('stress', stress);
-            console.log(profileImg.filename);
-            formData.append('profileImg', profileImg, profileImg.filename);
+            if (hasUpdatedPatientProfilePic) {
+                formData.append('profileImg', patientProfilePic, patientProfilePic.filename);
+            }
 
             try {
                 const response = await fetch('http://localhost:5000/registerPatient', {
@@ -197,7 +197,6 @@ function Register() {
                 const email = infoTherapistRefs.current.email.value;
                 const password = infoTherapistRefs.current.password.value;
                 const license = infoTherapistRefs.current.license.value;
-                const profileImg = hasUpdatedTherapistProfilePic ? therapistProfilePic : null;
 
                 const formData = new FormData();
                 formData.append('fname', fname);
@@ -206,7 +205,10 @@ function Register() {
                 formData.append('password', password);
                 formData.append('license', license);
                 formData.append('specializations', specializations.join(','));
-                formData.append('profileImg', profileImg, profileImg.filename);
+
+                if (hasUpdatedTherapistProfilePic) {
+                    formData.append('profileImg', therapistProfilePic, therapistProfilePic.filename);
+                }
 
                 try {
                     const response = await fetch('http://localhost:5000/registerTherapist', {

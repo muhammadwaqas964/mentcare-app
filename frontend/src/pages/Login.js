@@ -61,7 +61,7 @@ function Login() {
                 if (data.userType === 'Patient') {
                     localStorage.setItem('userType', data.userType);
                     localStorage.setItem('userID', data.userID);
-                    localStorage.setItem('realUserID', data.realUserID)
+                    localStorage.setItem('realUserID', data.realUserID);
                     console.log(localStorage.getItem('userID'));
                     navigate('/dashboard');
                 }

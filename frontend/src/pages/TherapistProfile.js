@@ -25,6 +25,9 @@ function TherapistProfile() {
     const [totalReviews, setTotalReviews] = useState(0);
     const [page, setPage] = useState(1);
 
+    const [currentTherapist, setCurrentTherapist] = useState(0);
+    const [ableToSwap, setAbleToSwap] = useState(0);
+
     const [editing, setEditing] = useState(0);
     const aboutMeRef = useRef(null);
     const educationRef = useRef(null);
@@ -34,12 +37,13 @@ function TherapistProfile() {
 
 
     useEffect(() => {
+        // editable info
         fetch(`http://localhost:5000/therapistProfileInfo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ realUserId: userId }),
+            body: JSON.stringify({ urlUserId: userId }),
         })
             .then(res => res.json())
             .then(data => {
@@ -61,27 +65,48 @@ function TherapistProfile() {
             })
             .catch(err => console.error('Error fetching data:', err));
 
+        // reviews
         fetch(`http://localhost:5000/therapistReviewInfo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ realUserId: userId, page: page }),
+            body: JSON.stringify({ urlUserId: userId, page: page }),
         })
             .then(res => res.json())
             .then(data => {
                 setReviews(data.reviews);
             })
             .catch(err => console.error('Error fetching data:', err));
+
+        // add rem therapist stuff
+        const nonParamUserId = localStorage.getItem("userID");
+        const userType = localStorage.getItem("userType");
+
+        fetch(`http://localhost:5000/isCurrentTherapist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: nonParamUserId, userType: userType, urlUserId: userId }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("usfx addrem", data);
+                setCurrentTherapist(data.isCurrentTherapist);
+                setAbleToSwap(data.swapable);
+            })
+            .catch(err => console.error('Error fetching data:', err));
     }, []);
 
+    // reviews
     useEffect(() => {
         fetch(`http://localhost:5000/therapistReviewInfo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ realUserId: userId, page: page }),
+            body: JSON.stringify({ urlUserId: userId, page: page }),
         })
             .then(res => res.json())
             .then(data => {
@@ -92,6 +117,28 @@ function TherapistProfile() {
 
     const paginationFunc = (event, value) => {
         setPage(value);
+    }
+
+    // editing data functions
+    const startEditing = (event) => {
+        event.preventDefault();
+        setSpecializationsArr(specializations.split(','));
+        setEducationUpd(education);
+        setAboutMeUpd(availability);
+        setAvailabilityUpd(aboutMe);
+        setPricingUpd(pricing);
+        setEditing(1);
+    }
+
+    const cancelEditing = (event) => {
+        event.preventDefault();
+        setSpecializationsArr(specializations.split(','));
+        setEditing(0);
+    }
+
+    const updText = (event, setFunc) => {
+        event.preventDefault();
+        setFunc(event.target.value);
     }
 
     function selectedSpecialization(e) {
@@ -112,27 +159,15 @@ function TherapistProfile() {
         }
     }
 
-    const startEditing = (event) => {
-        event.preventDefault();
-        setSpecializationsArr(specializations.split(','));
-        setEducationUpd(education);
-        setAboutMeUpd(availability);
-        setAvailabilityUpd(aboutMe);
-        setPricingUpd(pricing);
-        setEditing(1);
-    }
-
     const saveEditing = (event) => {
         event.preventDefault();
-        console.log("specializationsArr");
-        console.log(specializationsArr.join(','));
         fetch(`http://localhost:5000/therapistUpdateInfo`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                realUserId: userId,
+                urlUserId: userId,
                 specializationsArr: specializationsArr.join(','),
                 educationUpd: educationUpd,
                 aboutMeUpd: aboutMeUpd,
@@ -154,15 +189,25 @@ function TherapistProfile() {
         setEditing(0);
     }
 
-    const cancelEditing = (event) => {
+    // add rem therapist
+    const addRemTherapist = (event) => {
         event.preventDefault();
-        setSpecializationsArr(specializations.split(','));
-        setEditing(0);
-    }
+        const nonParamUserId = localStorage.getItem("userID");
+        const userType = localStorage.getItem("userType");
 
-    const updText = (event, setFunc) => {
-        event.preventDefault();
-        setFunc(event.target.value);
+        fetch(`http://localhost:5000/addRemTherapist`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: nonParamUserId, urlUserId: userId, currentlyTherapist: currentTherapist }),
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("addRemTherapist", data);
+                setCurrentTherapist(data.nowHasTherapist);
+            })
+            .catch(err => console.error('Error fetching data:', err));
     }
 
     return (
@@ -190,7 +235,7 @@ function TherapistProfile() {
                                     <input type='button' value={'Addiction'} className={specializations.includes("Addiction") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
                                     <input type='button' value={'Anxiety'} className={specializations.includes("Anxiety") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
                                     <input type='button' value={'PTSD'} className={specializations.includes("PTSD") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? "a" : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
+                                    <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
                                     <input type='button' value={'Anger Mgmt.'} className={specializations.includes("Anger Mgmt.") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
                                     <input type='button' value={'Confidence'} className={specializations.includes("Confidence") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
                                 </div>
@@ -217,7 +262,7 @@ function TherapistProfile() {
                             <textarea value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)}></textarea>
                         </div>
 
-                        <button className={(localStorage.getItem("userType") === "Patient") ? "" : "hidden"}>Add/Rem Therapist</button>
+                        <button className={(localStorage.getItem("userType") === "Patient" && ableToSwap) ? "" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
                         <h1>Reviews</h1>
                         <div className="flex-centered flex-col">
                             <div className="flex-centered flex-row">
@@ -273,7 +318,7 @@ function TherapistProfile() {
                         </div>
                         <Pagination variant="text" shape="rounded" count={Math.ceil(totalReviews / 4)} onChange={paginationFunc} />
                         <button className={(localStorage.getItem("userType") === "Patient") ? "" : "hidden"}>Add Review</button>
-                        <button className={(localStorage.getItem("userType") === "Therapist" && editing === 0) ? "" : "hidden"} onClick={(event) => startEditing(event)}>Edit Details</button>
+                        <button className={(localStorage.getItem("userType") === "Therapist" && editing === 0 && localStorage.getItem("realUserID") === userId) ? "" : "hidden"} onClick={(event) => startEditing(event)}>Edit Details</button>
                         <input type="submit" className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "" : "hidden"} value="Save Details" />
                         <button className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "" : "hidden"} onClick={(event) => cancelEditing(event)}>Cancel Editing</button>
                     </div>

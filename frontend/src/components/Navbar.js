@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import io from 'socket.io-client';
 import "./Navbar.css";
 import "../presets.css";
 import NotificationBellImg from "./notification-bell.png";
@@ -45,19 +46,94 @@ const Navbar = () => {
         setSelectedTab(path.toLowerCase());
     }
 
-    // useEffect(() => {
-    //     setIsActive(parseInt(localStorage.getItem("isActive")));
-    // }, [localStorage.getItem("isActive")]);
+    useEffect(() => {
+        const socket = io('http://localhost:5000');
+
+        const fakeUserID = localStorage.getItem("userID");
+        const realUserID = localStorage.getItem("realUserID");
+        const userType = localStorage.getItem("userType");
+
+        //  Connection
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit("init-socket-navbar-comm", { "userID": realUserID });
+        });
+        //  Disconnect
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('update-navbar', () => {
+            console.log('Updated navbar!')
+            fetch("http://localhost:5000/navbarData", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fakeUserID, userType }),
+            })
+                .then((res) => {
+                    if (!res.ok) {
+                        setUserData(null);
+                        setNotifications(null);
+                        throw new Error('Network response was not ok');
+                    }
+                    return res.json();
+                })
+                .then((data) => {
+                    setUserData(data[0][0]);
+                    setNotifications(data[1]);
+                    if (userType === 'Therapist') {
+                        setIsActive(data[0][0]['isActive'])
+                    }
+                })
+                .catch((err) => console.error("Error fetching data:", err));
+
+            let imageExists = false;
+            fetch("http://localhost:5000/retriveProfilePic", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",  // Ensure the request is sent as JSON
+                },
+                body: JSON.stringify({ realUserID }),
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        imageExists = true;
+                    }
+                    return res.blob();
+                })
+                .then((data) => {
+                    if (imageExists) {
+                        const imageUrl = URL.createObjectURL(data);
+                        // console.log("Image Blob:", data);
+                        // console.log("Image URL:", imageUrl);
+                        setProfileImgUrl(imageUrl);
+                        imageExists = false;
+                    }
+                    else {
+                        setProfileImgUrl(defaultProfilePic);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching image:", error);
+                });
+        });
+
+        // Cleanup on component unmount
+        return () => {
+            socket.emit("rem-socket-navbar-comm", { "userID": realUserID });
+            socket.off('update-navbar');
+            socket.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
-        console.log(localStorage.getItem("userID"));
+        const fakeUserID = localStorage.getItem("userID");
+        const realUserID = localStorage.getItem("realUserID");
+        const userType = localStorage.getItem("userType");
+
         if (localStorage.getItem("userID") !== "0") {
-            const fakeUserID = localStorage.getItem("userID");
-            const realUserID = localStorage.getItem("realUserID");
-            const userType = localStorage.getItem("userType");
-            // const isActive = localStorage.getItem("isActive");
-
-
             fetch("http://localhost:5000/navbarData", {
                 method: "POST",
                 headers: {
@@ -75,6 +151,7 @@ const Navbar = () => {
                     return res.json();
                 })
                 .then((data) => {
+                    console.log(data[0][0])
                     setUserData(data[0][0]);
                     setNotifications(data[1]);
                     if (userType === 'Therapist') {
@@ -349,7 +426,40 @@ const Navbar = () => {
                                         />
                                     </div>
 
-                                    {notifications && isActive ? (
+                                    {notifications && userData.userType === "Therapist" && isActive ? (
+                                        <div
+                                            className="notifs-dropdown-items hidden"
+                                            ref={bellRef}
+                                        >
+                                            {notifications.map((row, index) => (
+                                                <div
+                                                    key={`notif-${index}`}
+                                                    onClick={() =>
+                                                        handleNotificationClick(
+                                                            `${row.redirectLocation}`,
+                                                            `${row.notificationID}`
+                                                        )
+                                                    }
+                                                    className={`flex-row hamburger-item ${row.redirectLocation
+                                                        ? "hamburger-item-pointer"
+                                                        : "hamburger-item-no-pointer"
+                                                        }`}
+                                                >
+                                                    {row.message}
+                                                    <input
+                                                        type="button"
+                                                        value={"X"}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveNotification(
+                                                                `${row.notificationID}`
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : notifications && userData.userType === "Patient" ? (
                                         <div
                                             className="notifs-dropdown-items hidden"
                                             ref={bellRef}
@@ -388,7 +498,7 @@ const Navbar = () => {
                                                 No Notifications!
                                             </div>
                                         </div>
-                                    )}
+                                    )};
                                 </div>
                             </div>
                         ) : (
