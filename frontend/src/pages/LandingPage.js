@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/LandingPage.css';
 
@@ -8,10 +7,10 @@ import missionImage2 from './assets/images/img5_mission.png';
 import missionImage3 from './assets/images/img6_mission.png';
 
 function LandingPage() {
-    const navigate = useNavigate();
     const [testimonials, setTestimonials] = useState([]);
     const [mission, setMission] = useState("");
     const [faqs, setFaqs] = useState([]);
+    const [contact, setContact] = useState({ phone: "", email: "" });
 
     // Fetch Testimonials
     useEffect(() => {
@@ -25,7 +24,7 @@ function LandingPage() {
             .catch(error => console.error('Error fetching testimonials:', error));
     }, []);
 
-    // Fetch Company Data (Mission and FAQs)
+    // Fetch Company Data (Mission, FAQs, and Contact Us)
     useEffect(() => {
         fetch('http://127.0.0.1:5000/companydata')
             .then(response => response.json())
@@ -35,6 +34,13 @@ function LandingPage() {
                 }
                 if (data.FAQs) {
                     setFaqs(data.FAQs);
+                }
+                if (data.Contact) {
+                    // Ensure proper casing matches backend response
+                    setContact({
+                        phone: data.Contact.Phone || "",
+                        email: data.Contact.Email || ""
+                    });
                 }
             })
             .catch(error => console.error('Error fetching company data:', error));
@@ -81,7 +87,9 @@ function LandingPage() {
 
             <section className="contact-us">
                 <h1>Contact Us</h1>
-                <div>Need Assistance? Call: 123-1234-1234 or Email: mentcareabc@gmail.com</div>
+                <div>
+                    Need Assistance? Call: {contact.phone || "N/A"} or Email: {contact.email || "N/A"}
+                </div>
             </section>
         </div>
     );
