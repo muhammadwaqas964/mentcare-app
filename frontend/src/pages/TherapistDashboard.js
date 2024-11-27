@@ -220,7 +220,7 @@ function TherapistDashboard() {
                         <br />
                         <div className="flex-row flex-centered main-container" style={{ gap: "10px" }}>
                             <button className='td-btn' type="button" onClick={() => addSurveyElement()}>Add Question</button>&nbsp;
-                            <input className='td-btn' type="submit" value="Save Survey"></input>&nbsp;
+                            <input className='td-btn' type="submit" value="Save Survey" />&nbsp;
                             <button className='td-btn' type="button" onClick={() => cancelEditSurvey()}>Cancel Edit</button>
                         </div>
                     </form>

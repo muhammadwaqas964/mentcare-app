@@ -83,3 +83,52 @@ def theraReviewFunc():
         cursor.close()
 
     return jsonify({"reviews": reviews})
+
+@therapist_routes.route('/therapistUpdateInfo', methods=['POST'])
+def theraUpdInfoFunc():
+    try:
+        print('0')
+        realUserID = int(request.json.get('realUserId'))
+        newSpecializations = request.json.get('specializationsArr')
+        newEducation = request.json.get('educationUpd')
+        newAboutMe = request.json.get('aboutMeUpd')
+        newAvailability = request.json.get('availabilityUpd')
+        newPricing = request.json.get('pricingUpd')
+        print('0.5')
+
+        cursor = mysql.connection.cursor()
+
+        print(newSpecializations)
+        print("1")
+        if(len(newSpecializations) <= 1):
+            newSpecializations = ''
+            cursor.execute("""
+                UPDATE therapists
+                SET specializations = '', Education = %s, Intro = %s, DaysHours = %s, Price = %s
+                WHERE userID = %s
+            """, (newEducation, newAboutMe, newAvailability, newPricing, realUserID))
+        else:
+            if(newSpecializations[0] == ','):
+                newSpecializations = newSpecializations[1:]
+            cursor.execute("""
+                UPDATE therapists
+                SET specializations = %s, Education = %s, Intro = %s, DaysHours = %s, Price = %s
+                WHERE userID = %s
+            """, (newSpecializations, newEducation, newAboutMe, newAvailability, newPricing, realUserID))
+        print("2")
+
+
+        mysql.connection.commit()
+        print("2.5")
+
+        cursor.execute("""
+            SELECT specializations, Education, Intro, DaysHours, Price
+            FROM therapists
+            WHERE userID = %s
+        """, (realUserID, ))
+        therapistInfo = cursor.fetchone()
+        print("3")
+
+        return jsonify({"specializations": therapistInfo[0], "education": therapistInfo[1], "aboutMe": therapistInfo[2], "availability": therapistInfo[3], "pricing": therapistInfo[4] }), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
