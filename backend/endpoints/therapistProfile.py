@@ -1,5 +1,6 @@
 from flask import request, jsonify, json, Blueprint
 from app import mysql
+from datetime import datetime
 
 # Define the Blueprint
 therapist_routes = Blueprint('therapist_routes', __name__)
@@ -197,5 +198,35 @@ def addRemTheraFunc():
         cursor.close()
 
         return jsonify({"nowHasTherapist": hasThera }), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@therapist_routes.route('/leaveReview', methods=['POST'])
+def leaveReviewFunc():
+    try:
+        urlUserID = int(request.json.get('urlUserId'))
+        userID = int(request.json.get("userId"))
+        review = request.json.get("review")
+        stars = int(request.json.get("stars"))
+
+        cursor = mysql.connection.cursor()
+
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {urlUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
+
+        cursor.execute(f"""
+            INSERT INTO reviews (therapistID, patientID, content, stars, dateDone)
+            VALUES ({therapistID}, {userID}, '{review}', {stars}, '{datetime.today().date()}')
+        """)
+        
+        
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({"reviewSent": 1 }), 200
     except Exception as err:
         return {"error":  f"{err}"}
