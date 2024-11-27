@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import mockProfilePic from "./assets/images/Mock_Profile_Picture.jpg";
+import { useNavigate } from "react-router-dom";
 
 const TherapistListPage = () => {
   const [therapists, setTherapists] = useState([]);
@@ -8,6 +9,7 @@ const TherapistListPage = () => {
   const [maxPrice, setMaxPrice] = useState(""); 
   const [currentPage, setCurrentPage] = useState(1);
   const [therapistsPerPage, setTherapistsPerPage] = useState(1);
+  const navigate = useNavigate(); 
 
   // Fetch therapists data
   useEffect(() => {
@@ -35,11 +37,10 @@ const TherapistListPage = () => {
     fetchTherapists();
   }, []);
 
-
   useEffect(() => {
     const handleResize = () => {
       const cardWidth = 220;
-      const cardHeight = 320;
+      const cardHeight = 325; // card height
 
       const containerWidth = window.innerWidth - 40;
       const containerHeight = window.innerHeight - 200;
@@ -59,7 +60,6 @@ const TherapistListPage = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
   const handleSort = (criteria) => {
     setSortCriteria(criteria);
     const sortedTherapists = [...therapists].sort((a, b) => {
@@ -75,7 +75,6 @@ const TherapistListPage = () => {
     setTherapists(sortedTherapists);
   };
 
-
   const filteredTherapists = therapists.filter(
     (therapist) =>
       (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -83,7 +82,6 @@ const TherapistListPage = () => {
       (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
 
- 
   const indexOfLastTherapist = currentPage * therapistsPerPage;
   const indexOfFirstTherapist = indexOfLastTherapist - therapistsPerPage;
   const currentTherapists = filteredTherapists.slice(
@@ -94,6 +92,10 @@ const TherapistListPage = () => {
   const totalPages = Math.ceil(filteredTherapists.length / therapistsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const viewProfile = (id) => {
+    navigate(`/therapistProfile/${id}`);
+  };
 
   return (
     <div style={{ padding: 0, margin: 0, width: "100%" }}>
@@ -200,6 +202,7 @@ const TherapistListPage = () => {
               borderRadius: "10px",
               boxSizing: "border-box",
               minWidth: "200px",
+              minHeight: "325px", 
             }}
           >
             <img
@@ -223,14 +226,31 @@ const TherapistListPage = () => {
               {therapist.name}
             </h2>
             <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
-            Gender: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.gender}</span>
+              Gender: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.gender}</span>
             </p>
             <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
-            Price: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>${therapist.price}</span>
+              Price: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>${therapist.price}</span>
             </p>
             <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
-            Specialization: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.specialty}</span>
+              Specialization: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.specialty}</span>
             </p>
+            <button
+              onClick={() => viewProfile(therapist.id)}
+              style={{
+                marginTop: "auto", 
+                padding: "10px 15px",
+                backgroundColor: "#34c4a9",
+                border: "none",
+                borderRadius: "5px",
+                color: "white",
+                fontWeight: "bold",
+                cursor: "pointer",
+                textAlign: "center",
+                width: "100%",
+              }}
+            >
+              View Profile
+            </button>
           </div>
         ))}
       </div>
@@ -303,6 +323,9 @@ const TherapistListPage = () => {
 };
 
 export default TherapistListPage;
+
+
+
 
 
 
