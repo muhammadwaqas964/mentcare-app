@@ -8,7 +8,7 @@ therapist_routes = Blueprint('therapist_routes', __name__)
 @therapist_routes.route('/therapistProfileInfo', methods=['POST'])
 def thersProfInfoFunc():
     try:
-        realUserID = request.json.get('realUserId')
+        urlUserID = request.json.get('urlUserId')
 
         cursor = mysql.connection.cursor()
         cursor.execute("""
@@ -18,7 +18,7 @@ def thersProfInfoFunc():
             FROM users
             JOIN therapists ON users.userID = therapists.userID
             WHERE users.userID = %s AND users.userType = 'Therapist'
-        """, (realUserID,))
+        """, (urlUserID,))
         therapistInfo = cursor.fetchone()
 
         if not therapistInfo:
@@ -27,7 +27,7 @@ def thersProfInfoFunc():
         cursor.execute(f"""
             SELECT therapistID
             FROM therapists
-            WHERE userID = {realUserID}
+            WHERE userID = {urlUserID}
         """)
         therapistID = cursor.fetchone()[0]
 
@@ -53,7 +53,7 @@ def thersProfInfoFunc():
 @therapist_routes.route('/therapistReviewInfo', methods=['POST'])
 def theraReviewFunc():
     try:
-        realUserID = request.json.get('realUserId')
+        urlUserID = request.json.get('urlUserId')
         page = request.json.get('page')
 
         cursor = mysql.connection.cursor()
@@ -61,7 +61,7 @@ def theraReviewFunc():
         cursor.execute(f"""
             SELECT therapistID
             FROM therapists
-            WHERE userID = {realUserID}
+            WHERE userID = {urlUserID}
         """)
         therapistID = cursor.fetchone()[0]
 
@@ -87,26 +87,22 @@ def theraReviewFunc():
 @therapist_routes.route('/therapistUpdateInfo', methods=['POST'])
 def theraUpdInfoFunc():
     try:
-        print('0')
-        realUserID = int(request.json.get('realUserId'))
+        urlUserID = int(request.json.get('urlUserId'))
         newSpecializations = request.json.get('specializationsArr')
         newEducation = request.json.get('educationUpd')
         newAboutMe = request.json.get('aboutMeUpd')
         newAvailability = request.json.get('availabilityUpd')
         newPricing = request.json.get('pricingUpd')
-        print('0.5')
 
         cursor = mysql.connection.cursor()
 
-        print(newSpecializations)
-        print("1")
         if(len(newSpecializations) <= 1):
             newSpecializations = ''
             cursor.execute("""
                 UPDATE therapists
                 SET specializations = '', Education = %s, Intro = %s, DaysHours = %s, Price = %s
                 WHERE userID = %s
-            """, (newEducation, newAboutMe, newAvailability, newPricing, realUserID))
+            """, (newEducation, newAboutMe, newAvailability, newPricing, urlUserID))
         else:
             if(newSpecializations[0] == ','):
                 newSpecializations = newSpecializations[1:]
@@ -114,21 +110,92 @@ def theraUpdInfoFunc():
                 UPDATE therapists
                 SET specializations = %s, Education = %s, Intro = %s, DaysHours = %s, Price = %s
                 WHERE userID = %s
-            """, (newSpecializations, newEducation, newAboutMe, newAvailability, newPricing, realUserID))
-        print("2")
+            """, (newSpecializations, newEducation, newAboutMe, newAvailability, newPricing, urlUserID))
 
 
         mysql.connection.commit()
-        print("2.5")
 
         cursor.execute("""
             SELECT specializations, Education, Intro, DaysHours, Price
             FROM therapists
             WHERE userID = %s
-        """, (realUserID, ))
+        """, (urlUserID, ))
         therapistInfo = cursor.fetchone()
-        print("3")
 
         return jsonify({"specializations": therapistInfo[0], "education": therapistInfo[1], "aboutMe": therapistInfo[2], "availability": therapistInfo[3], "pricing": therapistInfo[4] }), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@therapist_routes.route('/isCurrentTherapist', methods=['POST'])
+def isCurrentTheraFunc():
+    try:
+        urlUserID = int(request.json.get('urlUserId'))
+        userID = int(request.json.get("userId"))
+        userType = request.json.get("userType")
+
+        if(userType != "Patient"):
+            return jsonify({"isCurrentTherapist": 0, "swapable": 0 }), 200
+        
+        cursor = mysql.connection.cursor()
+
+        print("urlUserId:", urlUserID)
+        print("userID:", userID)
+        print("userType:", userType)
+        cursor.execute(f"""
+            SELECT mainTherapistID
+            FROM patients
+            WHERE patientID = {userID}
+        """)
+        mainTherapistID = cursor.fetchone()[0]
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {urlUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
+        cursor.close()
+
+        return jsonify({"isCurrentTherapist": (therapistID == mainTherapistID), "swapable": (mainTherapistID == None or mainTherapistID == therapistID)  }), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@therapist_routes.route('/addRemTherapist', methods=['POST'])
+def addRemTheraFunc():
+    try:
+        urlUserID = int(request.json.get('urlUserId'))
+        userID = int(request.json.get("userId"))
+        currentlyTherapist = request.json.get("currentlyTherapist")
+
+        cursor = mysql.connection.cursor()
+
+        if(currentlyTherapist):
+            cursor.execute(f"""
+                UPDATE patients
+                SET mainTherapistID = NULL
+                WHERE patientID = {userID}
+            """)
+        else:
+            cursor.execute(f"""
+                SELECT therapistID
+                FROM therapists
+                WHERE userID = {urlUserID}
+            """)
+            therapistID = cursor.fetchone()[0]
+            cursor.execute(f"""
+                UPDATE patients
+                SET mainTherapistID = {therapistID}
+                WHERE patientID = {userID}
+            """)
+        
+        mysql.connection.commit()
+        cursor.execute(f"""
+            SELECT mainTherapistID
+            FROM patients
+            WHERE patients.patientID = {userID}
+        """)
+        hasThera = cursor.fetchone()[0]
+        cursor.close()
+
+        return jsonify({"nowHasTherapist": hasThera }), 200
     except Exception as err:
         return {"error":  f"{err}"}
