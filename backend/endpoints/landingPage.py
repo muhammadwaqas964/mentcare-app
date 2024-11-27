@@ -1,5 +1,10 @@
-from flask import request, jsonify, json, Blueprint #,render_template, request
+from flask import request, Flask, jsonify, json, Blueprint #,render_template, request
 from app import mysql
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
 
 # Feel free to add more imports above
 
@@ -19,4 +24,11 @@ def index():
     
     cursor.close()
     
-    return jsonify({"Testimonials": testimonials})
+    # Format the data into a list of dictionaries
+    formatted_testimonials = [
+        {"Username": row[0], "Content": row[1]} for row in testimonials
+    ]
+    
+    return jsonify({"Testimonials": formatted_testimonials})
+
+    
