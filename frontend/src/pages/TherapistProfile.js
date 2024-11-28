@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import './styles/TherapistProfile.css';
 import '../presets.css';
-import { Rating, Slider, Pagination } from '@mui/material';
+import { Rating, Slider, Pagination, FormControl, FormHelperText } from '@mui/material';
 
 function TherapistProfile() {
     const { userId } = useParams();
@@ -31,6 +31,7 @@ function TherapistProfile() {
 
     const [userReviewText, setUserReviewText] = useState();
     const [userReviewStars, setUserReviewStars] = useState(0);
+    const [ratingError, setRatingError] = useState(false);
     const popupRef = useRef(null);
 
 
@@ -45,6 +46,7 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
+                console.log("Swag", data);
                 setTherapistName(data.Therapist[0]);
                 setSpecializations(data.Therapist[5]);
                 setSpecializationsArr(data.Therapist[5].split(','));
@@ -90,7 +92,6 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("usfx addrem", data);
                 setCurrentTherapist(data.isCurrentTherapist);
                 setAbleToSwap(data.swapable);
             })
@@ -175,7 +176,6 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("edited save data", data);
                 setSpecializations(String(data.specializations));
                 setSpecializationsArr(String(data.specializations).split(','));
                 setEducation(data.education);
@@ -202,7 +202,6 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("addRemTherapist", data);
                 setCurrentTherapist(data.nowHasTherapist);
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -210,7 +209,8 @@ function TherapistProfile() {
 
     // leave review
     const startReview = () => {
-        setUserReviewStars(0);
+        setUserReviewStars();
+        setRatingError(false);
         popupRef.current.className = 'popUp-background';
     }
 
@@ -218,27 +218,32 @@ function TherapistProfile() {
         popupRef.current.className = 'hidden popUp-background';
     }
 
-    function saveReview(event) {
+    const saveReview = (event) => {
         event.preventDefault();
         const nonParamUserId = localStorage.getItem("userID");
-        fetch(`http://localhost:5000/leaveReview`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userId: nonParamUserId,
-                urlUserId: userId,
-                review: userReviewText,
-                stars: userReviewStars,
-            }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log("review", data);
+        if (userReviewStars !== 0 && userReviewStars !== undefined && userReviewText !== "") {
+            fetch(`http://localhost:5000/leaveReview`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: nonParamUserId,
+                    urlUserId: userId,
+                    review: userReviewText,
+                    stars: userReviewStars,
+                }),
             })
-            .catch(err => console.error('Error fetching data:', err));
-        popupRef.current.className = 'hidden popUp-background';
+                .then(res => res.json())
+                .then(data => {
+                    console.log("review", data);
+                    // TODO: Verify stuff was sent to backend
+                })
+                .catch(err => console.error('Error fetching data:', err));
+            popupRef.current.className = 'hidden popUp-background';
+        } else {
+            setRatingError(true);
+        }
     }
 
     return (
@@ -261,17 +266,17 @@ function TherapistProfile() {
                             </div>
                             <div className={editing ? "flex-col flex-centered" : "hidden"}>
                                 <div className='grid-specs-container'>
-                                    <input type='button' value={'Relationship'} className={specializations.includes("Relationship") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Depression'} className={specializations.includes("Depression") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Addiction'} className={specializations.includes("Addiction") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Anxiety'} className={specializations.includes("Anxiety") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'PTSD'} className={specializations.includes("PTSD") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Anger Mgmt.'} className={specializations.includes("Anger Mgmt.") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
-                                    <input type='button' value={'Confidence'} className={specializations.includes("Confidence") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)}></input>
+                                    <input type='button' value={'Relationship'} className={specializations.includes("Relationship") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Depression'} className={specializations.includes("Depression") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Addiction'} className={specializations.includes("Addiction") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Anxiety'} className={specializations.includes("Anxiety") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'PTSD'} className={specializations.includes("PTSD") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Anger Mgmt.'} className={specializations.includes("Anger Mgmt.") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    <input type='button' value={'Confidence'} className={specializations.includes("Confidence") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
                                 </div>
-                                <textarea value={educationUpd} onChange={(event) => updText(event, setEducationUpd)}></textarea>
-                                <textarea value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)}></textarea>
+                                <textarea value={educationUpd} onChange={(event) => updText(event, setEducationUpd)} />
+                                <textarea value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)} />
                             </div>
                         </div>
                     </div>
@@ -282,7 +287,7 @@ function TherapistProfile() {
                             <p>{availability}</p>
                         </div>
                         <div className={editing ? "flex-col flex-centered" : "hidden"}>
-                            <textarea value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)}></textarea>
+                            <textarea value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)} />
                         </div>
 
                         <h1>PRICING</h1>
@@ -290,7 +295,7 @@ function TherapistProfile() {
                             <p>{pricing}</p>
                         </div>
                         <div className={editing ? "flex-col flex-centered" : "hidden"}>
-                            <textarea value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)}></textarea>
+                            <textarea value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
                         </div>
 
                         <button className={(localStorage.getItem("userType") === "Patient" && ableToSwap) ? "td-btn" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
@@ -350,7 +355,7 @@ function TherapistProfile() {
                         <Pagination variant="text" shape="rounded" count={Math.ceil(totalReviews / 4)} onChange={paginationFunc} /> <br />
                         <button className={(localStorage.getItem("userType") === "Patient" && currentTherapist) ? "td-btn" : "hidden"} onClick={() => startReview()}>Add Review</button>
                         <button className={(localStorage.getItem("userType") === "Therapist" && editing === 0 && localStorage.getItem("realUserID") === userId) ? "" : "hidden"} onClick={(event) => startEditing(event)}>Edit Details</button>
-                        <input type="submit" className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "" : "hidden"} value="Save Details" />
+                        <input type="submit" className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} value="Save Details" /><br />
                         <button className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} onClick={(event) => cancelEditing(event)}>Cancel Editing</button>
                     </div>
                 </div>
@@ -358,9 +363,12 @@ function TherapistProfile() {
 
             <div ref={popupRef} className="hidden popUp-background">
                 <div className='popUp'>
-                    <form onSubmit={(event) => saveReview(event)}>
-                        <Rating name="userReviewRating" value={userReviewStars} max={5} onChange={(event, newValue) => setUserReviewStars(newValue)} required />
-                        <textarea value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} required />
+                    <form className="flex-col flex-centered main-container" onSubmit={(event) => saveReview(event)}>
+                        <FormControl className="flex-col flex-centered main-container">
+                            <textarea value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} />
+                            <Rating name="userReviewRating" value={userReviewStars} max={5} onChange={(event, newValue) => setUserReviewStars(newValue)} required />
+                            {ratingError && <FormHelperText>Please fill out stars & text box</FormHelperText>}
+                        </FormControl>
                         <div className="flex-row flex-centered main-container" style={{ gap: "10px" }}>
                             <input className='td-btn' type="submit" value="Send Review" />&nbsp;
                             <button className='td-btn' type="button" onClick={() => cancelReview()}>Cancel Review</button>
