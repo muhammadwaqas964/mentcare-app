@@ -158,17 +158,15 @@ function TherapistDashboard() {
         <>
             <div className='flex-row' style={{ justifyContent: "space-evenly" }}>
                 <div className="flex-row flex-centered">
-                    <div className="">
-                        <DashboardCardTitleless extraClasses="margined">
-                            <input
-                                type='button'
-                                className='acceptanceBtn'
-                                onClick={() => changeAcceptance()}
-                                value={`${acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS`}
-                                style={{ backgroundColor: acceptingStatus ? "#f44336" : "#66bb6a" }}
-                            >
-                            </input>
-                        </DashboardCardTitleless>
+                    <div className="flex-col flex-centered">
+                        <input
+                            type='button'
+                            className='acceptanceBtn'
+                            onClick={() => changeAcceptance()}
+                            value={`${acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS`}
+                            style={{ backgroundColor: acceptingStatus ? "#f44336" : "#66bb6a" }}
+                        >
+                        </input>
                         <DashboardCard title="Your Survey Questions" extraClasses="margined">
                             {surveyQuestions && surveyQuestions.map((item, index) => (
                                 <p key={`question-${index}`}>{item.question}</p>

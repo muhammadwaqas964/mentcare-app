@@ -1,19 +1,17 @@
 .payment-page {
     display: flex;
     flex-direction: column;
-    height: 110vh;
+    height: 100vh;
     width: 100vw;
     justify-content: center;
     align-items: center;
     margin: 0;
     font-size: small;
-    font-family: 'lato';
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
-.main-container.payment-page {
-    width: 60vw;
+.payment-main-container {
     display: flex;
-    flex: 1;
     justify-content: center;
     align-items: center;
     flex-direction: column;
@@ -39,4 +37,8 @@
 
 .row-spacing.one {
     justify-content: center;
+}
+
+.payment-label {
+    font-size: 12pt;
 }

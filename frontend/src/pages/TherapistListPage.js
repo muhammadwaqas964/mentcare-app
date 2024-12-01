@@ -6,16 +6,16 @@ const TherapistListPage = () => {
   const [therapists, setTherapists] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortCriteria, setSortCriteria] = useState("specialty");
-  const [maxPrice, setMaxPrice] = useState(""); 
+  const [maxPrice, setMaxPrice] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [therapistsPerPage, setTherapistsPerPage] = useState(1);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   // Fetch therapists data
   useEffect(() => {
     const fetchTherapists = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/getTherapists");
+        const response = await fetch("http://localhost:5000/getTherapists");
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
@@ -24,9 +24,9 @@ const TherapistListPage = () => {
           id: therapist.therapistID,
           name: therapist.name,
           specialty: therapist.specializations.join(", ") || "No specialty provided",
-          profilePic: therapist.profileImg || mockProfilePic, 
-          gender: therapist.gender || "Not specified", 
-          price: therapist.price || "Contact for pricing", 
+          profilePic: therapist.profileImg || mockProfilePic,
+          gender: therapist.gender || "Not specified",
+          price: therapist.chargingPrice || "Contact for pricing",
         }));
         setTherapists(formattedTherapists);
       } catch (error) {
@@ -64,9 +64,9 @@ const TherapistListPage = () => {
     setSortCriteria(criteria);
     const sortedTherapists = [...therapists].sort((a, b) => {
       if (criteria === "price") {
-        const priceA = parseFloat(a.price.replace(/[^0-9.-]+/g, "")) || 0;
-        const priceB = parseFloat(b.price.replace(/[^0-9.-]+/g, "")) || 0;
-        return priceA - priceB; 
+        const priceA = parseFloat(a.chargingPrice.replace(/[^0-9.-]+/g, "")) || 0;
+        const priceB = parseFloat(b.chargingPrice.replace(/[^0-9.-]+/g, "")) || 0;
+        return priceA - priceB;
       }
       if (a[criteria] < b[criteria]) return -1;
       if (a[criteria] > b[criteria]) return 1;
@@ -79,8 +79,9 @@ const TherapistListPage = () => {
     (therapist) =>
       (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
+      (!maxPrice || parseFloat(therapist.chargingPrice.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
+
 
   const indexOfLastTherapist = currentPage * therapistsPerPage;
   const indexOfFirstTherapist = indexOfLastTherapist - therapistsPerPage;
@@ -202,7 +203,7 @@ const TherapistListPage = () => {
               borderRadius: "10px",
               boxSizing: "border-box",
               minWidth: "200px",
-              minHeight: "325px", 
+              minHeight: "325px",
             }}
           >
             <img
@@ -237,7 +238,7 @@ const TherapistListPage = () => {
             <button
               onClick={() => viewProfile(therapist.id)}
               style={{
-                marginTop: "auto", 
+                marginTop: "auto",
                 padding: "10px 15px",
                 backgroundColor: "#34c4a9",
                 border: "none",

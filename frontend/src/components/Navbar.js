@@ -254,255 +254,176 @@ const Navbar = () => {
         <nav>
             <div className="left-section">
                 <Link to="/" onClick={() => handleTabClick(`/`)}>
-                    <h2 className="navbar-tab">MentCare</h2>
+                    <h2 className={`${selectedTab === "/" ? "active-tab" : "selectable-tab"}`}>MentCare</h2>
                 </Link>
-            </div>
-
-            <div className="mid-section">
-                {userData && (
-                    <div className="flex-row" style={{ gap: "20px" }}>
-                        {/* <Link
-                            to={`/dashboard`}
-                            onClick={() => handleTabClick(`/dashboard`)}
-                        >
-                            <h2
-                                className={`navbar-tab ${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"
-                                    }`}
-                            >
-                                Dashboard
-                            </h2>
-                        </Link> */}
-
-                        {userData.userType === "Patient" && (
-                            <>
-                                <Link
-                                    to={`/dashboard`}
-                                    onClick={() => handleTabClick(`/dashboard`)}
-                                >
-                                    <h2
-                                        className={`navbar-tab ${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"
-                                            }`}
-                                    >
-                                        Dashboard
-                                    </h2>
-                                </Link>
-                                <Link
-                                    to={`/therapistlist`}
-                                    onClick={() => handleTabClick(`/therapistlist`)}
-                                >
-                                    <h2
-                                        className={`navbar-tab ${selectedTab === "/therapistlist"
-                                            ? "active-tab"
-                                            : "selectable-tab"
-                                            }`}
-                                    >
-                                        Therapist List
-                                    </h2>
-                                </Link>
-                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
-                                    <h2
-                                        className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"
-                                            }`}
-                                    >
-                                        Chats
-                                    </h2>
-                                </Link>
-                            </>
-                        )}
-
-                        {userData.userType === "Therapist" && isActive ? (
-                            <>
-                                <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
-                                    <h2 className={`navbar-tab ${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
-                                        Dashboard
-                                    </h2>
-                                </Link>
-                                <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile`)}>
-                                    <h2 className={`navbar-tab ${selectedTab === "/therapistprofile" ? "active-tab" : "selectable-tab"}`}>
-                                        Profile
-                                    </h2>
-                                </Link>
-                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
-                                    <h2 className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
-                                        Chats
-                                    </h2>
-                                </Link>
-                            </>
-                        ) : null}
-
-                        {/* <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
-                            <h2
-                                className={`navbar-tab ${selectedTab === "/chat" ? "active-tab" : "selectable-tab"
-                                    }`}
-                            >
-                                Chats
-                            </h2>
-                        </Link> */}
-                    </div>
-                )}
             </div>
 
             <div className="right-section">
                 {!isLoggedIn ? (
                     <Link to={`/login`} onClick={() => handleTabClick(`/login`)}>
-                        <h2 className="navbar-tab">Login</h2>
+                        <h2 className={`${selectedTab === "/login" ? "active-tab" : "selectable-tab"}`}>Login</h2>
                     </Link>
                 ) : (
                     <>
-                        {userData ? (
-                            <div className="flex-row user-bell-container">
-                                <div className="dropdown">
-                                    <div className="flex-row flex-centered" style={{ gap: "10px", height: "100%" }}>
-                                        <h2 className="username">{userData.userName}</h2>
-                                        <div className='navbar-profile-pic-container'>
-                                            {profileImgUrl ? (
-                                                <div className="navbar-img-circle-mask">
-                                                    <img src={profileImgUrl} alt="Profile" className="navbar-profile-pic" />
+                        {userData && (
+                            <div className="flex-row flex-centered" style={{ gap: '30px' }}>
+                                <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+                                    <h2 className={`${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
+                                        Dashboard
+                                    </h2>
+                                </Link>
+                                {userData.userType === "Patient" && (
+                                    <Link to={`/therapistlist`} onClick={() => handleTabClick(`/therapistlist`)}>
+                                        <h2 className={`${selectedTab === "/therapistlist" ? "active-tab" : "selectable-tab"}`}>
+                                            Therapist List
+                                        </h2>
+                                    </Link>
+                                )}
+                                {userData.userType === "Therapist" && isActive && (
+                                    <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile/${localStorage.getItem('realUserID')}`)}>
+                                        <h2 className={`${selectedTab === `/therapistprofile/${localStorage.getItem('realUserID')}` ? "active-tab" : "selectable-tab"}`}>
+                                            Profile
+                                        </h2>
+                                    </Link>
+                                )}
+                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                                    <h2 className={`${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
+                                        Chats
+                                    </h2>
+                                </Link>
+                                {userData ? (
+                                    <div className="flex-row user-bell-container">
+                                        <div className="dropdown flex-col flex-centered" style={{ gap: "10px", height: "100%" }}>
+                                            <div className="flex-row flex-centered" style={{ position: 'relative' }}>
+                                                <h2 className={`${selectedTab === "/settings" ? "active-tab" : "selectable-tab"}`} style={{ cursor: 'default' }}>{userData.userName}</h2>
+                                                <div className='navbar-profile-pic-container'>
+                                                    {profileImgUrl ? (
+                                                        <div className="navbar-img-circle-mask">
+                                                            <img src={profileImgUrl} alt="Profile" className="navbar-profile-pic" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="navbar-img-circle-mask">
+                                                            <img src={defaultProfilePic} alt="Profile" className="navbar-profile-pic" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <div className="navbar-img-circle-mask">
-                                                    <img src={defaultProfilePic} alt="Profile" className="navbar-profile-pic" />
+                                                <div className="dropdown-items">
+                                                    <Link
+                                                        to={`/settings`}
+                                                        onClick={() => handleTabClick(`/settings`)}
+                                                        className="hamburger-item"
+                                                    >
+                                                        Settings
+                                                    </Link>
+                                                    <Link
+                                                        to={`/login`}
+                                                        onClick={() => handleTabClick(`/logout`)}
+                                                        className="hamburger-item"
+                                                    >
+                                                        Log Out
+                                                    </Link>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {userData.userType === "Patient" ? (
-                                        <div className="dropdown-items">
-                                            <Link
-                                                to={`/settings`}
-                                                onClick={() => handleTabClick(`/settings`)}
-                                                className="hamburger-item"
-                                            >
-                                                Settings
-                                            </Link>
-                                            <Link
-                                                to={`/login`}
-                                                onClick={() => handleTabClick(`/logout`)}
-                                                className="hamburger-item"
-                                            >
-                                                Log Out
-                                            </Link>
-                                        </div>
-                                    ) : (
-                                        <div className="dropdown-items">
-                                            {/* <Link
-                                                to={`/therapistProfile`}
-                                                onClick={() =>
-                                                    handleTabClick(`/therapistProfile`)
-                                                }
-                                                className="hamburger-item"
-                                            >
-                                                Profile
-                                            </Link> */}
-                                            <Link
-                                                to={`/settings`}
-                                                onClick={() => handleTabClick(`/settings`)}
-                                                className="hamburger-item"
-                                            >
-                                                Settings
-                                            </Link>
-                                            <Link
-                                                to={`/login`}
-                                                onClick={() => handleTabClick(`/logout`)}
-                                                className="hamburger-item"
-                                            >
-                                                Log Out
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="notifs-dropdown">
-                                    <div
-                                        className="flex-col flex-centered"
-                                        style={{ height: "100%" }}
-                                    >
-                                        <img
-                                            src={bellImage}
-                                            width={"40px"}
-                                            height={"40px"}
-                                            onClick={() => toggleNotifications()}
-                                        />
-                                    </div>
-
-                                    {notifications && userData.userType === "Therapist" && isActive ? (
-                                        <div
-                                            className="notifs-dropdown-items hidden"
-                                            ref={bellRef}
-                                        >
-                                            {notifications.map((row, index) => (
-                                                <div
-                                                    key={`notif-${index}`}
-                                                    onClick={() =>
-                                                        handleNotificationClick(
-                                                            `${row.redirectLocation}`,
-                                                            `${row.notificationID}`
-                                                        )
-                                                    }
-                                                    className={`flex-row hamburger-item ${row.redirectLocation
-                                                        ? "hamburger-item-pointer"
-                                                        : "hamburger-item-no-pointer"
-                                                        }`}
-                                                >
-                                                    {row.message}
-                                                    <input
-                                                        type="button"
-                                                        value={"X"}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveNotification(
-                                                                `${row.notificationID}`
-                                                            );
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : notifications && userData.userType === "Patient" ? (
-                                        <div
-                                            className="notifs-dropdown-items hidden"
-                                            ref={bellRef}
-                                        >
-                                            {notifications.map((row, index) => (
-                                                <div
-                                                    key={`notif-${index}`}
-                                                    onClick={() =>
-                                                        handleNotificationClick(
-                                                            `${row.redirectLocation}`,
-                                                            `${row.notificationID}`
-                                                        )
-                                                    }
-                                                    className={`flex-row hamburger-item ${row.redirectLocation
-                                                        ? "hamburger-item-pointer"
-                                                        : "hamburger-item-no-pointer"
-                                                        }`}
-                                                >
-                                                    {row.message}
-                                                    <input
-                                                        type="button"
-                                                        value={"X"}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleRemoveNotification(
-                                                                `${row.notificationID}`
-                                                            );
-                                                        }}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="notifs-dropdown-items">
-                                            <div className="hamburger-item hamburger-item-no-pointer">
-                                                No Notifications!
                                             </div>
                                         </div>
-                                    )};
-                                </div>
+
+                                        <div className="notifs-dropdown">
+                                            <div
+                                                className="flex-col flex-centered"
+                                                style={{ height: "100%" }}
+                                            >
+                                                <img
+                                                    src={bellImage}
+                                                    width={"40px"}
+                                                    height={"40px"}
+                                                    onClick={() => toggleNotifications()}
+                                                />
+                                            </div>
+
+                                            {notifications && userData.userType === "Therapist" && isActive ? (
+                                                <div
+                                                    className="notifs-dropdown-items hidden"
+                                                    ref={bellRef}
+                                                >
+                                                    {notifications.map((row, index) => (
+                                                        <div
+                                                            key={`notif-${index}`}
+                                                            onClick={() =>
+                                                                handleNotificationClick(
+                                                                    `${row.redirectLocation}`,
+                                                                    `${row.notificationID}`
+                                                                )
+                                                            }
+                                                            className={`flex-row hamburger-item ${row.redirectLocation
+                                                                ? "hamburger-item-pointer"
+                                                                : "hamburger-item-no-pointer"
+                                                                }`}
+                                                        >
+                                                            <div className="flex-col flex-centered">
+                                                                {row.message}
+                                                            </div>
+                                                            <input
+                                                                type="button"
+                                                                value={"X"}
+                                                                className='notif-close-btn'
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleRemoveNotification(
+                                                                        `${row.notificationID}`
+                                                                    );
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : notifications && userData.userType === "Patient" ? (
+                                                <div
+                                                    className="notifs-dropdown-items hidden"
+                                                    ref={bellRef}
+                                                >
+                                                    {notifications.map((row, index) => (
+                                                        <div
+                                                            key={`notif-${index}`}
+                                                            onClick={() =>
+                                                                handleNotificationClick(
+                                                                    `${row.redirectLocation}`,
+                                                                    `${row.notificationID}`
+                                                                )
+                                                            }
+                                                            className={`flex-row hamburger-item ${row.redirectLocation
+                                                                ? "hamburger-item-pointer"
+                                                                : "hamburger-item-no-pointer"
+                                                                }`}
+                                                        >
+                                                            <div className="flex-col flex-centered">
+                                                                {row.message}
+                                                            </div>
+                                                            <input
+                                                                type="button"
+                                                                value={"X"}
+                                                                className='notif-close-btn'
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleRemoveNotification(
+                                                                        `${row.notificationID}`
+                                                                    );
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="notifs-dropdown-items">
+                                                    <div className="hamburger-item hamburger-item-no-pointer">
+                                                        No Notifications!
+                                                    </div>
+                                                </div>
+                                            )};
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p>Loading...</p>
+                                )}
                             </div>
-                        ) : (
-                            <p>Loading...</p>
                         )}
                     </>
                 )}

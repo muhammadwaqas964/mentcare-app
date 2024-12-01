@@ -3,13 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/Register.css';
 import defaultProfilePic from './assets/images/default-profile-pic.jpg';
+import showPassword from './assets/images/show-password.png';
+import hidePassword from './assets/images/hide-password.png';
+
+import { styled } from '@mui/material/styles';
+import Button from '@mui/material/Button';
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 function Register() {
     const [patientFormVisibility, setPatientFormVisibility] = useState("visible");
-    const [therapistFormVisibility, setTherapistFormVisibility] = useState("hidden");
+    const [therapistFormVisibility, setTherapistFormVisibility] = useState('hidden');
+    const [therapistPageOneVisibility, setTherapistPageOneVisibility] = useState("visible");
+    const [therapistPageTwoVisibility, setTherapistPageTwoVisibility] = useState("hidden");
     const [pageOneVisibility, setPageOneVisibility] = useState("visible");
     const [pageTwoVisibility, setPageTwoVisibility] = useState("hidden");
     const [pageThreeVisibility, setPageThreeVisibility] = useState("hidden");
+    const [pageFourVisibility, setPageFourVisibility] = useState("hidden");
     const [licenseValue, setLicenseValue] = useState('');
 
     const [patientProfilePic, setPatientProfilePic] = useState(null);
@@ -23,9 +43,16 @@ function Register() {
     //  Need this to redirect user to their dashboard page
     const navigate = useNavigate();
 
+    const passRef = useRef({
+        patientPass: null,
+        therapistPass: null
+    });
+
     const formRefs = useRef({
         patientPageOne: null,
+        patientPageThree: null,
         patientRegister: null,
+        therapistPageOne: null,
         therapistRegister: null
     });
 
@@ -91,7 +118,29 @@ function Register() {
         }
     }
 
+    async function verifyLicense() {
+        try {
+            const formData = new FormData()
+            formData.append('licenseNum', licenseValue);
+            console.log(formData);
+            const response = await fetch(`https://q0vvl.wiremockapi.cloud/verifyTherapistLicense?licenseNum=${licenseValue}`, {
+                method: 'GET',
+            });
+            if (response.ok) {
+                alert("LICENSE NUMBER IS VALID!")
+                return true;
+            } else {
+                alert("LICENSE NUMBER IS NOT VALID!");
+                return false;
+            }
+        } catch (err) {
+            console.error('Error duing therapist registration:', err);
+            return false;  // In case of error (e.g., network issues)
+        }
+    }
+
     async function registerPatient(e) {
+        e.preventDefault();
         const form = formRefs.current.patientRegister;
         if (form.checkValidity()) {
             const fname = infoRefs.current.firstName.value;
@@ -130,8 +179,10 @@ function Register() {
             formData.append('sleep', sleep);
             formData.append('energy', energy);
             formData.append('stress', stress);
+
             if (hasUpdatedPatientProfilePic) {
-                formData.append('profileImg', patientProfilePic, patientProfilePic.filename);
+                console.log(patientProfilePic);
+                formData.append('profileImg', patientProfilePic);
             }
 
             try {
@@ -154,26 +205,6 @@ function Register() {
                 console.error('Error duing patient registration:', err);
                 return false;  // In case of error (e.g., network issues)
             }
-
-            // fetch('http://localhost:5000/registerPatient', {
-            //     method: 'POST',
-            //     body: formData,
-            // })
-            //     .then((res) => {
-            //         if (!res.ok) {
-
-            //         }
-            //         return res.json();
-            //     })
-            //     .then(data => {
-            //         //console.log("UserID: ", data.userID);
-            //         localStorage.setItem('userID', data.patientID);
-            //         localStorage.setItem('realUserID', data.userID)
-            //         localStorage.setItem('userType', 'Patient');
-            //         navigate('/dashboard');
-
-            //     })
-            //     .catch(err => console.error('Error updating rental:', err));
         }
         else {
             form.reportValidity();
@@ -184,7 +215,8 @@ function Register() {
         const form = formRefs.current.therapistRegister;
         if (form.checkValidity()) {
             const isEmailValid = await validateEmail(e, 'Therapist');
-            if (isEmailValid) {
+            const isLicenseVaild = await verifyLicense(infoTherapistRefs.current.license.value);
+            if (isEmailValid && isLicenseVaild) {
                 const specsArr = infoTherapistRefs.current.gridContainer.children;
                 let specializations = []
                 Array.from(specsArr).forEach(element => {
@@ -284,53 +316,85 @@ function Register() {
         setTherapistFormVisibility("visible");
     }
 
-    async function goToNextPage(e, page) {
+    async function goToNextPage(e, page, userType) {
         e.preventDefault();
-        const form = formRefs.current.patientPageOne;
-        if (form.checkValidity()) {
+        if (userType === 'Patient') {
             if (page === 1) {
-                const isEmailValid = await validateEmail(e, 'Patient');
-                if (isEmailValid) {
-                    if (pageOneVisibility === 'visible') {
+                const form = formRefs.current.patientPageOne;
+                if (form.checkValidity()) {
+                    const isEmailValid = await validateEmail(e, 'Patient');
+                    if (isEmailValid) {
                         setPageOneVisibility('hidden');
                         setPageTwoVisibility('visible');
                         setPageThreeVisibility('hidden');
+                        setPageFourVisibility('hidden');
                     }
-                    else if (pageTwoVisibility === 'visible') {
-                        setPageOneVisibility('hidden');
-                        setPageTwoVisibility('hidden');
-                        setPageThreeVisibility('visible');
-                    }
+                }
+                else {
+                    form.reportValidity();
                 }
             }
-            else {
-                if (pageOneVisibility === 'visible') {
-                    setPageOneVisibility('hidden');
-                    setPageTwoVisibility('visible');
-                    setPageThreeVisibility('hidden');
-                }
-                else if (pageTwoVisibility === 'visible') {
+            else if (page === 2) {
+                setPageOneVisibility('hidden');
+                setPageTwoVisibility('hidden');
+                setPageThreeVisibility('visible');
+                setPageFourVisibility('hidden');
+            }
+            else if (page === 3) {
+                const form = formRefs.current.patientPageThree;
+                if (form.checkValidity()) {
                     setPageOneVisibility('hidden');
                     setPageTwoVisibility('hidden');
-                    setPageThreeVisibility('visible');
+                    setPageThreeVisibility('hidden');
+                    setPageFourVisibility('visible');
+                }
+                else {
+                    form.reportValidity();
                 }
             }
         }
-        else {
-            form.reportValidity();
+        else if (userType === 'Therapist') {
+            if (page === 1) {
+                const form = formRefs.current.therapistPageOne;
+                if (form.checkValidity()) {
+                    const isEmailValid = await validateEmail(e, 'Therapist');
+                    if (isEmailValid) {
+                        setTherapistPageOneVisibility('hidden');
+                        setTherapistPageTwoVisibility('visible');
+                    }
+                }
+                else {
+                    form.reportValidity();
+                }
+            }
         }
     }
 
-    function goToPreviousPage() {
-        if (pageTwoVisibility === 'visible') {
-            setPageOneVisibility('visible');
-            setPageTwoVisibility('hidden');
-            setPageThreeVisibility('hidden');
-        }
-        else if (pageThreeVisibility === 'visible') {
-            setPageOneVisibility('hidden');
-            setPageTwoVisibility('visible');
-            setPageThreeVisibility('hidden');
+    function goToPreviousPage(userType) {
+        if (userType === 'Patient') {
+            if (pageTwoVisibility === 'visible') {
+                setPageOneVisibility('visible');
+                setPageTwoVisibility('hidden');
+                setPageThreeVisibility('hidden');
+                setPageFourVisibility('hidden');
+            }
+            else if (pageThreeVisibility === 'visible') {
+                setPageOneVisibility('hidden');
+                setPageTwoVisibility('visible');
+                setPageThreeVisibility('hidden');
+                setPageFourVisibility('hidden');
+            }
+            else if (pageFourVisibility === 'visible') {
+                setPageOneVisibility('hidden');
+                setPageTwoVisibility('hidden');
+                setPageThreeVisibility('visible');
+                setPageFourVisibility('hidden');
+            }
+        } else if (userType === 'Therapist') {
+            if (therapistPageTwoVisibility === 'visible') {
+                setTherapistPageOneVisibility('visible');
+                setTherapistPageTwoVisibility('hidden');
+            }
         }
     }
 
@@ -360,6 +424,7 @@ function Register() {
                 setUpdatedPatientProfilePic(true);
                 setPatientProfilePicURL(fileURL)
                 setPatientProfilePic(file);
+                console.log(file);
             } else {
                 setUpdatedTherapistProfilePic(true);
                 setTherapistProfilePicURL(fileURL)
@@ -368,12 +433,39 @@ function Register() {
         }
     };
 
+    function togglePasswordVisibility(userType) {
+        if (userType === 'Patient') {
+            if (infoRefs.current.password.type === 'password') {
+                infoRefs.current.password.type = 'text';
+                passRef.current.patientPass.src = showPassword;
+                passRef.current.patientPass.style.top = '44px';
+            }
+            else {
+                infoRefs.current.password.type = 'password';
+                passRef.current.patientPass.src = hidePassword;
+                passRef.current.patientPass.style.top = '42px';
+            }
+        }
+        else if (userType === 'Therapist') {
+            if (infoTherapistRefs.current.password.type === 'password') {
+                infoTherapistRefs.current.password.type = 'text';
+                passRef.current.therapistPass.src = showPassword;
+                passRef.current.therapistPass.style.top = '44px';
+            }
+            else {
+                infoTherapistRefs.current.password.type = 'password';
+                passRef.current.therapistPass.src = hidePassword;
+                passRef.current.therapistPass.style.top = '42px';
+            }
+        }
+    }
+
     return (
         <>
             {/* Patient Registration Form */}
             <div className={patientFormVisibility}>
 
-                {/* PAGE 1 OF 3 */}
+                {/* PAGE 1 OF 4 */}
                 <div className={`register-form flex-col ${pageOneVisibility}`}>
                     <div className='flex-col flex-centered'>
                         <h1 className='title'>REGISTER</h1>
@@ -385,28 +477,35 @@ function Register() {
                     </div>
 
                     <form onSubmit={goToNextPage} ref={el => (formRefs.current.patientPageOne = el)}>
-                        <div className='flex-row' style={{ gap: '40px' }}>
+                        <div className='flex-row' style={{ gap: '100px' }}>
                             <div className='patient-input-container'>
-                                <div className='flex-row' style={{ justifyContent: 'space-between' }}>
-                                    <div className='flex-col'>
+                                <div className='flex-row' style={{ justifyContent: 'space-between', width: '100%' }}>
+                                    <div className='flex-col reg-input-container'>
                                         <label>First Name</label>
-                                        <input type="text" required ref={el => (infoRefs.current.firstName = el)} className='userNameInput userInput'></input>
+                                        <input type="text" required ref={el => (infoRefs.current.firstName = el)} className='reg-name-input reg-user-input'></input>
                                     </div>
 
-                                    <div className='flex-col'>
+                                    <div className='flex-col reg-input-container'>
                                         <label>Last Name</label>
-                                        <input type="text" required ref={el => (infoRefs.current.lastName = el)} className='userNameInput userInput'></input>
+                                        <input type="text" required ref={el => (infoRefs.current.lastName = el)} className='reg-name-input reg-user-input'></input>
                                     </div>
                                 </div>
 
-                                <div className='flex-col'>
+                                <div className='flex-col reg-input-container'>
                                     <label>Email</label>
-                                    <input type="text" required ref={el => (infoRefs.current.email = el)} className='userInput'></input>
+                                    <input type="text" required ref={el => (infoRefs.current.email = el)} className='reg-user-input' style={{ width: 300 }}></input>
                                 </div>
 
-                                <div className='flex-col'>
+                                <div className='flex-col reg-input-container'>
                                     <label>Password</label>
-                                    <input type="password" required ref={el => (infoRefs.current.password = el)} className='userInput'></input>
+                                    <input type="password" required ref={el => (infoRefs.current.password = el)} className='reg-user-input' style={{ width: 300 }}></input>
+                                    <img
+                                        src={hidePassword}
+                                        alt='reveal-password'
+                                        ref={el => (passRef.current.patientPass = el)}
+                                        className='reg-password-toggle-btn'
+                                        onClick={() => togglePasswordVisibility('Patient')}
+                                    />
                                 </div>
 
                                 <div className='flex-centered'>
@@ -418,20 +517,34 @@ function Register() {
                             </div>
                             <div className='profile-pic-container'>
                                 <div className="img-circle-mask">
-                                    <img src={patientProfilePicURL} alt='PROFILE PIC' height={100} width={100} className="profile-pic" />
+                                    <img src={patientProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
                                 </div>
-                                <div>Upload Profile Picture</div>
-                                <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} />
+                                {/* <div>Upload Profile Picture</div>
+                                <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} /> */}
+                                <Button
+                                    component="label"
+                                    role={undefined}
+                                    variant="contained"
+                                    tabIndex={-1}
+                                    size="small"
+                                >
+                                    Upload Picture
+                                    <VisuallyHiddenInput
+                                        type="file"
+                                        onChange={(e) => handleImageFileChange(e, 'Patient')}
+                                        multiple
+                                    />
+                                </Button>
                             </div>
                         </div>
                     </form>
 
                     <div className='flex-col' style={{ alignItems: "center" }}>
-                        <button className='pageBtn' onClick={(e) => goToNextPage(e, 1)}>NEXT</button>
+                        <button className='pageBtn' onClick={(e) => goToNextPage(e, 1, 'Patient')}>NEXT</button>
                     </div>
                 </div >
 
-                {/* PAGE 2 OF 3 */}
+                {/* PAGE 2 OF 4 */}
                 < div className={`register-form flex-col flex-centered ${pageTwoVisibility}`}>
                     <div className='flex-col flex-centered'>
                         <h1 className='title'>REGISTER</h1>
@@ -439,90 +552,106 @@ function Register() {
                     </div>
 
                     <div className='flex-col' style={{ gap: '20px', width: '300px' }}>
-                        <div className='flex-col'>
+                        <div className='flex-col reg-input-container'>
                             <label>Insurance Company</label>
-                            <input type="text" ref={el => (insuranceRefs.current.company = el)} className='userInput'></input>
+                            <input type="text" ref={el => (insuranceRefs.current.company = el)} className='reg-user-input'></input>
                         </div>
 
-                        <div className='flex-col'>
+                        <div className='flex-col reg-input-container'>
                             <label>Insurance ID</label>
-                            <input type="text" ref={el => (insuranceRefs.current.id = el)} className='userInput'></input>
+                            <input type="text" ref={el => (insuranceRefs.current.id = el)} className='reg-user-input'></input>
                         </div>
 
-                        <div className='flex-col'>
+                        <div className='flex-col reg-input-container'>
                             <label>Insurance Tier</label>
-                            <input type="text" ref={el => (insuranceRefs.current.tier = el)} className='userInput'></input>
+                            <input type="text" ref={el => (insuranceRefs.current.tier = el)} className='reg-user-input'></input>
                         </div>
                     </div>
 
-                    <div className='flex-row flex-centered'>
-                        <input className='pageBtn' type='button' value={'BACK'} onClick={() => goToPreviousPage()}></input>
-                        <input className='pageBtn' type='button' value={'NEXT'} onClick={(e) => goToNextPage(e, 2)}></input>
+                    <div className='flex-row flex-centered' style={{ gap: '10px' }}>
+                        <input className='pageBtn' type='button' value={'BACK'} onClick={() => goToPreviousPage('Patient')}></input>
+                        <input className='pageBtn' type='button' value={'NEXT'} onClick={(e) => goToNextPage(e, 2, 'Patient')}></input>
                     </div>
                 </div >
 
-                {/* PAGE 3 OF 3 */}
+                {/* PAGE 3 OF 4 */}
                 < div className={`register-form flex-col ${pageThreeVisibility}`}>
                     <div className='flex-col flex-centered'>
                         <h1 className='title'>REGISTER</h1>
-                        <div className='subtitle'>Initial Questionnaire</div>
+                        <div className='subtitle'>Initial Questionnaire (1 of 2)</div>
                     </div>
-                    <form onSubmit={registerPatient} ref={el => (formRefs.current.patientRegister = el)}>
-                        <div>
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                    <form onSubmit={goToNextPage} ref={el => (formRefs.current.patientPageThree = el)}>
+                        <div className='flex-col reg-questionnaire-container'>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>What is your current weight? (in pounds)</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.weight = el)}></input>
                             </div>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>How tall are you? (in feet)</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.height = el)}></input>
                             </div>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>On average, how many calories do you consume per day? (in kcal)</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.calories = el)}></input>
                             </div>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>How many liters of water do you drink daily?</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.water = el)}></input>
                             </div>
+                        </div>
+                    </form>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                    <div className='flex-row flex-centered' style={{ gap: '10px' }}>
+                        <input className='pageBtn' type='button' value={'BACK'} onClick={() => goToPreviousPage('Patient')}></input>
+                        <input className='pageBtn' type='submit' value={'NEXT'} onClick={(e) => goToNextPage(e, 3, 'Patient')}></input>
+                    </div>
+                </div >
+
+                {/* PAGE 4 OF 4 */}
+                < div className={`register-form flex-col ${pageFourVisibility}`}>
+                    <div className='flex-col flex-centered'>
+                        <h1 className='title'>REGISTER</h1>
+                        <div className='subtitle'>INITIAL QUESTIONNAIRE (2 of 2)</div>
+                    </div>
+                    <form onSubmit={registerPatient} ref={el => (formRefs.current.patientRegister = el)}>
+                        <div className='flex-col reg-questionnaire-container'>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>How many minutes do you exercise each day on average?</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.exercise = el)}></input>
                             </div>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>How many hours of sleep do you get per night on average?</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.sleep = el)}></input>
                             </div>
 
-                            <div className='flex-row' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>On a scale of 1 to 10, how would you rate your energy level this week?</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.energy = el)}></input>
                             </div>
 
-                            <div className='flex-row ' style={{ justifyContent: 'space-between' }}>
+                            <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>On a scale of 1 to 10, how would you rate your stress level this week?</label>
                                 <input type="number" required className='userIntInput' ref={el => (answersRefs.current.stress = el)}></input>
                             </div>
                         </div>
                     </form>
 
-                    <div className='flex-row flex-centered'>
-                        <button className='pageBtn' onClick={() => goToPreviousPage()}>BACK</button>
+                    <div className='flex-row flex-centered' style={{ gap: '10px' }}>
+                        <button className='pageBtn' onClick={() => goToPreviousPage('Patient')}>BACK</button>
                         <button className='registerBtn' onClick={(e) => registerPatient(e)}>REGISTER</button>
                     </div>
                 </div >
             </div >
 
-            {/* Therapist Registration Form */}
-            < div className={therapistFormVisibility} >
-                <div className='register-form flex-col'>
+            {/* Therapist Registration Form (PAGE 1 OF 2) */}
+            <div className={therapistFormVisibility}>
+                <div className={`register-form flex-col ${therapistPageOneVisibility}`}>
                     <div className='register-pic-container'>
-                        <div className='flex-col' style={{ alignItems: 'center' }}>
+                        <div className='flex-col flex-centered'>
                             <h1 className='title'>REGISTER</h1>
                             <div className='subtitle'>Are you a...</div>
                             <div style={{ display: 'flex', gap: '20px' }}>
@@ -530,52 +659,97 @@ function Register() {
                                 <input type='button' value={'THERAPIST'} className='pt-button ' ref={el => (infoRefs.current.therapistBtn = el)} onClick={() => { changeUserRegister(1) }}></input>
                             </div>
                         </div>
-                        <div className='profile-pic-container'>
-                            <div className="img-circle-mask">
-                                <img src={therapistProfilePicURL} alt='PROFILE PIC' height={100} width={100} className='profile-pic' />
+                    </div>
+                    <form onSubmit={goToNextPage} ref={el => (formRefs.current.therapistPageOne = el)}>
+                        <div className='flex-row' style={{ gap: '100px' }}>
+                            <div className='therapist-input-container'>
+                                <div className='flex-row' style={{ justifyContent: 'space-between', width: '100%' }}>
+                                    <div className='flex-col reg-input-container'>
+                                        <label>First Name</label>
+                                        <input type="text" required ref={el => (infoTherapistRefs.current.fname = el)} className='reg-name-input reg-user-input'></input>
+                                    </div>
+
+                                    <div className='flex-col reg-input-container'>
+                                        <label>Last Name</label>
+                                        <input type="text" required ref={el => (infoTherapistRefs.current.lname = el)} className='reg-name-input reg-user-input'></input>
+                                    </div>
+                                </div>
+
+                                <div className='flex-col reg-input-container'>
+                                    <label>Email</label>
+                                    <input type="text" required ref={el => (infoTherapistRefs.current.email = el)} className='reg-user-input' style={{ width: 300 }}></input>
+                                </div>
+
+                                <div className='flex-col reg-input-container'>
+                                    <label>Password</label>
+                                    <input type="password" required ref={el => (infoTherapistRefs.current.password = el)} className='reg-user-input' style={{ width: 300 }}></input>
+                                    <img
+                                        src={hidePassword}
+                                        alt='reveal-password'
+                                        ref={el => (passRef.current.therapistPass = el)}
+                                        className='reg-password-toggle-btn'
+                                        onClick={() => togglePasswordVisibility('Therapist')}
+                                    />
+                                </div>
+
+                                <div className='flex-centered'>
+                                    <input type='checkbox' required name='checkboxInput' ref={el => (infoRefs.current.tosAgreement = el)}></input>
+                                    <label htmlFor='checkboxInput'>
+                                        I agree to the Terms of Service.
+                                    </label>
+                                </div>
                             </div>
-                            <div>Upload Profile Picture</div>
-                            <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Therapist')} />
+                            <div className='profile-pic-container'>
+                                <div className="img-circle-mask">
+                                    <img src={therapistProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
+                                </div>
+                                {/* <div>Upload Profile Picture</div>
+                                <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} /> */}
+                                <Button
+                                    component="label"
+                                    role={undefined}
+                                    variant="contained"
+                                    tabIndex={-1}
+                                    size="small"
+                                >
+                                    Upload Picture
+                                    <VisuallyHiddenInput
+                                        type="file"
+                                        onChange={(e) => handleImageFileChange(e, 'Therapist')}
+                                        multiple
+                                    />
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+                    <div className='flex-row flex-centered'>
+                        <input className='pageBtn' type='submit' value={'NEXT'} onClick={(e) => goToNextPage(e, 1, 'Therapist')}></input>
+                    </div>
+                </div>
+
+                < div className={`register-form flex-col flex-centered ${therapistPageTwoVisibility}`} >
+                    <div className='register-pic-container'>
+                        <div className='flex-col' style={{ alignItems: 'center' }}>
+                            <h1 className='title'>REGISTER</h1>
+                            <div className='subtitle'>THERAPIST INFORMATION</div>
                         </div>
                     </div>
                     <form onSubmit={registerTherapist} ref={el => (formRefs.current.therapistRegister = el)}>
-                        <div className='therapist-input-container'>
-                            <div className='flex-col' style={{ gap: '10px' }}>
-                                <div className='flex-col'>
-                                    <label>First Name</label>
-                                    <input type="text" required ref={el => (infoTherapistRefs.current.fname = el)} className='userInput'></input>
-                                </div>
-
-                                <div className='flex-col'>
-                                    <label>Last Name</label>
-                                    <input type="text" required ref={el => (infoTherapistRefs.current.lname = el)} className='userInput'></input>
-                                </div>
-
-                                <div className='flex-col'>
-                                    <label>Email</label>
-                                    <input type="text" required ref={el => (infoTherapistRefs.current.email = el)} className='userInput'></input>
-                                </div>
-
-                                <div className='flex-col'>
-                                    <label>Password</label>
-                                    <input type="password" required ref={el => (infoTherapistRefs.current.password = el)} className='userInput'></input>
-                                </div>
-                            </div>
-
-                            <div className='flex-col' style={{ gap: '10px' }}>
-                                <div className='flex-col'>
+                        <div className='flex-col'>
+                            <div className='flex-col flex-centered' style={{ gap: '20px' }}>
+                                <div className='flex-col reg-input-container'>
                                     <label>License Number</label>
                                     <input
                                         type="text"
                                         required
                                         ref={el => (infoTherapistRefs.current.license = el)}
-                                        className='userInput'
+                                        className='reg-user-input'
                                         value={licenseValue}
                                         onChange={(e) => handleNumberFieldInput(e)}
                                     />
                                 </div>
-                                <div>
-                                    <label>Specializations</label>
+                                <div className='flex-col' style={{ gap: '5px' }}>
+                                    <label style={{ fontSize: '14pt' }}>Specializations ( Choose all that apply )</label>
                                     <div className='grid-specs-container' ref={el => (infoTherapistRefs.current.gridContainer = el)}>
                                         <input type='button' value={'Relationship'} className='grid-spec' onClick={(e) => selectedSpecialization(e)}></input>
                                         <input type='button' value={'Depression'} className='grid-spec' onClick={(e) => selectedSpecialization(e)}></input>
@@ -590,17 +764,15 @@ function Register() {
                             </div>
 
                         </div>
-                        <div className='flex-centered checkboxInput' style={{ marginTop: '20px' }}>
-                            <input type='checkbox' name='checkboxInput' required ref={el => (infoTherapistRefs.current.tosAgreement = el)}></input>
-                            <label htmlFor='checkboxInput'>
-                                I agree to the Terms of Service.
-                            </label>
-                        </div>
                     </form>
-
-                    <div className='flex-col flex-centered'>
+                    <div className='flex-row flex-centered' style={{ gap: '10px' }}>
+                        <input className='pageBtn' type='button' value={'BACK'} onClick={() => goToPreviousPage('Therapist')}></input>
                         <button className='registerBtn' onClick={(e) => registerTherapist(e)}>REGISTER</button>
                     </div>
+
+                    {/* <div className='flex-col flex-centered'>
+                        <button className='registerBtn' onClick={(e) => registerTherapist(e)}>REGISTER</button>
+                    </div> */}
                 </div>
             </div >
         </>

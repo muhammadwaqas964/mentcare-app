@@ -27,18 +27,15 @@ def registerPatientFunc():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        print("\nBEFORE REQUEST FILES profileIMG")
+        # print("\nBEFORE REQUEST FILES profileIMG")
         profileImgBinary = None
 
         # Check if a file was uploaded
         if 'profileImg' in request.files:
-            print("\nPROFILE IMAGE EXISTS\n")
+            # print("\nPROFILE IMAGE EXISTS\n")
             profileImg = request.files['profileImg']
-
-            # Optional: Validate file type (example: image/jpeg, image/png)
             if profileImg:
                 profileImgBinary = profileImg.read()  # Read the binary data of the image
-                print("Image binary:", profileImgBinary)
             else:
                 return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
 
@@ -55,18 +52,18 @@ def registerPatientFunc():
         energy = request.form.get('energy')
         stress = request.form.get('stress')
 
-        print("\nGOT HERE BEFORE INSERT INTO\n")
+        # print("\nGOT HERE BEFORE INSERT INTO\n")
         cursor = mysql.connection.cursor()
         if profileImgBinary == None:
+            cursor.execute('''
+                    INSERT INTO users (userName, email, pass, userType)
+                    VALUES (%s, %s, %s, 'Patient')
+                    ''', (fullname, email, password))
+        else:
             cursor.execute('''
                     INSERT INTO users (userName, email, pass, userType, profileImg)
                     VALUES (%s, %s, %s, 'Patient', %s)
                     ''', (fullname, email, password, profileImgBinary))
-        else:
-            cursor.execute('''
-                    INSERT INTO users (userName, email, pass, userType)
-                    VALUES (%s, %s, %s, 'Patient', %s)
-                    ''', (fullname, email, password))
         mysql.connection.commit()
         print("\nSUCCESSFULLY ADDED USER!\n")
 
@@ -106,18 +103,15 @@ def registerTherapistFunc():
         license = request.form.get('license')
         specsArray = request.form.get('specializations')
 
-        print("\nBEFORE REQUEST FILES profileIMG")
+        # print("\nBEFORE REQUEST FILES profileIMG")
         profileImgBinary = None
 
         # Check if a file was uploaded
         if 'profileImg' in request.files:
-            print("\nPROFILE IMAGE EXISTS\n")
+            # print("\nPROFILE IMAGE EXISTS\n")
             profileImg = request.files['profileImg']
-
-            # Optional: Validate file type (example: image/jpeg, image/png)
             if profileImg:
                 profileImgBinary = profileImg.read()  # Read the binary data of the image
-                # print("Image binary:", profileImgBinary)
             else:
                 return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
     
@@ -140,9 +134,9 @@ def registerTherapistFunc():
         cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
         data = cursor.fetchone()
         userID = data[0]
-        print(userID)
-        print(license)
-        print(specsArray)
+        # print(userID)
+        # print(license)
+        # print(specsArray)
 
         cursor.execute('''
                 INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content, isActive)

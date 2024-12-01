@@ -11,7 +11,7 @@ def get_testimonials():
         cursor.execute("""
             SELECT users.userName, testimonials.content
             FROM users
-            JOIN testimonials ON users.userID = testimonials.userID
+            INNER JOIN testimonials ON users.userID = testimonials.userID
         """)
         testimonials = cursor.fetchall()
         cursor.close()

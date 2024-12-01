@@ -125,10 +125,9 @@ def retriveProfilePicFunc():
             WHERE userID = %s
         ''', (realUserID,))
 
-        data = cursor.fetchall()
+        data = cursor.fetchone()
         if data:
-            profile_img_data = data[0][0]
-        
+            profile_img_data = data[0]
             if profile_img_data:
                 img_stream = BytesIO(profile_img_data)
                 return send_file(img_stream, mimetype='image/jpeg')

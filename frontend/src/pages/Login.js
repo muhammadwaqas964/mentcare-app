@@ -2,12 +2,17 @@ import React, { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../presets.css';
 import './styles/Login.css';
+import showPassword from './assets/images/show-password.png';
+import hidePassword from './assets/images/hide-password.png';
+
 
 function Login() {
     const inputRefs = useRef({
         email: null,
         password: null
     });
+
+    const passRef = useRef(null);
 
     //  Need this to redirect user to their dashboard page
     const navigate = useNavigate();
@@ -18,17 +23,6 @@ function Login() {
         const password = inputRefs.current.password.value;
         console.log(email);
         console.log(password);
-
-        /*
-        // Here, you can add your login logic (e.g., checking email and password)
-        if (email === 'test@example.com' && password === 'password123') {
-            // On successful login, redirect to dashboard
-            navigate('/dashboard');
-        } else {
-            // Handle incorrect credentials (e.g., show an error message)
-            alert('Invalid credentials');
-        }
-        */
 
         fetch('http://localhost:5000/patientOrTherapist', {
             method: 'POST',
@@ -42,21 +36,6 @@ function Login() {
                 console.log(data.userType);
                 console.log(data.realUserID);
                 console.log(data.userID);
-                // if (data.userType === 'Patient' || data.userType === 'Therapist') {
-                //     if (data.userType === 'Therapist') {
-                //         localStorage.setItem('isActive', data.isActive);
-                //         if (data.isActive === 0) {
-                //             navigate('/deactivated');
-                //             return;
-                //         }
-                //     }
-                //     localStorage.setItem('userType', data.userType);
-                //     localStorage.setItem('userID', data.userID);
-                //     localStorage.setItem('realUserID', data.realUserID)
-                //     console.log(localStorage.getItem('userID'));
-                //     navigate('/dashboard');
-                // }
-
 
                 if (data.userType === 'Patient') {
                     localStorage.setItem('userType', data.userType);
@@ -81,24 +60,44 @@ function Login() {
             .catch(err => console.error('Error fetching data:', err));
     }
 
+    function togglePasswordVisibility() {
+        if (inputRefs.current.password.type === 'password') {
+            inputRefs.current.password.type = 'text';
+            passRef.current.src = showPassword;
+            passRef.current.style.top = '44px';
+        }
+        else {
+            inputRefs.current.password.type = 'password';
+            passRef.current.src = hidePassword;
+            passRef.current.style.top = '42px';
+        }
+    }
+
     return (
         <div className="default-form-container">
             <h1>LOG IN</h1>
             <form>
-                <div className='flex-col emailInput'>
+                <div className='flex-col input-container'>
                     <label>Email</label>
-                    <input type="text" ref={el => (inputRefs.current.email = el)} required={true}></input>
+                    <input type="text" className='email-input' ref={el => (inputRefs.current.email = el)} required={true}></input>
                 </div>
 
-                <div className='flex-col passInput'>
+                <div className='flex-col input-container'>
                     <label>Password</label>
-                    <input type="password" ref={el => (inputRefs.current.password = el)}></input>
+                    <input type="password" className='password-input' ref={el => (inputRefs.current.password = el)}></input>
+                    <img
+                        src={hidePassword}
+                        alt='reveal-password'
+                        ref={el => (passRef.current = el)}
+                        className='password-toggle-btn'
+                        onClick={() => togglePasswordVisibility()}
+                    />
                     <Link to={'/forgot_password'}>Forgot Password?</Link>
                 </div>
 
                 <div className='flex-col flex-centered margin-top-15'>
                     <input className='loginBtn' type='submit' value={'LOG IN'} onClick={(e) => checkLogin(e)}></input>
-                    <div className='flex-row flex-centered'>
+                    <div className='flex-row flex-centered redirect-register'>
                         New to MentCare?&nbsp;
                         <Link to={'/register'}>Register Now</Link>
                     </div>
