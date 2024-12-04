@@ -4,18 +4,11 @@ import { Row, Col } from 'react-grid-system';
 import Grid from '@mui/material/Grid2';
 import VideoPlayer from '../components/VideoPlayer';
 import { Link } from 'react-router-dom';
+import FadeInSection from '../components/FadeInSection';
 
 function LandingPage() {
     const [openQuestion, setOpenQuestion] = useState(null);
     const [testimonials, setTestimonials] = useState([]);
-    const [isVisible, setIsVisible] = useState(true);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsVisible((prev) => !prev);
-        }, 4000);
-        return () => clearInterval(interval);
-    }, []);
 
     const toggleQuestion = (index) => {
         setOpenQuestion((openQuestion === index) ? null : index);
@@ -35,32 +28,38 @@ function LandingPage() {
         fetchTestimonials();
     }, []);
 
+    console.log("Fetched testimonials:", testimonials);
+
 
     return (
         <div className="landing-page">
             <div className="video-section">
                 <div className="video">{VideoPlayer()}</div>
-                <div className='video-text'>
-                    <h1 className={`fade-text ${isVisible ? 'fade-in' : 'fade-out'}`}>Welcome to MentCare</h1>
-                    <h1 className={`fade-text ${isVisible ? 'fade-out' : 'fade-in'}`}>Your Journey to Wellness starts here</h1>
+                <div className='video-text animation'>
+                    <h1>Welcome to MentCare</h1>
+                    <h1>Your Journey to Wellness starts here</h1>
+                    <Link to="/register" style={{ paddingTop: 80}}>
+                        <button className="send-button">Register Now</button>
+                    </Link>
                 </div>
             </div>
             <div className="content-container">
                 <Grid>
-                    <Row className="row-spacing">
+                    {/* <Row className="row-spacing">
                         <Col>
                             <Link to="/register">
                                 <button className="send-button">Register Now</button>
                             </Link>
                         </Col>
-                    </Row>
+                    </Row> */}
 
-                    <Row className="row-spacing">
+                    <FadeInSection>
+                    <Row className="row-spacing" style={{ paddingTop: 40 }}>
                         <Col md={6} className='about-us'>
                             <h2>About Us</h2>
                             <p>
-                                At MentCare, our mission is to create a safe, supportive, and accessible online space where individuals can prioritize their mental well-being. By connecting patients with licensed therapists through secure and meaningful interactions, we aim to empower users to overcome challenges, develop resilience, and lead fulfilling lives.
-                                Through our platform, we provide a confidential environment where patients can openly communicate with therapists via chat, receive personalized advice, and gain tools to navigate their mental health journey. Our commitment is to make professional mental health support more accessible, fostering a community of care and understanding in a digital world.
+                                At MentCare, our mission is to create a safe, supportive, and accessible online space where individuals can prioritize their mental well-being. By connecting patients with licensed therapists through secure and meaningful interactions, we aim to empower users to overcome challenges, develop resilience, and lead fulfilling lives. <br /> <br />
+                                Through our platform, we provide a confidential environment where patients can openly communicate with therapists via chat, receive personalized advice, and gain tools to navigate their mental health journey. Our commitment is to make professional mental health support more accessible, fostering a community of care and understanding in a digital world. <br /> <br />
                                 At MentCare, we believe that everyone deserves compassionate support and the opportunity to thrive.
                             </p>
                         </Col>
@@ -68,20 +67,24 @@ function LandingPage() {
                             <div><img src="/Mentcare-Symbol.png" alt="image" width={350} height={350} /></div>
                         </Col>
                     </Row>
+                    </FadeInSection>
 
-                    <div className="testimonial-users-section">
+                    <FadeInSection>
+                    <div className="testimonial-users-section" style={{ paddingTop: 40 }}>
                         <h2>Hear Our Happy Users!</h2>
                         <div className="testimonial-users-container">
                             {testimonials.map((testimonial, index) => (
-                                <div className={`testimonial-user ${(index % 2 === 0) ? "left" : "right"}`} key={testimonial.testimonialId}>
-                                    <div className="profile-picture">{<img src='logo192.png' width={100} height={100}></img>}</div>
+                                <div className={`testimonial-user ${(index % 2 === 0) ? "left" : "right"}`} key={testimonial.id}>
+                                    <div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : testimonial.img}</div>
                                     <div className="testimonial">{testimonial.content}</div>
                                 </div>
                             ))}
                         </div>
                     </div>
+                    </FadeInSection>
 
-                    <div className="faq-section">
+                    <FadeInSection>
+                    <div className="faq-section" style={{ paddingTop: 40 }}>
                         <h2>FAQs</h2>
                         <div className="faq-container">
                             <div className={`faq-bubble ${(openQuestion === 0) ? "open" : ""}`} onClick={() => toggleQuestion(0)}>
@@ -104,9 +107,11 @@ function LandingPage() {
                             </div>
                         </div>
                     </div>
+                    </FadeInSection>
 
-                    <div>
-                        <h2 style={{ textAlign: 'center', paddingTop: 20 }}>Contact Us</h2>
+                    <FadeInSection>
+                    <div style={{ paddingTop: 40 }}>
+                        <h2 style={{ textAlign: 'center'}}>Contact Us</h2>
                         <Row className="row-spacing">
                             <Col md={6}>
                                 <h2>Leave a review!</h2>
@@ -122,6 +127,7 @@ function LandingPage() {
                             </Col>
                         </Row>
                     </div>
+                    </FadeInSection>
                 </Grid>
             </div>
         </div>
