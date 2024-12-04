@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import io from 'socket.io-client';
 import { DashboardCard } from '../components/DashboardCards.js';
 import Pagination from '../components/Pagination.js';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './styles/PatientDashboard.css';
 import '../components/Pagination.css';
 
@@ -297,7 +299,13 @@ function PatientDashboard() {
             // console.log(divParent);
             divParent.className = 'hidden popUp-background';
         }
+        setCallCount(callCount + 1);
         console.log(therapistSurveyQuestions);
+    }
+
+    const clearWaitingQueue = () => {
+        // Easy, right 😎
+        toast.clearWaitingQueue();
     }
 
     function saveJournal(e) {
@@ -315,6 +323,8 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
+                clearWaitingQueue();
+                toast.success('Saved Journal!');
                 console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -364,6 +374,8 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
+                clearWaitingQueue();
+                toast.success('Successfully submitted survey!');
                 //console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -393,6 +405,8 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
+                clearWaitingQueue();
+                toast.success('Successfully submitted survey!');
                 //console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -448,6 +462,14 @@ function PatientDashboard() {
 
     return (
         <div className='patient-dashboard-container'>
+            <ToastContainer
+                limit={1}
+                position="bottom-left"
+                closeButton={false}
+                hideProgressBar={true}
+                pauseOnHover={false}
+                autoClose={3000}
+            />
             <h1>Welcome to your Patient Dashboard!</h1>
             {/* Display patient-specific content */}
 
@@ -458,10 +480,10 @@ function PatientDashboard() {
                             <div key={`journal-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={`Journal ${new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
-                                    <div className='popUp'>
+                                    <div className='popUp pd-popUp'>
                                         <h2>Journal Entry #{index + 1}</h2>
-                                        <h3>Date Created: {new Date(row.timeDone).toDateString()}</h3>
-                                        <textarea defaultValue={row.journalEntry}></textarea>
+                                        <h3>Date Created: {new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}</h3>
+                                        <textarea defaultValue={row.journalEntry} placeholder='Type here...'></textarea>
                                         <div className="flex-row" style={{ gap: "10px" }}>
                                             <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
                                             <input className='pd-action-btn' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
@@ -480,9 +502,12 @@ function PatientDashboard() {
                             <div key={`feedback-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={row.feedback} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
-                                    <div className='popUp'>
+                                    <div className='popUp pd-popUp'>
                                         <h2>Feedback #{index + 1}</h2>
-                                        <h3>Date Sent: {new Date(row.feedbackDate).toDateString()}</h3>
+                                        <div className='flex-col' style={{ gap: '10px' }}>
+                                            <h3>Date Sent: {new Intl.DateTimeFormat('en-US').format(new Date(row.feedbackDate))}</h3>
+                                            <h3>Sent By: {row.userName}</h3>
+                                        </div>
                                         <p>{row.feedback}</p>
                                         <div>
                                             <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>

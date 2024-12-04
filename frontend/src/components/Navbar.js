@@ -6,6 +6,7 @@ import "../presets.css";
 import NotificationBellImg from "./notification-bell.png";
 import NotificationBellActiveImg from "./notification-bell-active.png";
 import defaultProfilePic from '../pages/assets/images/default-profile-pic.jpg';
+import mentcareLogo from '../pages/assets/images/Mentcare_Symbol.png'
 
 const Navbar = () => {
     const [userData, setUserData] = useState(null);
@@ -252,7 +253,10 @@ const Navbar = () => {
 
     return (
         <nav>
-            <div className="left-section">
+            <div className="left-section flex-row">
+                <div className="navbar-img-circle-mask">
+                    <img src={mentcareLogo} alt="Logo" className="navbar-profile-pic" />
+                </div>
                 <Link to="/" onClick={() => handleTabClick(`/`)}>
                     <h2 className={`${selectedTab === "/" ? "active-tab" : "selectable-tab"}`}>MentCare</h2>
                 </Link>
@@ -326,10 +330,10 @@ const Navbar = () => {
                                             </div>
                                         </div>
 
-                                        <div className="notifs-dropdown">
+                                        <div className="notifs-dropdown flex-col flex-centered">
                                             <div
                                                 className="flex-col flex-centered"
-                                                style={{ height: "100%" }}
+                                                style={{ height: "100%", marginTop: '20px', marginBottom: '20px' }}
                                             >
                                                 <img
                                                     src={bellImage}
@@ -417,7 +421,7 @@ const Navbar = () => {
                                                         No Notifications!
                                                     </div>
                                                 </div>
-                                            )};
+                                            )}
                                         </div>
                                     </div>
                                 ) : (

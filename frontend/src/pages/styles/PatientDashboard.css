@@ -41,6 +41,37 @@
     z-index: 999;
 }
 
+.pd-popUp {
+
+    &>h2,
+    h3 {
+        margin: 0;
+    }
+
+    &>h2 {
+        margin-bottom: 10px;
+    }
+
+    &>p {
+        font-size: 14pt;
+    }
+
+    &>textarea {
+        width: 600px;
+        height: 400px;
+        padding: 20px;
+        box-sizing: border-box;
+        border: 2px solid #ccc;
+        border-radius: 25px;
+        background-color: #f8f8f8;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        font-size: 16px;
+        resize: none;
+        outline: none;
+    }
+}
+
 .questions-container {
     display: flex;
     flex-direction: row;
@@ -67,6 +98,10 @@
 .pd-action-btn {
     width: 100px;
     padding: 8px 14px;
+
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .pd-questions-container {

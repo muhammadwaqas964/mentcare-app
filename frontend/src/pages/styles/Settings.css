@@ -88,11 +88,29 @@
 }
 
 .settings-main-container {
+    /* display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; */
+
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
     align-items: center;
-    height: 100%;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    gap: 5px;
+
+    border-radius: 20px;
+    padding: 20px;
+    padding-top: 30px;
+    text-align: center;
+    width: max-content;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -30%);
 }
 
 .settings-text-input {

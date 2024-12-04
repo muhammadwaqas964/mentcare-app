@@ -98,6 +98,7 @@ def get_user_chats():
 def startChatFunc():
     try:
         patientID = request.json.get('patientId')
+        therapistID = request.json.get('therapistId')
 
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
@@ -106,7 +107,7 @@ def startChatFunc():
 
         # Emit the event to the connected socket clients
         socketio.emit('start-chat-for-patient', {
-            'message':'active'
+            'therapistID': therapistID
         }, room=app.sockets[str(userID)])
 
         return jsonify({"message": "Chat started successfully!"}), 200
@@ -136,6 +137,7 @@ def endChatFunc():
 def requestChatFunc():
     try:
         therapistID = request.json.get('therapistId')
+        patientID = request.json.get('patientId')
 
         cursor = mysql.connection.cursor()
         cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapistID, ))
@@ -144,7 +146,7 @@ def requestChatFunc():
 
         # Emit the event to the connected socket clients
         socketio.emit('request-chat', {
-            'message':'active'
+            'patientID':patientID
         }, room=app.sockets[str(userID)])
 
         return jsonify({"message": "Requested"}), 200

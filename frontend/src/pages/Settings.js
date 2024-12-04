@@ -354,63 +354,61 @@ function SettingsPage() {
     return (
         <div className='settings-main-container'>
             <div className="flex-col flex-centered">
-                <DashboardCardTitleless>
-                    <div className='flex-col flex-centered'>
-                        <h1>Account Details</h1>
-                        <div className='flex-row flex-centered' style={{ gap: "20px" }}>
-                            {pfp ? (
-                                <div className="centered settings-img-circle-mask">
-                                    <img src={pfp} alt="Profile" className="settings-profile-pic" />
-                                </div>
-                            ) : (
-                                <div className="centered settings-img-circle-mask">
-                                    <img src={defaultProfilePic} alt="Profile" className="settings-profile-pic" />
-                                </div>
-                            )}
-                            <div className='flex-row' style={{ textAlign: "right", gap: "10px" }}>
-                                <div className='flex-col'>
-                                    <p>Name:</p>
-                                    <p>Email:</p>
-                                </div>
-                                <div className='flex-col' style={{ textAlign: "left" }}>
-                                    <p>{userName}</p>
-                                    <p>{email}</p>
-                                </div>
+                <div className='flex-col flex-centered'>
+                    <h1>Account Details</h1>
+                    <div className='flex-row flex-centered' style={{ gap: "20px" }}>
+                        {pfp ? (
+                            <div className="centered settings-img-circle-mask">
+                                <img src={pfp} alt="Profile" className="settings-profile-pic" />
                             </div>
-                        </div>
-
-                        <button className='settings-btn' type="button" onClick={() => editAccDetails()}>Edit Details</button>
-                    </div>
-                    <div ref={patientRef} className="hidden settings-popUp-background">
-                        <label htmlFor="theme">Allow therpists to see old records?</label><br />
-                        <select name="theme" id="theme" defaultValue={patientPrivacy} onChange={(event) => privacyHandler(event)}>
-                            <option value="False">No</option>
-                            <option value="True">Yes</option>
-                        </select>
-                        <hr style={{ "width": "100%", "height": "4px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
-                        <h1>Insurance Information</h1>
-                        <div className='flex-row' style={{ gap: "10px" }}>
-                            <div className='flex-col' style={{ textAlign: "right" }}>
-                                <p>Insurance Company:</p>
-                                <p>Insurance ID:</p>
-                                <p>Insurance Tier:</p>
+                        ) : (
+                            <div className="centered settings-img-circle-mask">
+                                <img src={defaultProfilePic} alt="Profile" className="settings-profile-pic" />
+                            </div>
+                        )}
+                        <div className='flex-row' style={{ textAlign: "right", gap: "10px" }}>
+                            <div className='flex-col'>
+                                <p>Name:</p>
+                                <p>Email:</p>
                             </div>
                             <div className='flex-col' style={{ textAlign: "left" }}>
-                                <p>{insComp}</p>
-                                <p>{insID}</p>
-                                <p>{insTier}</p>
+                                <p>{userName}</p>
+                                <p>{email}</p>
                             </div>
                         </div>
-                        <button className='settings-btn' type="button" onClick={() => editInsDetails()}>Edit Details</button>
                     </div>
-                    <hr style={{ "width": "100%", "height": "4px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
-                    <h1>Appearance</h1>
-                    <label htmlFor="theme">Choose a theme:</label><br />
-                    <select name="theme" id="theme">
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
+
+                    <button className='settings-btn' type="button" onClick={() => editAccDetails()}>Edit Details</button>
+                </div>
+                <div ref={patientRef} className="hidden settings-popUp-background">
+                    <label htmlFor="theme">Allow therpists to see old records?</label><br />
+                    <select name="theme" id="theme" defaultValue={patientPrivacy} onChange={(event) => privacyHandler(event)}>
+                        <option value="False">No</option>
+                        <option value="True">Yes</option>
                     </select>
-                </DashboardCardTitleless>
+                    <hr style={{ "width": "100%", "height": "4px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
+                    <h1>Insurance Information</h1>
+                    <div className='flex-row' style={{ gap: "10px" }}>
+                        <div className='flex-col' style={{ textAlign: "right" }}>
+                            <p>Insurance Company:</p>
+                            <p>Insurance ID:</p>
+                            <p>Insurance Tier:</p>
+                        </div>
+                        <div className='flex-col' style={{ textAlign: "left" }}>
+                            <p>{insComp}</p>
+                            <p>{insID}</p>
+                            <p>{insTier}</p>
+                        </div>
+                    </div>
+                    <button className='settings-btn' type="button" onClick={() => editInsDetails()}>Edit Details</button>
+                </div>
+                <hr style={{ "width": "100%", "height": "4px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
+                <h1>Appearance</h1>
+                <label htmlFor="theme">Choose a theme:</label><br />
+                <select name="theme" id="theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
                 <br /><br />
                 <button className={accActionClass} type="button" onClick={() => accountChangeHandler(words)}>{words} Account</button> {/* TODO: Make this a big red button */}
             </div>

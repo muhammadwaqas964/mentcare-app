@@ -3,7 +3,6 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 88px;
 }
 
 /* Prevent pointer cursor on the Link element */
@@ -20,10 +19,10 @@ a h2 {
 .active-tab {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     font-weight: bold;
+    font-size: 16pt;
     color: white;
     position: relative;
     display: inline-block;
-    padding-bottom: 5px;
 }
 
 .dropdown-selectable-tab {
@@ -61,6 +60,10 @@ a h2 {
 
 /* Keep the underline visible when dropdown is hovered */
 .dropdown:hover .selectable-tab::after {
+    width: 100%;
+}
+
+.hoverable-fix .selectable-tab::after {
     width: 100%;
 }
 
@@ -131,7 +134,7 @@ a h2 {
 .dropdown-items {
     display: none;
     position: absolute;
-    top: 88px;
+    top: 80.4px;
     background-color: #f9f9f9;
     width: 100%;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
@@ -151,6 +154,7 @@ a h2 {
     position: absolute;
     background-color: #f9f9f9;
     right: 0;
+    top: 80px;
     width: 300px;
     text-align: center;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
@@ -231,8 +235,8 @@ a h2 {
 }
 
 .navbar-img-circle-mask {
-    width: 75px;
-    height: 75px;
+    width: 50px;
+    height: 50px;
     mask-image: url('../pages/assets/images/circle_mask.png');
     mask-repeat: no-repeat;
     mask-size: cover;

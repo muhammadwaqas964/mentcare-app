@@ -12,10 +12,10 @@ function LandingPage() {
 
     useEffect(() => {
         const interval = setInterval(() => {
-          setIsVisible((prev) => !prev);
+            setIsVisible((prev) => !prev);
         }, 4000);
         return () => clearInterval(interval);
-      }, []);
+    }, []);
 
     const toggleQuestion = (index) => {
         setOpenQuestion((openQuestion === index) ? null : index);
@@ -65,7 +65,7 @@ function LandingPage() {
                             </p>
                         </Col>
                         <Col md={6}>
-                            <div><img src="/Mentcare Symbol.png" alt="image" width={350} height={350} /></div>
+                            <div><img src="/Mentcare-Symbol.png" alt="image" width={350} height={350} /></div>
                         </Col>
                     </Row>
 

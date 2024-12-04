@@ -42,19 +42,17 @@ function Chat() {
             console.log('Disconnected from server');
         });
 
-        socket.on('start-chat-for-patient', async () => {
+        socket.on('start-chat-for-patient', async (data) => {
             console.log("Your therapist has started a chat! ");
-
             setSelectedTherapist({
                 therapistID: chooseId,
-                patientID: selectedTherapist?.therapistID,
+                patientID: parseInt(data.therapistID),
                 chatStatus: 'Active',
                 requestStatus: 'Inactive',
             });
             const updatedUsers = await updateUsers();
-            console.log(updatedUsers);
             setTherapists(updatedUsers);
-            const therapist = updatedUsers.filter(therap => therap.therapistID === 1);
+            const therapist = updatedUsers.filter(therap => therap.therapistID === parseInt(data.therapistID));
             // console.log(therapist[0]);
             // setChatHistory(JSON.parse(therapist[0].content).chats);
             const updatedTherapist = { ...therapist[0], requestStatus: 'Inactive' };
@@ -80,15 +78,16 @@ function Chat() {
             const updatedUsers = await updateUsers();
             console.log(updatedUsers);
             setTherapists(updatedUsers);
-            const therapist = updatedUsers.filter(therap => therap.therapistID === 1);
+            const therapist = updatedUsers.filter(therap => therap.patientID === selectedTherapist?.patientID);
             handleTherapistSelect(therapist[0]);
         });
 
-        socket.on('request-chat', async () => {
+        socket.on('request-chat', async (data) => {
             console.log("Patient has sent a chat request!");
+            console.log(data.patientID);
 
             setSelectedTherapist({
-                therapistID: selectedTherapist?.therapistID,
+                therapistID: parseInt(data.patientID),
                 patientID: chooseId,
                 chatStatus: 'Inactive',
                 requestStatus: 'Active',
@@ -96,9 +95,8 @@ function Chat() {
             const updatedUsers = await updateUsers();
             console.log(updateUsers);
             setTherapists(updatedUsers);
-            setSelectedTherapist((prevSelected) =>
-                prevSelected ? { ...prevSelected, requestStatus: 'Active' } : null
-            );
+            const therapist = updatedUsers.filter(therap => therap.patientID === parseInt(data.patientID));
+            handleTherapistSelect(therapist[0]);
         });
 
         socket.on('new-message', (data) => {
@@ -249,13 +247,14 @@ function Chat() {
     const handleStartChat = () => {
         if (selectedTherapist) {
             const patientId = selectedTherapist.therapistID;
+            const therapistID = chooseId;
             console.log(patientId);
             fetch('http://localhost:5000/startChat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ patientId }),
+                body: JSON.stringify({ patientId, therapistId: chooseId }),
             })
                 .then(res => res.json())
                 .then(data => {
@@ -302,13 +301,15 @@ function Chat() {
     const handleRequestChat = () => {
         if (selectedTherapist) {
             const therapistId = selectedTherapist?.therapistID;
+            const patientId = chooseId;
+            console.log(chooseId);
             console.log(therapistId);
             fetch('http://localhost:5000/requestChat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ therapistId }),
+                body: JSON.stringify({ therapistId, patientId }),
             })
                 .then(res => res.json())
                 .then(data => {
