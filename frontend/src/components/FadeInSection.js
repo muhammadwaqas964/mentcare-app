@@ -1,4 +1,5 @@
 import React from "react";
+import '../pages/styles/LandingPage.css'
 
 function FadeInSection(props) {
     const [isVisible, setVisible] = React.useState(false);
