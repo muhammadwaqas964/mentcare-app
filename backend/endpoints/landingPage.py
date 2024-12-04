@@ -4,23 +4,27 @@ from app import mysql
 landingPageData = Blueprint('landingPageData', __name__)
 
 # Fetch testimonials
-@landingPageData.route('/testimonials', methods=['GET'])
+@landingPageData.route('/getTestimonials', methods=['GET'])
 def get_testimonials():
     try:
         cursor = mysql.connection.cursor()
         cursor.execute("""
-            SELECT users.userName, testimonials.content
-            FROM users
-            INNER JOIN testimonials ON users.userID = testimonials.userID
-        """)
+            SELECT testimonials.testimonialID, testimonials.content, users.profileImg
+            FROM testimonials INNER JOIN users ON users.userID = testimonials.userID; """)
         testimonials = cursor.fetchall()
         cursor.close()
+
         formatted_testimonials = [
-            {"Username": row[0], "Content": row[1]} for row in testimonials
+            {
+                "id": row[0],
+                "content": row[1],
+                "img": row[2]
+            } for row in testimonials
         ]
-        return jsonify({"Testimonials": formatted_testimonials})
+        return jsonify(formatted_testimonials)
     except Exception as err:
-        return {"error": f"{err}"}
+        return jsonify({"error": str(err)}), 500
+
 
 # Fetch mission statement, FAQs, and Contact Us data
 @landingPageData.route('/companydata', methods=['GET'])
