@@ -3,15 +3,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import io from 'socket.io-client';
 import "./Navbar.css";
 import "../presets.css";
-import NotificationBellImg from "./notification-bell.png";
-import NotificationBellActiveImg from "./notification-bell-active.png";
-import defaultProfilePic from '../pages/assets/images/default-profile-pic.jpg';
-import mentcareLogo from '../pages/assets/images/Mentcare_Symbol.png'
 
 const Navbar = () => {
     const [userData, setUserData] = useState(null);
     const [notifications, setNotifications] = useState(null);
-    const [bellImage, setBellImage] = useState(NotificationBellImg);
+    const [bellImage, setBellImage] = useState('/assets/images/notification-bell.png');
     const [profileImgUrl, setProfileImgUrl] = useState(null);
     const [isActive, setIsActive] = useState(null);
 
@@ -102,18 +98,15 @@ const Navbar = () => {
                     if (res.ok) {
                         imageExists = true;
                     }
-                    return res.blob();
+                    return res.json();
                 })
                 .then((data) => {
                     if (imageExists) {
-                        const imageUrl = URL.createObjectURL(data);
-                        // console.log("Image Blob:", data);
-                        // console.log("Image URL:", imageUrl);
-                        setProfileImgUrl(imageUrl);
+                        setProfileImgUrl(`/assets/profile-pics/${data.profileImg}`);
                         imageExists = false;
                     }
                     else {
-                        setProfileImgUrl(defaultProfilePic);
+                        setProfileImgUrl(null);
                     }
                 })
                 .catch((error) => {
@@ -152,7 +145,6 @@ const Navbar = () => {
                     return res.json();
                 })
                 .then((data) => {
-                    console.log(data[0][0])
                     setUserData(data[0][0]);
                     setNotifications(data[1]);
                     if (userType === 'Therapist') {
@@ -174,18 +166,15 @@ const Navbar = () => {
                     if (res.ok) {
                         imageExists = true;
                     }
-                    return res.blob();
+                    return res.json();
                 })
                 .then((data) => {
                     if (imageExists) {
-                        const imageUrl = URL.createObjectURL(data);
-                        // console.log("Image Blob:", data);
-                        // console.log("Image URL:", imageUrl);
-                        setProfileImgUrl(imageUrl);
+                        setProfileImgUrl(`/assets/profile-pics/${data.profileImg}`);
                         imageExists = false;
                     }
                     else {
-                        setProfileImgUrl(defaultProfilePic);
+                        setProfileImgUrl(null);
                     }
                 })
                 .catch((error) => {
@@ -202,15 +191,14 @@ const Navbar = () => {
     //  Use to update notifications
     useEffect(() => {
         if (!notifications) {
-            setBellImage(NotificationBellImg);
+            setBellImage('/assets/images/notification-bell.png');
         } else {
-            setBellImage(NotificationBellActiveImg);
+            setBellImage('/assets/images/notification-bell-active.png');
         }
     }, [notifications]);
 
     //  Use to update current tab clicked
     useEffect(() => {
-        console.log(location.pathname);
         handleTabClick(`${location.pathname}`)
     }, [location.pathname])
 
@@ -249,13 +237,11 @@ const Navbar = () => {
         }).catch((err) => console.error("Error fetching data:", err));
     }
 
-    console.log(isLoggedIn);
-
     return (
-        <nav>
+        <nav className="navbar">
             <div className="left-section flex-row">
                 <div className="navbar-img-circle-mask">
-                    <img src={mentcareLogo} alt="Logo" className="navbar-profile-pic" />
+                    <img src={'/assets/images/Mentcare_Symbol.png'} alt="Logo" className="navbar-profile-pic" />
                 </div>
                 <Link to="/" onClick={() => handleTabClick(`/`)}>
                     <h2 className={`${selectedTab === "/" ? "active-tab" : "selectable-tab"}`}>MentCare</h2>
@@ -307,7 +293,7 @@ const Navbar = () => {
                                                         </div>
                                                     ) : (
                                                         <div className="navbar-img-circle-mask">
-                                                            <img src={defaultProfilePic} alt="Profile" className="navbar-profile-pic" />
+                                                            <img src={'/assets/images/default-profile-pic.jpg'} alt="Profile" className="navbar-profile-pic" />
                                                         </div>
                                                     )}
                                                 </div>
@@ -337,6 +323,7 @@ const Navbar = () => {
                                             >
                                                 <img
                                                     src={bellImage}
+                                                    alt="notif-bell"
                                                     width={"40px"}
                                                     height={"40px"}
                                                     onClick={() => toggleNotifications()}

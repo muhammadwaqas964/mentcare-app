@@ -21,8 +21,6 @@ function Login() {
         e.preventDefault();
         const email = inputRefs.current.email.value;
         const password = inputRefs.current.password.value;
-        console.log(email);
-        console.log(password);
 
         fetch('http://localhost:5000/patientOrTherapist', {
             method: 'POST',
@@ -33,15 +31,10 @@ function Login() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data.userType);
-                console.log(data.realUserID);
-                console.log(data.userID);
-
                 if (data.userType === 'Patient') {
                     localStorage.setItem('userType', data.userType);
                     localStorage.setItem('userID', data.userID);
                     localStorage.setItem('realUserID', data.realUserID);
-                    console.log(localStorage.getItem('userID'));
                     navigate('/dashboard');
                 }
                 else if (data.userType === 'Therapist') {

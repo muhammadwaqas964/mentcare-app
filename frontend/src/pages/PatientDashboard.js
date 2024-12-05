@@ -470,7 +470,20 @@ function PatientDashboard() {
                 pauseOnHover={false}
                 autoClose={3000}
             />
-            <h1>Welcome to your Patient Dashboard!</h1>
+            <h1
+                style={{
+                    textAlign: "center",
+                    color: "#34c4a9",
+                    fontSize: "38px",
+                    fontWeight: "bold",
+                    margin: 0,
+                    padding: "20px 0",
+                    boxSizing: "border-box",
+                    textShadow: "0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867"
+                }}
+            >
+                Welcome to Your Patient Dashboard
+            </h1>
             {/* Display patient-specific content */}
 
             <div className="cards-container">

@@ -15,7 +15,7 @@ def thersProfInfoFunc():
         cursor.execute("""
             SELECT users.userName, therapists.Intro, therapists.Education, 
                    therapists.DaysHours, therapists.Price, 
-                   therapists.specializations
+                   therapists.specializations, users.profileImg
             FROM users
             JOIN therapists ON users.userID = therapists.userID
             WHERE users.userID = %s AND users.userType = 'Therapist'
@@ -67,7 +67,7 @@ def theraReviewFunc():
         therapistID = cursor.fetchone()[0]
 
         cursor.execute(f"""
-            SELECT reviews.content, reviews.stars, reviews.dateDone, users.userName
+            SELECT reviews.content, reviews.stars, reviews.dateDone, users.userName, users.profileImg
             FROM reviews, patients, users
             WHERE reviews.therapistID = {therapistID}
             AND reviews.patientID = patients.patientID

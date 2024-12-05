@@ -16,7 +16,7 @@ def get_therapists():
 
         cursor.execute('''
             SELECT 
-                t.therapistID, 
+                u.userID, 
                 u.userName, 
                 u.profileImg, 
                 t.specializations, 
@@ -37,12 +37,13 @@ def get_therapists():
 
         therapists = []
         for row in data:
-            therapistID, userName, profileImg, specializations, Intro, Education, DaysHours, Price, isActive = row
+            userID, userName, profileImg, specializations, Intro, Education, DaysHours, Price, isActive = row
 
             
             if profileImg:
-                profileImg_base64 = base64.b64encode(profileImg).decode('utf-8')
-                profileImg_url = f"data:image/jpeg;base64,{profileImg_base64}"
+                # profileImg_base64 = base64.b64encode(profileImg).decode('utf-8')
+                # profileImg_url = f"data:image/jpeg;base64,{profileImg_base64}"
+                profileImg_url = profileImg
             else:
                 profileImg_url = None  
 
@@ -53,7 +54,7 @@ def get_therapists():
                 specializations_list = []
 
             therapist = {
-                'therapistID': therapistID,
+                'userID': userID,
                 'name': userName,
                 'profileImg': profileImg_url,
                 'specializations': specializations_list,

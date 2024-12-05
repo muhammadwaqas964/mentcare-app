@@ -102,15 +102,14 @@
     gap: 5px;
 
     border-radius: 20px;
-    padding: 20px;
-    padding-top: 30px;
+    padding: 40px;
     text-align: center;
     width: max-content;
 
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -30%);
+    /* transform: translate(-50%, -50%); */
 }
 
 .settings-text-input {
@@ -157,6 +156,7 @@
     height: 44px;
     border-radius: 10px;
     border: 0px;
+    margin-top: 30px;
 
     &:hover {
         cursor: pointer;

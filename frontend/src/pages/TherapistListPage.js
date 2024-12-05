@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import mockProfilePic from "./assets/images/Mock_Profile_Picture.jpg";
 import { useNavigate } from "react-router-dom";
 
 const TherapistListPage = () => {
@@ -21,12 +20,12 @@ const TherapistListPage = () => {
         }
         const data = await response.json();
         const formattedTherapists = data.map((therapist) => ({
-          id: therapist.therapistID,
+          id: therapist.userID,
           name: therapist.name,
           specialty: therapist.specializations.join(", ") || "No specialty provided",
-          profilePic: therapist.profileImg || mockProfilePic,
+          profilePic: therapist.profileImg !== null ? `/assets/profile-pics/${therapist.profileImg}` : '/assets/images/Mock_Profile_Picture.jpg',
           gender: therapist.gender || "Not specified",
-          price: therapist.chargingPrice || "Contact for pricing",
+          price: therapist.chargingPrice ? `$${therapist.chargingPrice}` : "Contact for pricing",
         }));
         setTherapists(formattedTherapists);
       } catch (error) {
@@ -64,11 +63,13 @@ const TherapistListPage = () => {
     setSortCriteria(criteria);
     const sortedTherapists = [...therapists].sort((a, b) => {
       if (criteria === "price") {
-        const priceA = parseFloat(a.chargingPrice.replace(/[^0-9.-]+/g, "")) || 0;
-        const priceB = parseFloat(b.chargingPrice.replace(/[^0-9.-]+/g, "")) || 0;
+        const priceA = parseFloat(a.price.replace(/[^0-9.-]+/g, "")) || 0;
+        const priceB = parseFloat(b.price.replace(/[^0-9.-]+/g, "")) || 0;
         return priceA - priceB;
       }
-      if (a[criteria] < b[criteria]) return -1;
+      if (a[criteria] < b[criteria]) {
+        return -1;
+      }
       if (a[criteria] > b[criteria]) return 1;
       return 0;
     });
@@ -79,7 +80,7 @@ const TherapistListPage = () => {
     (therapist) =>
       (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      (!maxPrice || parseFloat(therapist.chargingPrice.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
+      (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
 
 
@@ -109,6 +110,7 @@ const TherapistListPage = () => {
           margin: 0,
           padding: "20px 0",
           boxSizing: "border-box",
+          textShadow: "0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867, 0px 0px 2px #1a7867"
         }}
       >
         Therapist List
@@ -230,7 +232,7 @@ const TherapistListPage = () => {
               Gender: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.gender}</span>
             </p>
             <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
-              Price: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>${therapist.price}</span>
+              Price: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.price}</span>
             </p>
             <p style={{ margin: "5px 0", fontSize: "14px", color: "#666", fontWeight: "bold" }}>
               Specialization: <span style={{ fontSize: "15px", color: "#333", fontWeight: "normal" }}>{therapist.specialty}</span>

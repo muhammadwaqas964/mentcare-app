@@ -3,6 +3,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-bottom: 200px;
 }
 
 .video-section {
@@ -150,7 +151,7 @@
 
 .fade-in-section {
   opacity: 0;
-  transform: translateY(20vh);
+  transform: translateY(10vh);
   visibility: hidden;
   transition: opacity 0.6s ease-out, transform 1.2s ease-out;
   will-change: opacity, visibility;

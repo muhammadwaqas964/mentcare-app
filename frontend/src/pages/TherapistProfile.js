@@ -7,6 +7,7 @@ import { Rating, Slider, Pagination, FormControl, FormHelperText } from '@mui/ma
 function TherapistProfile() {
     const { userId } = useParams();
     const [therapistName, setTherapistName] = useState("Loading Name");
+    const [therapistPfp, setTherapistPfp] = useState("/assets/images/default-profile-pic.jpg");
 
     const [specializations, setSpecializations] = useState("Loading specializations");
     const [education, setEducation] = useState("Loading education");
@@ -47,6 +48,13 @@ function TherapistProfile() {
             .then(res => res.json())
             .then(data => {
                 console.log("Swag", data);
+                if (data.Therapist[6] !== null) {
+                    setTherapistPfp(`/assets/profile-pics/${data.Therapist[6]}`)
+                }
+                else {
+                    setTherapistPfp('/assets/images/default-profile-pic.jpg')
+                }
+
                 setTherapistName(data.Therapist[0]);
                 setSpecializations(data.Therapist[5]);
                 setSpecializationsArr(data.Therapist[5].split(','));
@@ -123,8 +131,8 @@ function TherapistProfile() {
         event.preventDefault();
         setSpecializationsArr(specializations.split(','));
         setEducationUpd(education);
-        setAboutMeUpd(availability);
-        setAvailabilityUpd(aboutMe);
+        setAboutMeUpd(aboutMe);
+        setAvailabilityUpd(availability);
         setPricingUpd(pricing);
         setEditing(1);
     }
@@ -249,114 +257,146 @@ function TherapistProfile() {
     return (
         <>
             <form onSubmit={(event) => saveEditing(event)}>
-                <div className="flex-col main-container flex-centered">
-                    <div className="flex-row">
+                <div className="flex-col flex-centered" style={{ gap: '40px', paddingTop: '40px', fontSize: '14pt' }}>
+                    <div className="flex-row" style={{ gap: '60px' }}>
                         <div className="flex-col flex-centered thera-prof-top-left">
-                            <p>PFP here</p>
+                            <div className='profile-pic-container'>
+                                <div className="img-circle-mask">
+                                    <img src={therapistPfp} alt='PROFILE PIC' className="profile-pic" />
+                                </div>
+                            </div>
                             <p>{therapistName}</p>
-                            <Rating name="stars-overview" value={reviewSummary.avgStars} precision={0.1} readOnly />
+                            <Rating name="stars-overview" value={reviewSummary.avgStars} precision={0.1} size='large' readOnly />
                         </div>
 
                         <div className="flex-col flex-centered thera-prof-top-right">
                             <h1>ABOUT ME</h1>
-                            <div className={editing ? "hidden" : "flex-col flex-centered"}>
+                            <div className={editing ? "hidden" : "flex-col"} style={{ maxWidth: '600px' }}>
+                                <p>{aboutMe}</p>
                                 <p><strong>Specializations: </strong>{specializations.replace(/,/g, ", ")}</p>
                                 <p><strong>Education: </strong>{education}</p>
-                                <p>{aboutMe}</p>
                             </div>
-                            <div className={editing ? "flex-col flex-centered" : "hidden"}>
-                                <div className='grid-specs-container'>
-                                    <input type='button' value={'Relationship'} className={specializations.includes("Relationship") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Depression'} className={specializations.includes("Depression") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Addiction'} className={specializations.includes("Addiction") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Anxiety'} className={specializations.includes("Anxiety") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'PTSD'} className={specializations.includes("PTSD") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Anger Mgmt.'} className={specializations.includes("Anger Mgmt.") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
-                                    <input type='button' value={'Confidence'} className={specializations.includes("Confidence") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                            <div className={editing ? "flex-col" : "hidden"} style={{ gap: '20px' }}>
+                                <div className='flex-col'>
+                                    <label>Edit About Me</label>
+                                    <textarea className='ther-profile-textarea' value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)} />
                                 </div>
-                                <textarea value={educationUpd} onChange={(event) => updText(event, setEducationUpd)} />
-                                <textarea value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)} />
+                                <div className='flex-col'>
+                                    <label>Edit Specializations</label>
+                                    <div className='grid-specs-container'>
+                                        <input type='button' value={'Relationship'} className={specializations.includes("Relationship") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Depression'} className={specializations.includes("Depression") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Addiction'} className={specializations.includes("Addiction") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Anxiety'} className={specializations.includes("Anxiety") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'PTSD'} className={specializations.includes("PTSD") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Family Therapy'} className={specializations.includes("Family Therapy") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Anger Mgmt.'} className={specializations.includes("Anger Mgmt.") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                        <input type='button' value={'Confidence'} className={specializations.includes("Confidence") ? 'grid-spec selected-spec' : 'grid-spec'} onClick={(e) => selectedSpecialization(e)} />
+                                    </div>
+                                </div>
+                                <div className='flex-col'>
+                                    <label>Edit Education</label>
+                                    <textarea className='ther-profile-textarea' value={educationUpd} onChange={(event) => updText(event, setEducationUpd)} />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-col flex-centered thera-prof-mid">
-                        <h1>AVAILABILITY</h1>
-                        <div className={editing ? "hidden" : "flex-col flex-centered"}>
-                            <p>{availability}</p>
-                        </div>
-                        <div className={editing ? "flex-col flex-centered" : "hidden"}>
-                            <textarea value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)} />
+                    <div className="flex-col flex-centered thera-prof-mid" style={{ gap: '20px' }}>
+                        <div className='flex-col flex-centered' style={{ gap: '20px', 'alignItems': 'stretch', marginBottom: '40px' }}>
+                            <div className='flex-col flex-centered'>
+                                <h1>AVAILABILITY</h1>
+                                <div className={editing ? "hidden" : "flex-col flex-centered"}>
+                                    <div>{availability}</div>
+                                </div>
+                                <div className={editing ? "flex-col" : "hidden"}>
+                                    <label>Edit Availability</label>
+                                    <textarea className='ther-profile-textarea' value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)} />
+                                </div>
+                            </div>
+
+                            <div className='flex-col flex-centered'>
+                                <h1>PRICING</h1>
+                                <div className={editing ? "hidden" : "flex-col flex-centered"} style={{ maxWidth: '500px' }}>
+                                    <div>{pricing}</div>
+                                </div>
+                                <div className={editing ? "flex-col" : "hidden"}>
+                                    <label>Edit Pricing</label>
+                                    <textarea className='ther-profile-textarea' value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
+                                </div>
+                            </div>
                         </div>
 
-                        <h1>PRICING</h1>
-                        <div className={editing ? "hidden" : "flex-col flex-centered"}>
-                            <p>{pricing}</p>
-                        </div>
-                        <div className={editing ? "flex-col flex-centered" : "hidden"}>
-                            <textarea value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
+                        <button className={(localStorage.getItem("userType") === "Therapist" && editing === 0 && localStorage.getItem("realUserID") === userId) ? "td-btn" : "hidden"} onClick={(event) => startEditing(event)}>Edit Details</button>
+                        <div className='flex-row flex-centered' style={{ gap: '20px' }}>
+                            <input type="submit" className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} value="Save Details" /><br />
+                            <button className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} onClick={(event) => cancelEditing(event)}>Cancel Editing</button>
                         </div>
 
                         <button className={(localStorage.getItem("userType") === "Patient" && ableToSwap) ? "td-btn" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
-                        <h1>Reviews</h1>
-                        <div className="flex-centered flex-col">
-                            <div className="flex-centered flex-row">
-                                5<Rating name="5Stars" value={1} max={1} readOnly />
-                                <Slider
-                                    value={reviewSummary.individualReviews[0].fives}
-                                    max={totalReviews}
-                                    sx={{ width: "400px", '& .MuiSlider-thumb': { display: 'none' } }}
-                                    disabled />
-                            </div>
-                            <div className="flex-centered flex-row">
-                                4<Rating name="4Stars" value={1} max={1} readOnly />
-                                <Slider
-                                    value={reviewSummary.individualReviews[0].fours}
-                                    max={totalReviews}
-                                    sx={{ width: "400px", '& .MuiSlider-thumb': { display: 'none' } }}
-                                    disabled />
-                            </div>
-                            <div className="flex-centered flex-row">
-                                3<Rating name="3Stars" value={1} max={1} readOnly />
-                                <Slider
-                                    value={reviewSummary.individualReviews[0].threes}
-                                    max={totalReviews}
-                                    sx={{ width: "400px", '& .MuiSlider-thumb': { display: 'none' } }}
-                                    disabled />
-                            </div>
-                            <div className="flex-centered flex-row">
-                                2<Rating name="2Stars" value={1} max={1} readOnly />
-                                <Slider
-                                    value={reviewSummary.individualReviews[0].twos}
-                                    max={totalReviews}
-                                    sx={{ width: "400px", '& .MuiSlider-thumb': { display: 'none' } }}
-                                    disabled />
-                            </div>
-                            <div className="flex-centered flex-row">
-                                1<Rating name="1Stars" value={1} max={1} readOnly />
-                                <Slider
-                                    value={reviewSummary.individualReviews[0].ones}
-                                    max={totalReviews}
-                                    sx={{ width: "400px", '& .MuiSlider-thumb': { display: 'none' } }}
-                                    disabled />
-                            </div>
-                        </div>
-                        <div className="flex-centered flex-row">
-                            {reviews && reviews.map((item, index) => (
-                                <div className="flex-centered flex-col" style={{ "marginLeft": "25px", "marginRight": "25px", "marginBottom": "10px" }}>
-                                    <div className="flex-centered flex-row">
-                                        <p>{item[3]}<br />{item[2]}</p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<Rating name="1Stars" value={item[1]} max={5} readOnly />
-                                    </div>
-                                    <p>{item[0]}</p>
+
+                        <div className='flex-col flex-centered' style={{ gap: '60px' }}>
+                            <div className="flex-centered flex-col" style={{ gap: '20px' }}>
+                                <h1>Reviews</h1>
+                                <div className="flex-centered flex-row">
+                                    5<Rating name="5Stars" value={1} max={1} size='large' readOnly />
+                                    <Slider
+                                        value={reviewSummary.individualReviews[0].fives}
+                                        max={totalReviews}
+                                        sx={{ width: "500px", '& .MuiSlider-thumb': { display: 'none' } }}
+                                        disabled />
                                 </div>
-                            ))}
+                                <div className="flex-centered flex-row">
+                                    4<Rating name="4Stars" value={1} max={1} size='large' readOnly />
+                                    <Slider
+                                        value={reviewSummary.individualReviews[0].fours}
+                                        max={totalReviews}
+                                        sx={{ width: "500px", '& .MuiSlider-thumb': { display: 'none' } }}
+                                        disabled />
+                                </div>
+                                <div className="flex-centered flex-row">
+                                    3<Rating name="3Stars" value={1} max={1} size='large' readOnly />
+                                    <Slider
+                                        value={reviewSummary.individualReviews[0].threes}
+                                        max={totalReviews}
+                                        sx={{ width: "500px", '& .MuiSlider-thumb': { display: 'none' } }}
+                                        disabled />
+                                </div>
+                                <div className="flex-centered flex-row">
+                                    2<Rating name="2Stars" value={1} max={1} size='large' readOnly />
+                                    <Slider
+                                        value={reviewSummary.individualReviews[0].twos}
+                                        max={totalReviews}
+                                        sx={{ width: "500px", '& .MuiSlider-thumb': { display: 'none' } }}
+                                        disabled />
+                                </div>
+                                <div className="flex-centered flex-row">
+                                    1<Rating name="1Stars" value={1} max={1} size='large' readOnly />
+                                    <Slider
+                                        value={reviewSummary.individualReviews[0].ones}
+                                        max={totalReviews}
+                                        sx={{ width: "500px", '& .MuiSlider-thumb': { display: 'none' } }}
+                                        disabled />
+                                </div>
+                            </div>
+                            <div className="flex-centered flex-row">
+                                {reviews && reviews.map((item, index) => (
+                                    <div className="flex-centered flex-col" style={{ "marginLeft": "25px", "marginRight": "25px", "marginBottom": "10px" }}>
+                                        <div className="flex-centered flex-col">
+                                            <div className='reviews-profile-pic-container'>
+                                                <div className="img-circle-mask" style={{ width: '100px', height: '100px' }}>
+                                                    <img src={item[4] !== null ? `/assets/profile-pics/${item[4]}` : '/assets/images/default-profile-pic.jpg'} alt='PROFILE PIC' className="profile-pic" />
+                                                </div>
+                                            </div>
+                                            <p>{item[3]}<br />{item[2]}</p><Rating name="1Stars" value={item[1]} max={5} readOnly />
+                                        </div>
+                                        <p>{item[0]}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                         <Pagination variant="text" shape="rounded" count={Math.ceil(totalReviews / 4)} onChange={paginationFunc} /> <br />
                         <button className={(localStorage.getItem("userType") === "Patient" && currentTherapist) ? "td-btn" : "hidden"} onClick={() => startReview()}>Add Review</button>
-                        <button className={(localStorage.getItem("userType") === "Therapist" && editing === 0 && localStorage.getItem("realUserID") === userId) ? "" : "hidden"} onClick={(event) => startEditing(event)}>Edit Details</button>
-                        <input type="submit" className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} value="Save Details" /><br />
-                        <button className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} onClick={(event) => cancelEditing(event)}>Cancel Editing</button>
                     </div>
                 </div>
             </form>

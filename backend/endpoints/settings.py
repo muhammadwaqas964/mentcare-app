@@ -2,6 +2,8 @@ from flask import request, jsonify, json, Blueprint, send_file #,render_template
 from app import mysql
 import app
 from io import BytesIO
+import os
+from werkzeug.utils import secure_filename
 
 settingsPageData = Blueprint('settingsPageData', __name__)
 
@@ -56,66 +58,48 @@ def settingsUpdAccDetailsFunc():
         print("New Name: ", newName)
         print("New Email: ", newEmail)
 
-        profileImgBinary = None
-
-        if 'pfpFile' in request.files:
-            print("pfpFile is IN request.files")
-            profileImg = request.files['pfpFile']
-            if profileImg:
-                profileImgBinary = profileImg.read()
-            else:
-                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
-
         cursor = mysql.connection.cursor()
-        if userType == "Patient":
-            print("IN HERE")
-            if profileImgBinary == None:
-                cursor.execute('''
-                    UPDATE users, patients
-                    SET users.userName = %s, users.email = %s
-                    WHERE users.userID = patients.userID AND patients.patientID = %s;
-                    ''', (newName, newEmail, userId))
-                mysql.connection.commit()
-            else:
-                cursor.execute('''
-                    UPDATE users, patients
-                    SET users.userName = %s, users.email = %s, users.profileImg = %s
-                    WHERE users.userID = patients.userID AND patients.patientID = %s;
-                    ''', (newName, newEmail, profileImgBinary, userId))
-                mysql.connection.commit()
-        elif userType == "Therapist":
-            if profileImgBinary == None:
-                cursor.execute('''
-                    UPDATE users, therapists
-                    SET users.userName = %s, users.email = %s
-                    WHERE users.userID = therapists.userID AND therapists.therapistID = %s;
-                    ''', (newName, newEmail, userId))
-                mysql.connection.commit()
-            else:
-                cursor.execute('''
-                    UPDATE users, therapists
-                    SET users.userName = %s, users.email = %s, users.profileImg = %s
-                    WHERE users.userID = therapists.userID AND therapists.therapistID = %s;
-                ''', (newName, newEmail, profileImgBinary, userId))
-                mysql.connection.commit()
-        else:
-            cursor.close()
-            return jsonify({"inserted" : -1}), 200
+        
+        #   Updated profile picture (if it exists)
+        if 'pfpFile' in request.files:
+            profileImg = request.files['pfpFile']
+            extension = profileImg.filename.rsplit('.', 1)[1].lower()
+            UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend', 'public', 'assets', 'profile-pics')
+            filename = f'user-{realUserId}.{extension}'
+            filename = secure_filename(filename)
+            print(filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            profileImg.save(file_path)
+            cursor.execute('''
+                UPDATE users
+                SET profileImg = %s
+                WHERE userID = %s
+            ''', (filename, realUserId))
+            mysql.connection.commit()
+
+        cursor.execute('''
+            UPDATE users
+            SET userName = %s, email = %s
+            WHERE userID = %s            
+        ''', (newName, newEmail, realUserId))
+        mysql.connection.commit()
         
         cursor.execute(f'''
-                SELECT userName, email FROM users
+                SELECT userName, email, profileImg FROM users
                 WHERE users.userID = {realUserId}
                 ''')
         data = cursor.fetchone()
         if data:
             userName = data[0]
             email = data[1]
+            profileImg = data[2]
             cursor.close()
             app.socketio.emit('update-navbar', room=app.socketsNavbar[realUserId])
-            return jsonify({"inserted" : 1, "userName" : userName, "email" : email}), 200
+            print("SUCCESSFULLY UPDATED ACCOUNT DETAILS")
+            return jsonify({"inserted" : 1, "userName" : userName, "email" : email, "profileImg" : profileImg}), 200
         else:
             cursor.close()
-            return jsonify({"inserted" : 0}), 200
+            return jsonify({"inserted" : 0}), 404
     except Exception as err:
         return {"error":  f"{err}"}
     

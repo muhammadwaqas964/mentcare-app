@@ -1,5 +1,7 @@
 from flask import request, jsonify, json, Blueprint #,render_template, request
 from app import mysql # , socketio, sockets
+import os
+from werkzeug.utils import secure_filename
 # If you need socketio stuff maybe uncomment the below line. 100% uncomment the stuff directly above
 # from flask_socketio import SocketIO, join_room, leave_room, send, emit
 
@@ -27,17 +29,13 @@ def registerPatientFunc():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        # print("\nBEFORE REQUEST FILES profileIMG")
-        profileImgBinary = None
-
-        # Check if a file was uploaded
-        if 'profileImg' in request.files:
-            # print("\nPROFILE IMAGE EXISTS\n")
-            profileImg = request.files['profileImg']
-            if profileImg:
-                profileImgBinary = profileImg.read()  # Read the binary data of the image
-            else:
-                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
+        # profileImgBinary = None
+        # if 'profileImg' in request.files:
+        #     profileImg = request.files['profileImg']
+        #     if profileImg:
+        #         profileImgBinary = profileImg.read()  # Read the binary data of the image
+        #     else:
+        #         return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
 
         insuranceCompany = request.form.get('company')
         insuranceID = request.form.get('insuranceId')
@@ -52,18 +50,21 @@ def registerPatientFunc():
         energy = request.form.get('energy')
         stress = request.form.get('stress')
 
-        # print("\nGOT HERE BEFORE INSERT INTO\n")
         cursor = mysql.connection.cursor()
-        if profileImgBinary == None:
-            cursor.execute('''
-                    INSERT INTO users (userName, email, pass, userType)
-                    VALUES (%s, %s, %s, 'Patient')
-                    ''', (fullname, email, password))
-        else:
-            cursor.execute('''
-                    INSERT INTO users (userName, email, pass, userType, profileImg)
-                    VALUES (%s, %s, %s, 'Patient', %s)
-                    ''', (fullname, email, password, profileImgBinary))
+        # if profileImgBinary == None:
+        #     cursor.execute('''
+        #             INSERT INTO users (userName, email, pass, userType)
+        #             VALUES (%s, %s, %s, 'Patient')
+        #             ''', (fullname, email, password))
+        # else:
+        #     cursor.execute('''
+        #             INSERT INTO users (userName, email, pass, userType, profileImg)
+        #             VALUES (%s, %s, %s, 'Patient', %s)
+        #             ''', (fullname, email, password, profileImgBinary))
+        cursor.execute('''
+            INSERT INTO users (userName, email, pass, userType)
+            VALUES (%s, %s, %s, 'Patient')
+        ''', (fullname, email, password))
         mysql.connection.commit()
         print("\nSUCCESSFULLY ADDED USER!\n")
 
@@ -72,7 +73,26 @@ def registerPatientFunc():
         data = cursor.fetchone()
         userID = data[0]
 
-        #   Check if user inputted Insurance Information
+        #   Insert profile picture (if it exists)
+        if 'profileImg' in request.files:
+            profileImg = request.files['profileImg']
+            extension = profileImg.filename.rsplit('.', 1)[1].lower()
+            UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend', 'public', 'assets', 'profile-pics')
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
+            filename = f'user-{userID}.{extension}'
+            filename = secure_filename(filename)
+            print(filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            profileImg.save(file_path)
+            cursor.execute('''
+                UPDATE users
+                SET profileImg = %s
+                WHERE email LIKE %s AND pass LIKE %s
+            ''', (filename, email, password))
+            mysql.connection.commit()
+
+        #   Insert insurance information (if it exists)
         if insuranceCompany and insuranceID and insuranceTier:
             cursor.execute('''
                     INSERT INTO patients (userID, insuranceCompany, insuranceID, insuranceTier)
@@ -103,41 +123,50 @@ def registerTherapistFunc():
         license = request.form.get('license')
         specsArray = request.form.get('specializations')
 
-        # print("\nBEFORE REQUEST FILES profileIMG")
-        profileImgBinary = None
-
-        # Check if a file was uploaded
-        if 'profileImg' in request.files:
-            # print("\nPROFILE IMAGE EXISTS\n")
-            profileImg = request.files['profileImg']
-            if profileImg:
-                profileImgBinary = profileImg.read()  # Read the binary data of the image
-            else:
-                return jsonify({"error": "Invalid file type. Only image files are allowed."}), 400
-    
-        content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
-
+        # profileImgBinary = None
         cursor = mysql.connection.cursor()
-        if profileImgBinary == None:
-            cursor.execute('''
-                    INSERT INTO users (userName, email, pass, userType)
-                    VALUES (%s, %s, %s, 'Therapist')
-                    ''', (fullname, email, password))
-        else:
-            cursor.execute('''
-                    INSERT INTO users (userName, email, pass, userType, profileImg)
-                    VALUES (%s, %s, %s, 'Therapist', %s)
-                    ''', (fullname, email, password, profileImgBinary))
+        # if profileImgBinary == None:
+        #     cursor.execute('''
+        #             INSERT INTO users (userName, email, pass, userType)
+        #             VALUES (%s, %s, %s, 'Therapist')
+        #             ''', (fullname, email, password))
+        # else:
+        #     cursor.execute('''
+        #             INSERT INTO users (userName, email, pass, userType, profileImg)
+        #             VALUES (%s, %s, %s, 'Therapist', %s)
+        #             ''', (fullname, email, password, profileImgBinary))
+        cursor.execute('''
+            INSERT INTO users (userName, email, pass, userType)
+            VALUES (%s, %s, %s, 'Therapist')
+        ''', (fullname, email, password))
         mysql.connection.commit()
 
         #   Retrive userID of newly created user
         cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))
         data = cursor.fetchone()
         userID = data[0]
-        # print(userID)
-        # print(license)
-        # print(specsArray)
 
+        #   Insert profile picture (if it exists)
+        if 'profileImg' in request.files:
+            profileImg = request.files['profileImg']
+            extension = profileImg.filename.rsplit('.', 1)[1].lower()
+            UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend', 'public', 'assets', 'profile-pics')
+            if not os.path.exists(UPLOAD_FOLDER):
+                os.makedirs(UPLOAD_FOLDER)
+            filename = f'user-{userID}.{extension}'
+            filename = secure_filename(filename)
+            print(filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            profileImg.save(file_path)
+            cursor.execute('''
+                UPDATE users
+                SET profileImg = %s
+                WHERE email LIKE %s AND pass LIKE %s
+            ''', (filename, email, password))
+            mysql.connection.commit()
+
+        #   Insert new therapists information in therapists table
+        content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
         cursor.execute('''
                 INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content, isActive)
                 VALUES (%s, %s, %s, %s, %s, 1)

@@ -16,7 +16,7 @@
 }
 
 .h1_class {
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     /* Applies a stylish serif font */
     font-size: 3rem;
     /* Sets the font size to 3 rem units */
@@ -29,7 +29,8 @@
     margin-top: 20px;
     /* Adds space above the heading */
 }
-.header h2  {
+
+.header h2 {
     margin: 0;
     font-size: 1.5rem;
     color: #000;
@@ -52,7 +53,8 @@
     color: #000;
     border: navajowhite;
     cursor: pointer;
-    border: 5px solid rgb(228, 232, 6); /* Adds a black border */
+    border: 5px solid rgb(228, 232, 6);
+    /* Adds a black border */
     margin-right: 20px;
 }
 
@@ -61,7 +63,11 @@
     color: #fff;
 }
 
-.profile, .availability, .pricing, .reviews, .patient-reviews {
+.profile,
+.availability,
+.pricing,
+.reviews,
+.patient-reviews {
     padding: 2rem;
     border-bottom: 1px solid #000;
 }
@@ -74,7 +80,8 @@
     margin-bottom: 1rem;
 }
 
-.reach-out-btn, .add-review-btn {
+.reach-out-btn,
+.add-review-btn {
     margin-top: 1rem;
     padding: 0.5rem 1rem;
     background-color: #34c4a9;
@@ -85,7 +92,8 @@
     transition: background-color 0.3s;
 }
 
-.reach-out-btn:hover, .add-review-btn:hover {
+.reach-out-btn:hover,
+.add-review-btn:hover {
     background-color: #2a9d84;
 }
 
@@ -103,4 +111,16 @@
     background-color: #f9f9f9;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ther-profile-textarea {
+    width: 350px;
+    height: 125px;
+    padding: 20px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    background-color: #f8f8f8;
+    font-size: 16px;
+    resize: none;
 }

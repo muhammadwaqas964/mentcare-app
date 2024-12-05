@@ -126,15 +126,15 @@ def retriveProfilePicFunc():
         ''', (realUserID,))
 
         data = cursor.fetchone()
-        if data:
-            profile_img_data = data[0]
-            if profile_img_data:
-                img_stream = BytesIO(profile_img_data)
-                return send_file(img_stream, mimetype='image/jpeg')
-            else:
-                return jsonify({"error": "Profile image not found"}), 404
+        if data and data[0] is not None:
+            # profile_img_data = data[0]
+            # if profile_img_data:
+            #     img_stream = BytesIO(profile_img_data)
+            #     return send_file(img_stream, mimetype='image/jpeg')
+            # else:
+            return jsonify({"profileImg": data[0]}), 200
         else:
-            return jsonify({"error": "User not found"}), 404
+            return jsonify({"error": "Profile image is null"}), 404
     except Exception as err:
         return {"error":  f"{err}"}
     

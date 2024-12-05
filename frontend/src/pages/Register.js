@@ -212,6 +212,7 @@ function Register() {
     }
 
     async function registerTherapist(e) {
+        e.preventDefault();
         const form = formRefs.current.therapistRegister;
         if (form.checkValidity()) {
             const isEmailValid = await validateEmail(e, 'Therapist');
