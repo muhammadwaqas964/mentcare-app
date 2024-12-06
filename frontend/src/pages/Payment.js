@@ -108,55 +108,53 @@ function Payment() {
         }));
     }
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault(); //
+
         console.log(formInput);
-        let phone;
-        if (formInput.phone) {
-            phone = formInput.phone;
-        }
-        else {
-            phone = null;
-        }
+        let phone = formInput.phone || null;
 
         const date = new Date(formInput.year, formInput.month, 0);
         const formDate = date.toLocaleDateString('en-CA');
 
-        console.log(formDate);
+        try {
+            const response = await fetch("http://localhost:5000/submitPayment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    patientId: patientId,
+                    invoiceId: invoiceID,
+                    amount: amountDue,
+                    cardNum: formInput.cardNum,
+                    cvc: formInput.cvc,
+                    expDate: formDate,
+                    firstName: formInput.firstName,
+                    lastName: formInput.lastName,
+                    city: formInput.city,
+                    billingAddress: formInput.billingAddress,
+                    state: formInput.state,
+                    country: formInput.country,
+                    zip: formInput.zip,
+                    phone: phone,
+                    check: save,
+                    alreadyIn: alreadyIn,
+                }),
+            });
 
-        const response = await fetch("http://localhost:5000/submitPayment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                patientId: patientId,
-                invoiceId: invoiceID,
-                amount: amountDue,
-                cardNum: formInput.cardNum,
-                cvc: formInput.cvc,
-                expDate: formDate,
-                firstName: formInput.firstName,
-                lastName: formInput.lastName,
-                city: formInput.city,
-                billingAddress: formInput.billingAddress,
-                state: formInput.state,
-                country: formInput.country,
-                zip: formInput.zip,
-                phone: phone,
-                check: save,
-                alreadyIn: alreadyIn,
-            }),
-        });
-
-        if (response.ok) {
-            notifySuccess();
-            <ToastContainer />
-            window.location = "/dashboard";
-        }
-        else {
+            if (response.ok) {
+                notifySuccess();
+                setTimeout(() => {
+                    window.location.href = "http://localhost:3000/dashboard";
+                }, 500);
+            } else {
+                notifyFail();
+            }
+        } catch (error) {
+            console.error("Error submitting payment:", error);
             notifyFail();
-            <ToastContainer />
         }
-        // Handle datepaid on the backend.
-    }
+    };
+
 
     const handleDetails = (e) => {
         setSave(e.target.checked);
@@ -164,6 +162,7 @@ function Payment() {
 
     return (
         <div className="payment-page">
+            <ToastContainer />
             <div>
                 <Box className="payment-main-container" component="form" onSubmit={handleSubmit}>
                     <Grid>

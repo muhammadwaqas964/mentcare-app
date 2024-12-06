@@ -124,6 +124,7 @@ def startChatFunc():
         data = cursor.fetchone()
         userID = data[0]
 
+        print('got in')
         # Emit the event to the connected socket clients
         socketio.emit('start-chat-for-patient', {
             'therapistID': therapistID
