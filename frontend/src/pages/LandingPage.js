@@ -7,10 +7,17 @@ import { Link } from 'react-router-dom';
 // import FadeInSection from '../components/FadeInSection';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { Box } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 function LandingPage() {
     const [openQuestion, setOpenQuestion] = useState(null);
     const [testimonials, setTestimonials] = useState([]);
+    const [review, setReview] = useState("");
+    const userType = localStorage.getItem('userType');
+    const realUserID = localStorage.getItem('realUserID');
+    const location = useLocation(); // Get the location object
+    console.log(userType);
 
     const toggleQuestion = (index) => {
         setOpenQuestion((openQuestion === index) ? null : index);
@@ -36,6 +43,23 @@ function LandingPage() {
 
     console.log("Fetched testimonials:", testimonials);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!review.trim()) {
+            alert("Please enter a review before submitting.");
+            return;
+        }
+
+        await fetch("http://localhost:5000/sendTestimonial", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: realUserID,
+                content: review,
+            }),
+        });
+        window.location = "/";
+    };
 
     return (
         <div className="landing-page">
@@ -80,7 +104,8 @@ function LandingPage() {
                     <div className="testimonial-users-container">
                         {testimonials && testimonials.map((testimonial, index) => (
                             <div className={`testimonial-user ${(index % 2 === 0) ? "left" : "right"}`} key={testimonial.id}>
-                                <div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : <img src={`/assets/profile-pics/${testimonial.img}`} width={100} height={100}></img>}</div>
+                                <div><div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : <img src={`/assets/profile-pics/${testimonial.img}`} width={100} height={100}></img>}</div>
+                                    <div className='username'>{testimonial.username}</div></div>
                                 <div className="testimonial">{testimonial.content}</div>
                             </div>
                         ))}
@@ -93,21 +118,24 @@ function LandingPage() {
                     <h2>FAQs</h2>
                     <div className="faq-container">
                         <div className={`faq-bubble ${(openQuestion === 0) ? "open" : ""}`} onClick={() => toggleQuestion(0)}>
-                            <div className="faq-question">How many people are we helping?</div>
+                            <div className="faq-question">How does online therapy work?</div>
                             {(openQuestion === 0) && (
-                                <div className="faq-answer">MILLIONS!</div>
+                                <div className="faq-answer">Patients create an account, browse licensed therapists, and schedule sessions.
+                                    Sessions can take place via video call, chat, or voice, depending on the therapist's and patient's preferences.</div>
                             )}
                         </div>
                         <div className={`faq-bubble ${(openQuestion === 1) ? "open" : ""}`} onClick={() => toggleQuestion(1)}>
-                            <div className="faq-question">Are we legit?</div>
+                            <div className="faq-question">Is online therapy as effective as in-person therapy?</div>
                             {(openQuestion === 1) && (
-                                <div className="faq-answer">Of course.</div>
+                                <div className="faq-answer">Yes, numerous studies have shown that online therapy can be as effective as in-person therapy for many individuals and conditions.
+                                    It also offers the convenience of accessing therapy from the comfort of your home.</div>
                             )}
                         </div>
                         <div className={`faq-bubble ${(openQuestion === 2) ? "open" : ""}`} onClick={() => toggleQuestion(2)}>
-                            <div className="faq-question">Do we make a lot of money?</div>
+                            <div className="faq-question">How do I choose the right therapist?</div>
                             {(openQuestion === 2) && (
-                                <div className="faq-answer">No.</div>
+                                <div className="faq-answer">You can browse therapist profiles, read their qualifications,
+                                    specialties, and client reviews, and filter by language, availability, and type of therapy they offer.</div>
                             )}
                         </div>
                     </div>
@@ -118,12 +146,16 @@ function LandingPage() {
                 <div data-aos="fade-up" style={{ paddingTop: 40 }}>
                     <h2 style={{ textAlign: 'center' }}>Contact Us</h2>
                     <Row className="row-spacing">
-                        <Col md={6}>
-                            <h2>Leave a review!</h2>
-                            <textarea placeholder="Enter review" className="review-box"></textarea>
-                            <button className="send-button">Send</button>
-                        </Col>
-                        <Col md={6}>
+                        {(userType !== null) ?
+                            <Col md={6}>
+                                <Box component="form" onSubmit={handleSubmit}>
+                                    <h2>Leave a review!</h2>
+                                    <textarea required placeholder="Enter review" className="review-box" value={review} onChange={(e) => setReview(e.target.value)}></textarea>
+                                    <button className="send-button" type='submit'>Send</button>
+                                </Box>
+                            </Col>
+                            : null}
+                        <Col md={(userType !== null) ? 6 : { span: 6, offset: 3 }} className={userType === null ? 'text-center' : ''}>
                             <div>
                                 <h2>Need Assistance?</h2>
                                 <p>Call: 111-222-3333</p>
