@@ -28,6 +28,7 @@ def registerPatientFunc():
         fullname = fname + ' ' + lname
         email = request.form.get('email')
         password = request.form.get('password')
+        gender = request.form.get('gender')
 
         # profileImgBinary = None
         # if 'profileImg' in request.files:
@@ -62,9 +63,9 @@ def registerPatientFunc():
         #             VALUES (%s, %s, %s, 'Patient', %s)
         #             ''', (fullname, email, password, profileImgBinary))
         cursor.execute('''
-            INSERT INTO users (userName, email, pass, userType)
-            VALUES (%s, %s, %s, 'Patient')
-        ''', (fullname, email, password))
+            INSERT INTO users (userName, email, pass, gender, userType)
+            VALUES (%s, %s, %s, %s, 'Patient')
+        ''', (fullname, email, password, gender))
         mysql.connection.commit()
         print("\nSUCCESSFULLY ADDED USER!\n")
 
@@ -120,6 +121,7 @@ def registerTherapistFunc():
         fullname = fname + ' ' + lname
         email = request.form.get('email')
         password = request.form.get('password')
+        gender = request.form.get('gender')
         license = request.form.get('license')
         specsArray = request.form.get('specializations')
 
@@ -136,9 +138,9 @@ def registerTherapistFunc():
         #             VALUES (%s, %s, %s, 'Therapist', %s)
         #             ''', (fullname, email, password, profileImgBinary))
         cursor.execute('''
-            INSERT INTO users (userName, email, pass, userType)
-            VALUES (%s, %s, %s, 'Therapist')
-        ''', (fullname, email, password))
+            INSERT INTO users (userName, email, pass, gender, userType)
+            VALUES (%s, %s, %s, %s, 'Therapist')
+        ''', (fullname, email, password, gender))
         mysql.connection.commit()
 
         #   Retrive userID of newly created user
@@ -167,10 +169,12 @@ def registerTherapistFunc():
 
         #   Insert new therapists information in therapists table
         content = '{"survey" : [{"question": "How was your day?", "questionType": "string"}, {"question": "How much do you weigh in pounds?", "questionType": "number"}, {"question": "Did you eat today", "questionType": "boolean"}, {"question": "How much do you look forward to tomorrow?", "questionType": "range10"}]}'
+        defaultText = "Hi, I'm new to MentCare! I'll be updating my information soon!"
+
         cursor.execute('''
-                INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content, isActive)
-                VALUES (%s, %s, %s, %s, %s, 1)
-                ''', (userID, license, specsArray, 1, content))
+                INSERT INTO therapists (userID, licenseNumber, specializations, acceptingPatients, content, DaysHours, Price, Intro, Education, chargingPrice, isActive)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 20, 1)
+                ''', (userID, license, specsArray, 1, content, defaultText, defaultText, defaultText, defaultText))
         mysql.connection.commit()
 
         #   Retrive therapistID of newly created user

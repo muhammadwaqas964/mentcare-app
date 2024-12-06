@@ -5,6 +5,9 @@ import './styles/Register.css';
 import defaultProfilePic from './assets/images/default-profile-pic.jpg';
 import showPassword from './assets/images/show-password.png';
 import hidePassword from './assets/images/hide-password.png';
+import ManIcon from '@mui/icons-material/Man';
+import WomanIcon from '@mui/icons-material/Woman';
+import WcIcon from '@mui/icons-material/Wc';
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -31,6 +34,7 @@ function Register() {
     const [pageThreeVisibility, setPageThreeVisibility] = useState("hidden");
     const [pageFourVisibility, setPageFourVisibility] = useState("hidden");
     const [licenseValue, setLicenseValue] = useState('');
+    const [selectedGender, setSelectedGender] = useState(null);
 
     const [patientProfilePic, setPatientProfilePic] = useState(null);
     const [patientProfilePicURL, setPatientProfilePicURL] = useState(defaultProfilePic);
@@ -42,6 +46,15 @@ function Register() {
 
     //  Need this to redirect user to their dashboard page
     const navigate = useNavigate();
+
+    const genderRefs = useRef({
+        patientMaleBtn: null,
+        patientFemaleBtn: null,
+        patientOtherBtn: null,
+        therapistMaleBtn: null,
+        therapistFemaleBtn: null,
+        therapistOtherBtn: null
+    })
 
     const passRef = useRef({
         patientPass: null,
@@ -168,6 +181,7 @@ function Register() {
             formData.append('lname', lname);
             formData.append('email', email);
             formData.append('password', password);
+            formData.append('gender', selectedGender);
             formData.append('company', company);
             formData.append('insuranceId', insuranceId);
             formData.append('tier', tier);
@@ -236,6 +250,7 @@ function Register() {
                 formData.append('lname', lname);
                 formData.append('email', email);
                 formData.append('password', password);
+                formData.append('gender', selectedGender);
                 formData.append('license', license);
                 formData.append('specializations', specializations.join(','));
 
@@ -457,6 +472,59 @@ function Register() {
         }
     }
 
+    function selectGender(gender, userType) {
+        if (gender === 'Male') {
+            if (selectedGender === 'Male') {
+                genderRefs.current[`${userType}MaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}MaleBtn`].style.color = 'white';
+                setSelectedGender(null);
+            }
+            else {
+                genderRefs.current[`${userType}MaleBtn`].style.borderColor = 'blue';
+                genderRefs.current[`${userType}MaleBtn`].style.color = 'blue';
+                genderRefs.current[`${userType}FemaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}FemaleBtn`].style.color = 'white';
+                genderRefs.current[`${userType}OtherBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}OtherBtn`].style.color = 'white';
+                setSelectedGender('Male');
+            }
+        }
+        else if (gender === 'Female') {
+            if (selectedGender === 'Female') {
+                genderRefs.current[`${userType}FemaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}FemaleBtn`].style.color = 'white';
+                setSelectedGender(null);
+            }
+            else {
+                genderRefs.current[`${userType}MaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}MaleBtn`].style.color = 'white';
+                genderRefs.current[`${userType}FemaleBtn`].style.borderColor = 'pink';
+                genderRefs.current[`${userType}FemaleBtn`].style.color = 'pink';
+                genderRefs.current[`${userType}OtherBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}OtherBtn`].style.color = 'white';
+                setSelectedGender('Female');
+            }
+
+        }
+        else {
+            if (selectedGender === 'Other') {
+                genderRefs.current[`${userType}OtherBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}OtherBtn`].style.color = 'white';
+                setSelectedGender(null);
+            }
+            else {
+                genderRefs.current[`${userType}MaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}MaleBtn`].style.color = 'white';
+                genderRefs.current[`${userType}FemaleBtn`].style.borderColor = 'white';
+                genderRefs.current[`${userType}FemaleBtn`].style.color = 'white';
+                genderRefs.current[`${userType}OtherBtn`].style.borderColor = 'purple';
+                genderRefs.current[`${userType}OtherBtn`].style.color = 'purple';
+                setSelectedGender('Other');
+            }
+
+        }
+    }
+
     return (
         <>
             {/* Patient Registration Form */}
@@ -474,7 +542,7 @@ function Register() {
                     </div>
 
                     <form onSubmit={goToNextPage} ref={el => (formRefs.current.patientPageOne = el)}>
-                        <div className='flex-row' style={{ gap: '100px' }}>
+                        <div className='flex-row' style={{ gap: '60px' }}>
                             <div className='patient-input-container'>
                                 <div className='flex-row' style={{ justifyContent: 'space-between', width: '100%' }}>
                                     <div className='flex-col reg-input-container'>
@@ -512,26 +580,63 @@ function Register() {
                                     </label>
                                 </div>
                             </div>
-                            <div className='profile-pic-container'>
-                                <div className="img-circle-mask">
-                                    <img src={patientProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
+                            <div className='flex-col'>
+                                <div className='flex-col reg-input-container'>
+                                    <label>Gender</label>
+                                    <div className='flex-row' style={{ gap: '5px' }}>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.patientMaleBtn = el)}
+                                            onClick={() => selectGender('Male', 'patient')}
+                                        >
+                                            <ManIcon sx={{ fontSize: 40 }}></ManIcon>
+                                            <label style={{ fontSize: 13 }}>Male</label>
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.patientFemaleBtn = el)}
+                                            onClick={() => selectGender('Female', 'patient')}
+                                        >
+                                            <WomanIcon sx={{ fontSize: 40 }}></WomanIcon>
+                                            <label style={{ fontSize: 13 }}>Female</label>
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.patientOtherBtn = el)}
+                                            onClick={() => selectGender('Other', 'patient')}
+                                        >
+                                            <WcIcon sx={{ fontSize: 40 }}></WcIcon>
+                                            <label style={{ fontSize: 13 }}>Other</label>
+                                        </Button>
+                                    </div>
                                 </div>
-                                {/* <div>Upload Profile Picture</div>
+                                <div className='profile-pic-container'>
+                                    <div className="img-circle-mask" style={{ width: '125px', height: '125px' }}>
+                                        <img src={patientProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
+                                    </div>
+                                    {/* <div>Upload Profile Picture</div>
                                 <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} /> */}
-                                <Button
-                                    component="label"
-                                    role={undefined}
-                                    variant="contained"
-                                    tabIndex={-1}
-                                    size="small"
-                                >
-                                    Upload Picture
-                                    <VisuallyHiddenInput
-                                        type="file"
-                                        onChange={(e) => handleImageFileChange(e, 'Patient')}
-                                        multiple
-                                    />
-                                </Button>
+                                    <Button
+                                        component="label"
+                                        role={undefined}
+                                        variant="contained"
+                                        tabIndex={-1}
+                                        size="small"
+                                    >
+                                        Upload Picture
+                                        <VisuallyHiddenInput
+                                            type="file"
+                                            onChange={(e) => handleImageFileChange(e, 'Patient')}
+                                            multiple
+                                        />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -658,7 +763,7 @@ function Register() {
                         </div>
                     </div>
                     <form onSubmit={goToNextPage} ref={el => (formRefs.current.therapistPageOne = el)}>
-                        <div className='flex-row' style={{ gap: '100px' }}>
+                        <div className='flex-row' style={{ gap: '60px' }}>
                             <div className='therapist-input-container'>
                                 <div className='flex-row' style={{ justifyContent: 'space-between', width: '100%' }}>
                                     <div className='flex-col reg-input-container'>
@@ -696,26 +801,63 @@ function Register() {
                                     </label>
                                 </div>
                             </div>
-                            <div className='profile-pic-container'>
-                                <div className="img-circle-mask">
-                                    <img src={therapistProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
+                            <div className='flex-col'>
+                                <div className='flex-col reg-input-container'>
+                                    <label>Gender</label>
+                                    <div className='flex-row' style={{ gap: '5px' }}>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.therapistMaleBtn = el)}
+                                            onClick={() => selectGender('Male', 'therapist')}
+                                        >
+                                            <ManIcon sx={{ fontSize: 40 }}></ManIcon>
+                                            <label style={{ fontSize: 13 }}>Male</label>
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.therapistFemaleBtn = el)}
+                                            onClick={() => selectGender('Female', 'therapist')}
+                                        >
+                                            <WomanIcon sx={{ fontSize: 40 }}></WomanIcon>
+                                            <label style={{ fontSize: 13 }}>Female</label>
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            className='flex-col'
+                                            style={{ backgroundColor: 'rgb(52, 196, 169)', color: 'white', borderColor: 'white', border: '2px solid', width: '50px' }}
+                                            ref={el => (genderRefs.current.therapistOtherBtn = el)}
+                                            onClick={() => selectGender('Other', 'therapist')}
+                                        >
+                                            <WcIcon sx={{ fontSize: 40 }}></WcIcon>
+                                            <label style={{ fontSize: 13 }}>Other</label>
+                                        </Button>
+                                    </div>
                                 </div>
-                                {/* <div>Upload Profile Picture</div>
+                                <div className='profile-pic-container'>
+                                    <div className="img-circle-mask" style={{ width: '125px', height: '125px' }}>
+                                        <img src={therapistProfilePicURL} alt='PROFILE PIC' className="profile-pic" />
+                                    </div>
+                                    {/* <div>Upload Profile Picture</div>
                                 <input type="file" style={{ width: "180px" }} onChange={(e) => handleImageFileChange(e, 'Patient')} /> */}
-                                <Button
-                                    component="label"
-                                    role={undefined}
-                                    variant="contained"
-                                    tabIndex={-1}
-                                    size="small"
-                                >
-                                    Upload Picture
-                                    <VisuallyHiddenInput
-                                        type="file"
-                                        onChange={(e) => handleImageFileChange(e, 'Therapist')}
-                                        multiple
-                                    />
-                                </Button>
+                                    <Button
+                                        component="label"
+                                        role={undefined}
+                                        variant="contained"
+                                        tabIndex={-1}
+                                        size="small"
+                                    >
+                                        Upload Picture
+                                        <VisuallyHiddenInput
+                                            type="file"
+                                            onChange={(e) => handleImageFileChange(e, 'Therapist')}
+                                            multiple
+                                        />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </form>

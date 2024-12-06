@@ -17,13 +17,14 @@ def get_therapists():
         cursor.execute('''
             SELECT 
                 u.userID, 
-                u.userName, 
+                u.userName,
+                u.gender,
                 u.profileImg, 
                 t.specializations, 
                 t.Intro,
                 t.Education,
                 t.DaysHours,
-                t.Price,
+                t.chargingPrice,
                 t.isActive
             FROM 
                 therapists t
@@ -37,7 +38,7 @@ def get_therapists():
 
         therapists = []
         for row in data:
-            userID, userName, profileImg, specializations, Intro, Education, DaysHours, Price, isActive = row
+            userID, userName, gender, profileImg, specializations, Intro, Education, DaysHours, chargingPrice, isActive = row
 
             
             if profileImg:
@@ -56,12 +57,13 @@ def get_therapists():
             therapist = {
                 'userID': userID,
                 'name': userName,
+                'gender' : gender,
                 'profileImg': profileImg_url,
                 'specializations': specializations_list,
                 'intro': Intro,
                 'education': Education,
                 'availability': DaysHours,
-                'price': Price,
+                'price': chargingPrice,
                 'isActive': bool(isActive)
             }
             therapists.append(therapist)
