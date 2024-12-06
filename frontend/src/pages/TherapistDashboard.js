@@ -102,8 +102,6 @@ function TherapistDashboard() {
     const saveSurvey = (event) => {
         event.preventDefault();
         const therapistId = localStorage.getItem("userID");
-        console.log(surveyQuestions);
-        console.log(constSurveyQuestions);
 
         if (JSON.stringify(surveyQuestions) !== JSON.stringify(constSurveyQuestions)) {
 

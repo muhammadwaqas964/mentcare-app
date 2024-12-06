@@ -157,7 +157,7 @@ function TherapistProfile() {
                 setFunc(priceNum);
             }
             else {
-                setFunc(0);
+                // setFunc(0);
             }
         }
         else {
@@ -455,7 +455,7 @@ function TherapistProfile() {
                 <div className='popUp'>
                     <form className="flex-col flex-centered main-container" onSubmit={(event) => saveReview(event)}>
                         <FormControl className="flex-col flex-centered main-container">
-                            <textarea maxLength="255" value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} />
+                            <textarea className="ther-profile-textarea" maxLength="255" value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} />
                             <Rating name="userReviewRating" value={userReviewStars} max={5} onChange={(event, newValue) => setUserReviewStars(newValue)} required />
                             {ratingError && <FormHelperText>Please fill out stars & text box</FormHelperText>}
                         </FormControl>

@@ -185,6 +185,12 @@ def addRemTheraFunc():
                 SET mainTherapistID = NULL
                 WHERE patientID = {userID}
             """)
+
+            cursor.execute(f"""
+                UPDATE therapistPatientsList
+                SET status = 'Inactive', chatStatus = 'Inactive', requestStatus = 'Inactive'
+                WHERE patientID = {userID} AND therapistID = {urlUserID}
+            """)
         else:
             cursor.execute(f"""
                 SELECT therapistID
@@ -200,8 +206,8 @@ def addRemTheraFunc():
 
             cursor.execute(f"""
                 SELECT pairingID
-                FROM therapistpatientslist
-                WHERE therapistpatientslist.therapistID = {therapistID} AND therapistpatientslist.patientID = {userID}
+                FROM therapistPatientsList
+                WHERE therapistID = {therapistID} AND patientID = {userID}
             """)
             chatsExist = cursor.fetchone()
 
@@ -213,7 +219,7 @@ def addRemTheraFunc():
                 """)
 
                 cursor.execute(f"""
-                    INSERT INTO therapistpatientslist (therapistID, patientID, status, chatStatus, requestStatus)
+                    INSERT INTO therapistPatientsList (therapistID, patientID, status, chatStatus, requestStatus)
                     VALUES ({therapistID}, {userID}, 'Active', 'Inactive', 'Inactive')
                 """)
         
