@@ -14,6 +14,24 @@ paymentPageData = Blueprint('paymentPageData', __name__)
 def sample_endpoint_function():
     return jsonify({"data" : "I exist"}), 200
 
+@paymentPageData.route('/getDetails', methods=['POST'])
+def get_details():
+    try:
+        patient_id = request.json.get('patientId')
+
+        cursor = mysql.connection.cursor()
+        cursor.execute('''SELECT * from details WHERE patientID = %s''', (patient_id,))
+        details = cursor.fetchall()
+        print(details)
+
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify(details)
+
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
 @paymentPageData.route('/submitPayment', methods=['POST'])
 def submit_payment():
     try: 
@@ -32,7 +50,8 @@ def submit_payment():
         country = request.json.get('country')
         zip = request.json.get('zip')
         phone = request.json.get('phone')
-
+        check = request.json.get('check')
+        alreadyIn = request.json.get('alreadyIn')
 
         print(patient_id)
         print(invoice_id)
@@ -49,11 +68,23 @@ def submit_payment():
         print(country)
         print(zip)
         print(phone)
+        print(check)
+        print(alreadyIn)
 
         cursor = mysql.connection.cursor()
         cursor.execute('''INSERT INTO payments (patientID, amount, datePaid, cardNum, cvc, expDate, firstName, lastName, city, billingAddress, state, country, zip, phone) VALUES
                         (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (patient_id, amount, date_paid, card_num, cvc, exp_date, first_name, last_name, city, billing_address, state, country, zip, phone))
-        
+
+        if (check == True and alreadyIn == False):
+            print("Got through")
+            cursor.execute('''INSERT INTO details (patientID, cardNum, cvc, expDate, firstName, lastName, city, billingAddress, state, country, zip, phone) VALUES 
+                           (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);''', (patient_id, card_num, cvc, exp_date, first_name, last_name, city, billing_address, state, country, zip, phone))
+            print("Got through")
+
+        if (check == False and alreadyIn == True):
+            print('deleted')
+            cursor.execute('''DELETE FROM details WHERE patientID = %s;''', (patient_id,))
+
         print("got through")
         cursor.execute('''DELETE FROM invoices WHERE invoiceID = %s;''', (invoice_id,))
         print("got through")

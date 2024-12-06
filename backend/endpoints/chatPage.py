@@ -13,6 +13,25 @@ import app
 
 chatPageData = Blueprint('chatPageData', __name__)
 
+@chatPageData.route("/getCharging", methods=['POST'])
+def get_charging():
+    try:
+        therapist_id = request.json.get('therapistId')
+        cursor = mysql.connection.cursor()
+
+        cursor.execute('''SELECT chargingPrice FROM therapists where therapistID = %s''', (therapist_id, ))
+        charging = cursor.fetchall()
+
+        mysql.connection.commit()
+        cursor.close()
+        print(charging[0][0])
+
+        return jsonify(charging)
+    
+    except Exception as err:
+        return jsonify({"error": str(err)}), 500
+
+
 @chatPageData.route("/updateStatus", methods=['POST'])
 def set_chat_status():
     try:
@@ -43,9 +62,9 @@ def send_invoice():
         therapist_id = request.json.get('therapistId')
         amount = str(round(float(request.json.get('amountDue')), 2))
 
-        # print(patient_id)
-        # print(therapist_id)
-        # print(amount)
+        print(patient_id)
+        print(therapist_id)
+        print(amount)
 
         cursor = mysql.connection.cursor()
         cursor.execute('''INSERT INTO invoices (patientID, therapistID, amountDue, dateCreated) VALUES
