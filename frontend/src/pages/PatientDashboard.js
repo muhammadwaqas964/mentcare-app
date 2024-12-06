@@ -502,7 +502,7 @@ function PatientDashboard() {
                                 <div key={`journal-${originalIndex}`} style={{ width: "100%" }}>
                                     <input className='card-buttons' type='button' value={`Journal #${originalIndex + 1} - ${new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
                                     <div className='hidden popUp-background'>
-                                        <div className='popUp pd-popUp'>
+                                        <div className='pd-popUp'>
                                             <h2>Journal Entry #{originalIndex + 1}</h2>
                                             <h3>Date Created: {new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}</h3>
                                             <textarea defaultValue={row.journalEntry} placeholder='Type here...'></textarea>
@@ -525,7 +525,7 @@ function PatientDashboard() {
                             <div key={`feedback-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={row.feedback} onClick={(e) => displayPopUp(e, 1)}></input>
                                 <div className='hidden popUp-background'>
-                                    <div className='popUp pd-popUp'>
+                                    <div className='pd-popUp'>
                                         <h2>Feedback #{index + 1}</h2>
                                         <div className='flex-col' style={{ gap: '10px' }}>
                                             <h3>Date Sent: {new Intl.DateTimeFormat('en-US').format(new Date(row.feedbackDate))}</h3>
@@ -554,7 +554,7 @@ function PatientDashboard() {
                                     onClick={(e) => displayPopUp(e, 1, index, 'Daily')}
                                 />
                                 <form className='hidden popUp-background' dailysurveyid={row.dailySurveyID} onSubmit={(e) => submitDailySurvey(e, 3)}>
-                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
+                                    <div className='pd-popUp pd-questions-container' style={{ width: "400px" }}>
                                         <h2>Daily Survey #{index + 1}</h2>
                                         <h3>Date: {new Date(row.dateCreated).toDateString()}</h3>
                                         {paginatedDailySurvey && paginatedDailySurvey.length > 0 ? (
@@ -645,7 +645,7 @@ function PatientDashboard() {
                                     onClick={(e) => displayPopUp(e, 1, index, 'Incomplete')}
                                 />
                                 <form className='hidden popUp-background' incomptherapistsurveyid={row.surveyID} onSubmit={(e) => submitTherapistSurvey(e, 3)}>
-                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
+                                    <div className='pd-popUp pd-questions-container' style={{ width: "400px" }}>
                                         <h2>{row.userName}'s Survey</h2>
                                         {/* <h3>Date: {new Date(row.dateCreated).toDateString()}</h3> */}
                                         {paginatedTherapistSurvey && paginatedTherapistSurvey.length > 0 ? (
@@ -699,7 +699,7 @@ function PatientDashboard() {
                                     onClick={(e) => displayPopUp(e, 1, index, 'Complete')}
                                 />
                                 <div className='hidden popUp-background' comptherapistsurveyid={row.completionID}>
-                                    <div className='popUp pd-questions-container' style={{ width: "400px" }}>
+                                    <div className='pd-popUp pd-questions-container' style={{ width: "400px" }}>
                                         <h2>{row.userName}'s Survey</h2>
                                         {/* <h3>Date: {new Date(row.dateCreated).toDateString()}</h3> */}
                                         {paginatedCompletedTherapistSurvey && paginatedCompletedTherapistSurvey.length > 0 ? (

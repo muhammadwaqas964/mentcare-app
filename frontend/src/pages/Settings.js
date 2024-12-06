@@ -4,6 +4,8 @@ import './styles/Settings.css'
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
+import { ToastContainer, toast } from 'react-toastify';
+
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -66,7 +68,6 @@ function SettingsPage() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("data", data);
                 setUserName(data.userName);
                 setUserNameUpd(data.userName);
 
@@ -176,7 +177,7 @@ function SettingsPage() {
             // setPfp(`/assets/profile-pics/${data.profileImg}`);
             accDeetsPopupRef.current.className = 'hidden settings-popUp-background';
         } else {
-            alert("Patient Registration Failed. Try Again!");
+            toast.error("Updating details failed. Try Again!");
         }
         // console.log("STARTING PROFILE PIC RETRIEVAL");
         // let imageExists = false;
@@ -259,7 +260,6 @@ function SettingsPage() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
             })
             .catch(err => console.error('Error fetching data:', err));
     }
@@ -277,7 +277,6 @@ function SettingsPage() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
                 if (userType === 'Therapist' && words === 'Deactivate') {
                     localStorage.setItem("isActive", data.isActive);
                     navigate('/deactivated');
@@ -344,6 +343,10 @@ function SettingsPage() {
         }
     }
 
+    const clearWaitingQueue = () => {
+        toast.clearWaitingQueue();
+    }
+
     return (
         <div style={{ height: '100vh', position: 'relative' }}>
             <div className='settings-main-container'
@@ -379,7 +382,7 @@ function SettingsPage() {
                         <button className='settings-btn' type="button" onClick={() => editAccDetails()}>Edit Details</button>
                     </div>
                     <div ref={patientRef} className="hidden settings-popUp-background" style={{ width: '100%' }}>
-                        <label htmlFor="theme">Allow therpists to see old records?</label><br />
+                        <label htmlFor="theme">Allow therapists to see old records?</label><br />
                         <select name="theme" id="theme" defaultValue={patientPrivacy} onChange={(event) => privacyHandler(event)}>
                             <option value="False">No</option>
                             <option value="True">Yes</option>
@@ -408,7 +411,7 @@ function SettingsPage() {
                         <option value="dark">Dark</option>
                     </select>
                     <br /><br /> */}
-                    <button className={accActionClass} type="button" onClick={() => accountChangeHandler(words)}>{words} Account</button> {/* TODO: Make this a big red button */}
+                    <button className={accActionClass} type="button" onClick={() => accountChangeHandler(words)}>{words} Account</button>
                 </div>
             </div >
             <div ref={accDeetsPopupRef} className="hidden settings-popUp-background">
@@ -440,7 +443,7 @@ function SettingsPage() {
                                 <div className='flex-col' style={{ gap: "5px" }}>
                                     <label>New Name:</label>
                                     <div className='flex-row flex-centered' style={{ height: "30px", gap: "10px" }}>
-                                        <input className='settings-text-input' type="text" id="nameBox" name="nameBox" placeholder="Name" value={userNameUpd} onChange={(event) => event.target.value !== '' ? setUserNameUpd(event.target.value) : setUserNameUpd('')} />
+                                        <input className='settings-text-input' type="text" id="nameBox" name="nameBox" placeholder="Name" maxLength="50" value={userNameUpd} onChange={(event) => event.target.value !== '' ? setUserNameUpd(event.target.value) : setUserNameUpd('')} />
                                         <div className='settings-undo-btn-container'>
                                             <img src={'/assets/images/undo-btn.png'} alt='undo-btn' onClick={(e) => resetInput(e, 'name')} style={{ height: "100%", width: "auto" }} ></img>
                                         </div>
@@ -449,7 +452,7 @@ function SettingsPage() {
                                 <div className='flex-col' style={{ gap: "5px" }}>
                                     <label>New Email:</label>
                                     <div className='flex-row' style={{ height: "30px", gap: "10px" }}>
-                                        <input className='settings-text-input' type="text" id="emailBox" name="emailBox" placeholder="Email" value={emailUpd} onChange={(event) => event.target.value !== '' ? setEmailUpd(event.target.value) : setEmailUpd('')} />
+                                        <input className='settings-text-input' type="text" id="emailBox" name="emailBox" placeholder="Email" maxLength="320" value={emailUpd} onChange={(event) => event.target.value !== '' ? setEmailUpd(event.target.value) : setEmailUpd('')} />
                                         <div className='settings-undo-btn-container'>
                                             <img src={'/assets/images/undo-btn.png'} alt='undo-btn' onClick={(e) => resetInput(e, 'email')} style={{ height: "100%", width: "auto" }} ></img>
                                         </div>

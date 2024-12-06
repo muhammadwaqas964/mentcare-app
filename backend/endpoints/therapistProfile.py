@@ -15,7 +15,7 @@ def thersProfInfoFunc():
         cursor.execute("""
             SELECT users.userName, therapists.Intro, therapists.Education, 
                    therapists.DaysHours, therapists.Price, 
-                   therapists.specializations, users.profileImg
+                   therapists.specializations, users.profileImg, therapists.acceptingPatients, therapists.chargingPrice
             FROM users
             JOIN therapists ON users.userID = therapists.userID
             WHERE users.userID = %s AND users.userType = 'Therapist'
@@ -94,36 +94,46 @@ def theraUpdInfoFunc():
         newAboutMe = request.json.get('aboutMeUpd')
         newAvailability = request.json.get('availabilityUpd')
         newPricing = request.json.get('pricingUpd')
+        newPricingNum = request.json.get('pricingUpdNum')
 
+        print(0)
         cursor = mysql.connection.cursor()
 
         if(len(newSpecializations) <= 1):
+            print(1.1)
             newSpecializations = ''
             cursor.execute("""
                 UPDATE therapists
-                SET specializations = '', Education = %s, Intro = %s, DaysHours = %s, Price = %s
+                SET specializations = '', Education = %s, Intro = %s, DaysHours = %s, Price = %s, chargingPrice = %s
                 WHERE userID = %s
-            """, (newEducation, newAboutMe, newAvailability, newPricing, urlUserID))
+            """, (newEducation, newAboutMe, newAvailability, newPricing, newPricingNum, urlUserID, ))
+            print(1.2)
         else:
+            print(2.1)
             if(newSpecializations[0] == ','):
                 newSpecializations = newSpecializations[1:]
             cursor.execute("""
                 UPDATE therapists
-                SET specializations = %s, Education = %s, Intro = %s, DaysHours = %s, Price = %s
+                SET specializations = %s, Education = %s, Intro = %s, DaysHours = %s, Price = %s, chargingPrice = %s
                 WHERE userID = %s
-            """, (newSpecializations, newEducation, newAboutMe, newAvailability, newPricing, urlUserID))
+            """, (newSpecializations, newEducation, newAboutMe, newAvailability, newPricing, newPricingNum, urlUserID, ))
+            print(2.2)
 
-
+        print(3)
         mysql.connection.commit()
+        print(4)
 
         cursor.execute("""
-            SELECT specializations, Education, Intro, DaysHours, Price
+            SELECT specializations, Education, Intro, DaysHours, Price, chargingPrice
             FROM therapists
             WHERE userID = %s
         """, (urlUserID, ))
         therapistInfo = cursor.fetchone()
+        cursor.close()
+        print(5)
 
-        return jsonify({"specializations": therapistInfo[0], "education": therapistInfo[1], "aboutMe": therapistInfo[2], "availability": therapistInfo[3], "pricing": therapistInfo[4] }), 200
+        print(therapistInfo)
+        return jsonify({"specializations": therapistInfo[0], "education": therapistInfo[1], "aboutMe": therapistInfo[2], "availability": therapistInfo[3], "pricing": therapistInfo[4], "pricingNum": therapistInfo[5] }), 200
     except Exception as err:
         return {"error":  f"{err}"}
     
@@ -168,6 +178,12 @@ def addRemTheraFunc():
         currentlyTherapist = request.json.get("currentlyTherapist")
 
         cursor = mysql.connection.cursor()
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {urlUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
 
         if(currentlyTherapist):
             cursor.execute(f"""
@@ -175,18 +191,36 @@ def addRemTheraFunc():
                 SET mainTherapistID = NULL
                 WHERE patientID = {userID}
             """)
-        else:
             cursor.execute(f"""
-                SELECT therapistID
-                FROM therapists
-                WHERE userID = {urlUserID}
+                UPDATE therapistPatientsList
+                SET status = 'Inactive'
+                WHERE patientID = {userID} AND therapistID = {therapistID}
             """)
-            therapistID = cursor.fetchone()[0]
+        else:
             cursor.execute(f"""
                 UPDATE patients
                 SET mainTherapistID = {therapistID}
                 WHERE patientID = {userID}
             """)
+
+            cursor.execute(f"""
+                SELECT pairingID
+                FROM therapistPatientsList
+                WHERE therapistID = {therapistID} AND patientID = {userID}
+            """)
+            chatsExist = cursor.fetchone()
+
+            if(chatsExist == None):
+                chatsJson = '{"chats": []}' 
+                cursor.execute(f"""
+                    INSERT INTO chats (patientID, therapistID, content)
+                    VALUES ({userID}, {therapistID}, '{chatsJson}')
+                """)
+
+                cursor.execute(f"""
+                    INSERT INTO therapistPatientsList (therapistID, patientID, status, chatStatus, requestStatus)
+                    VALUES ({therapistID}, {userID}, 'Active', 'Inactive', 'Inactive')
+                """)
         
         mysql.connection.commit()
         cursor.execute(f"""
@@ -223,10 +257,9 @@ def leaveReviewFunc():
             VALUES ({therapistID}, {userID}, '{review}', {stars}, '{datetime.today().date()}')
         """)
         
-        
         mysql.connection.commit()
         cursor.close()
 
         return jsonify({"reviewSent": 1 }), 200
     except Exception as err:
-        return {"error":  f"{err}"}
+        return {"error":  f"{err}", "reviewSent": 0 }

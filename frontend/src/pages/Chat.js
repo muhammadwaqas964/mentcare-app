@@ -352,9 +352,9 @@ function Chat() {
                     <div className="bottom-list">
                         {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Active') ?
                             <div className="request-chat-button not" style={{ textAlign: "center" }}>Patient has requested to chat!</div> : ''}
-                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') ? <button className="request-chat-button inactive">Start Chat</button> :
+                        {(userType === 'Therapist' && selectedTherapist?.chatStatus === 'Active') || (userType === 'Therapist' && selectedTherapist?.status === 'Inactive') ? <button className="request-chat-button inactive">Start Chat</button> :
                             userType === 'Therapist' && selectedTherapist ? <button className="request-chat-button" onClick={() => handleStartChat('Active', 'chat')}>Start Chat</button> :
-                                (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive') ?
+                                (userType === 'Patient' && selectedTherapist?.chatStatus === 'Inactive' && selectedTherapist?.requestStatus === 'Inactive' && selectedTherapist?.status === 'Active') ?
                                     <button className="request-chat-button" onClick={() => handleRequestChat('Active', 'request')}>Request to chat</button> : (userType === 'Patient') ?
                                         <button className="request-chat-button inactive">Request to Chat</button> : <button className="request-chat-button inactive">Start Chat</button>}
                     </div>
