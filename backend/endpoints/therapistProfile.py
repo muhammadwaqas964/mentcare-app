@@ -178,6 +178,12 @@ def addRemTheraFunc():
         currentlyTherapist = request.json.get("currentlyTherapist")
 
         cursor = mysql.connection.cursor()
+        cursor.execute(f"""
+            SELECT therapistID
+            FROM therapists
+            WHERE userID = {urlUserID}
+        """)
+        therapistID = cursor.fetchone()[0]
 
         if(currentlyTherapist):
             cursor.execute(f"""
@@ -185,19 +191,12 @@ def addRemTheraFunc():
                 SET mainTherapistID = NULL
                 WHERE patientID = {userID}
             """)
-
             cursor.execute(f"""
                 UPDATE therapistPatientsList
-                SET status = 'Inactive', chatStatus = 'Inactive', requestStatus = 'Inactive'
-                WHERE patientID = {userID} AND therapistID = {urlUserID}
+                SET status = 'Inactive'
+                WHERE patientID = {userID} AND therapistID = {therapistID}
             """)
         else:
-            cursor.execute(f"""
-                SELECT therapistID
-                FROM therapists
-                WHERE userID = {urlUserID}
-            """)
-            therapistID = cursor.fetchone()[0]
             cursor.execute(f"""
                 UPDATE patients
                 SET mainTherapistID = {therapistID}
