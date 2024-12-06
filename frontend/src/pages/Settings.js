@@ -379,7 +379,7 @@ function SettingsPage() {
                         <button className='settings-btn' type="button" onClick={() => editAccDetails()}>Edit Details</button>
                     </div>
                     <div ref={patientRef} className="hidden settings-popUp-background" style={{ width: '100%' }}>
-                        <label htmlFor="theme">Allow therpists to see old records?</label><br />
+                        <label htmlFor="theme">Allow therapists to see old records?</label><br />
                         <select name="theme" id="theme" defaultValue={patientPrivacy} onChange={(event) => privacyHandler(event)}>
                             <option value="False">No</option>
                             <option value="True">Yes</option>

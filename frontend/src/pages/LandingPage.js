@@ -69,7 +69,7 @@ function LandingPage() {
                         </p>
                     </Col>
                     <Col md={6}>
-                        <div><img src="/Mentcare-Symbol.png" alt="image" width={350} height={350} /></div>
+                        <div><img src="/assets/images/Mentcare_Symbol_Sans_AI.png" alt="image" width={320} height={320} /></div>
                     </Col>
                 </Row>
                 {/* </FadeInSection> */}
@@ -78,7 +78,7 @@ function LandingPage() {
                 <div data-aos="fade-up" className="testimonial-users-section" style={{ paddingTop: 40 }}>
                     <h2>Hear Our Happy Users!</h2>
                     <div className="testimonial-users-container">
-                        {testimonials.map((testimonial, index) => (
+                        {testimonials && testimonials.map((testimonial, index) => (
                             <div className={`testimonial-user ${(index % 2 === 0) ? "left" : "right"}`} key={testimonial.id}>
                                 <div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : <img src={`/assets/profile-pics/${testimonial.img}`} width={100} height={100}></img>}</div>
                                 <div className="testimonial">{testimonial.content}</div>

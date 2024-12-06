@@ -197,8 +197,8 @@ function TherapistDashboard() {
                     type='button'
                     className='acceptanceBtn'
                     onClick={() => changeAcceptance()}
-                    value={`${acceptingStatus ? "START" : "STOP"} ACCEPTING PATIENTS`}
-                    style={{ backgroundColor: acceptingStatus ? "#f44336" : "#66bb6a" }}
+                    value={`${acceptingStatus ? "STOP" : "START"} ACCEPTING PATIENTS`}
+                    style={{ backgroundColor: acceptingStatus ? "#66bb6a" : "#f44336" }}
                 >
                 </input>
                 <div className='flex-row' style={{ gap: '100px', justifyContent: 'center' }}>

@@ -3,23 +3,24 @@ import { useParams } from 'react-router-dom';
 import './styles/TherapistProfile.css';
 import '../presets.css';
 import { Rating, Slider, Pagination, FormControl, FormHelperText } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
 
 function TherapistProfile() {
     const { userId } = useParams();
-    const [therapistName, setTherapistName] = useState("Loading Name");
+    const [therapistName, setTherapistName] = useState("");
     const [therapistPfp, setTherapistPfp] = useState("/assets/images/default-profile-pic.jpg");
 
-    const [specializations, setSpecializations] = useState("Loading specializations");
-    const [education, setEducation] = useState("Loading education");
-    const [availability, setAvailability] = useState("Loading availability");
-    const [aboutMe, setAboutMe] = useState("Loading about me");
-    const [pricing, setPricing] = useState("Loading pricing");
+    const [specializations, setSpecializations] = useState("");
+    const [education, setEducation] = useState("");
+    const [availability, setAvailability] = useState("");
+    const [aboutMe, setAboutMe] = useState("");
+    const [pricing, setPricing] = useState("");
 
     const [specializationsArr, setSpecializationsArr] = useState([]);
-    const [educationUpd, setEducationUpd] = useState("Loading education");
-    const [availabilityUpd, setAvailabilityUpd] = useState("Loading availability");
-    const [aboutMeUpd, setAboutMeUpd] = useState("Loading about me");
-    const [pricingUpd, setPricingUpd] = useState("Loading pricing");
+    const [educationUpd, setEducationUpd] = useState("");
+    const [availabilityUpd, setAvailabilityUpd] = useState("");
+    const [aboutMeUpd, setAboutMeUpd] = useState("");
+    const [pricingUpd, setPricingUpd] = useState("");
 
     const [reviews, setReviews] = useState();
     const [reviewSummary, setReviewSummary] = useState({ "avgStars": 0, "individualReviews": [{ "fives": 5, "fours": 4, "threes": 3, "twos": 2, "ones": 1 }] });
@@ -29,6 +30,7 @@ function TherapistProfile() {
 
     const [currentTherapist, setCurrentTherapist] = useState(0);
     const [ableToSwap, setAbleToSwap] = useState(0);
+    const [accepting, setAccepting] = useState(0);
 
     const [userReviewText, setUserReviewText] = useState();
     const [userReviewStars, setUserReviewStars] = useState(0);
@@ -47,14 +49,13 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("Swag", data);
                 if (data.Therapist[6] !== null) {
                     setTherapistPfp(`/assets/profile-pics/${data.Therapist[6]}`)
                 }
                 else {
                     setTherapistPfp('/assets/images/default-profile-pic.jpg')
                 }
-
+                console.log(data);
                 setTherapistName(data.Therapist[0]);
                 setSpecializations(data.Therapist[5]);
                 setSpecializationsArr(data.Therapist[5].split(','));
@@ -66,6 +67,7 @@ function TherapistProfile() {
                 setAvailabilityUpd(data.Therapist[3]);
                 setPricing(data.Therapist[4]);
                 setPricingUpd(data.Therapist[4]);
+                setAccepting(data.Therapist[7]);
                 let totRevs = data.fives + data.fours + data.threes + data.twos + data.ones
                 let avgStars = (5 * data.fives + 4 * data.fours + 3 * data.threes + 2 * data.twos + data.ones) / totRevs
                 setReviewSummary({ "avgStars": avgStars, "individualReviews": [{ "fives": data.fives, "fours": data.fours, "threes": data.threes, "twos": data.twos, "ones": data.ones }] });
@@ -100,6 +102,7 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
+                console.log(data);
                 setCurrentTherapist(data.isCurrentTherapist);
                 setAbleToSwap(data.swapable);
             })
@@ -218,6 +221,7 @@ function TherapistProfile() {
     // leave review
     const startReview = () => {
         setUserReviewStars();
+        setUserReviewText("");
         setRatingError(false);
         popupRef.current.className = 'popUp-background';
     }
@@ -244,8 +248,14 @@ function TherapistProfile() {
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log("review", data);
-                    // TODO: Verify stuff was sent to backend
+                    if (data.reviewSent === 1) {
+                        clearWaitingQueue();
+                        toast.success('Review sent!');
+                    }
+                    else {
+                        clearWaitingQueue();
+                        toast.error('Review not sent.');
+                    }
                 })
                 .catch(err => console.error('Error fetching data:', err));
             popupRef.current.className = 'hidden popUp-background';
@@ -254,12 +264,24 @@ function TherapistProfile() {
         }
     }
 
+    const clearWaitingQueue = () => {
+        toast.clearWaitingQueue();
+    }
+
     return (
         <>
+            <ToastContainer
+                limit={1}
+                position="bottom-left"
+                closeButton={false}
+                hideProgressBar={true}
+                pauseOnHover={false}
+                autoClose={3000}
+            />
             <form onSubmit={(event) => saveEditing(event)}>
                 <div className="flex-col flex-centered" style={{ gap: '40px', paddingTop: '40px', fontSize: '14pt' }}>
-                    <div className="flex-row" style={{ gap: '60px' }}>
-                        <div className="flex-col flex-centered thera-prof-top-left">
+                    <div className="flex-row" style={{ gap: '20px' }}>
+                        <div className="card flex-col flex-centered thera-prof-top-left">
                             <div className='profile-pic-container'>
                                 <div className="img-circle-mask">
                                     <img src={therapistPfp} alt='PROFILE PIC' className="profile-pic" />
@@ -269,7 +291,7 @@ function TherapistProfile() {
                             <Rating name="stars-overview" value={reviewSummary.avgStars} precision={0.1} size='large' readOnly />
                         </div>
 
-                        <div className="flex-col flex-centered thera-prof-top-right">
+                        <div className="card flex-col flex-centered thera-prof-top-right">
                             <h1>ABOUT ME</h1>
                             <div className={editing ? "hidden" : "flex-col"} style={{ maxWidth: '600px' }}>
                                 <p>{aboutMe}</p>
@@ -279,7 +301,7 @@ function TherapistProfile() {
                             <div className={editing ? "flex-col" : "hidden"} style={{ gap: '20px' }}>
                                 <div className='flex-col'>
                                     <label>Edit About Me</label>
-                                    <textarea className='ther-profile-textarea' value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)} />
+                                    <textarea className='ther-profile-textarea' maxLength="255" value={aboutMeUpd} onChange={(event) => updText(event, setAboutMeUpd)} />
                                 </div>
                                 <div className='flex-col'>
                                     <label>Edit Specializations</label>
@@ -296,33 +318,33 @@ function TherapistProfile() {
                                 </div>
                                 <div className='flex-col'>
                                     <label>Edit Education</label>
-                                    <textarea className='ther-profile-textarea' value={educationUpd} onChange={(event) => updText(event, setEducationUpd)} />
+                                    <textarea className='ther-profile-textarea' maxLength="255" value={educationUpd} onChange={(event) => updText(event, setEducationUpd)} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex-col flex-centered thera-prof-mid" style={{ gap: '20px' }}>
-                        <div className='flex-col flex-centered' style={{ gap: '20px', 'alignItems': 'stretch', marginBottom: '40px' }}>
-                            <div className='flex-col flex-centered'>
+                        <div className='flex-row flex-centered' style={{ gap: '20px', 'alignItems': 'stretch', marginBottom: '40px' }}>
+                            <div className='card flex-col'>
                                 <h1>AVAILABILITY</h1>
                                 <div className={editing ? "hidden" : "flex-col flex-centered"}>
                                     <div>{availability}</div>
                                 </div>
                                 <div className={editing ? "flex-col" : "hidden"}>
                                     <label>Edit Availability</label>
-                                    <textarea className='ther-profile-textarea' value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)} />
+                                    <textarea className='ther-profile-textarea' maxLength="255" value={availabilityUpd} onChange={(event) => updText(event, setAvailabilityUpd)} />
                                 </div>
                             </div>
 
-                            <div className='flex-col flex-centered'>
+                            <div className='card flex-col'>
                                 <h1>PRICING</h1>
                                 <div className={editing ? "hidden" : "flex-col flex-centered"} style={{ maxWidth: '500px' }}>
                                     <div>{pricing}</div>
                                 </div>
                                 <div className={editing ? "flex-col" : "hidden"}>
                                     <label>Edit Pricing</label>
-                                    <textarea className='ther-profile-textarea' value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
+                                    <textarea className='ther-profile-textarea' maxLength="255" value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
                                 </div>
                             </div>
                         </div>
@@ -333,7 +355,7 @@ function TherapistProfile() {
                             <button className={(localStorage.getItem("userType") === "Therapist" && editing === 1) ? "td-btn" : "hidden"} onClick={(event) => cancelEditing(event)}>Cancel Editing</button>
                         </div>
 
-                        <button className={(localStorage.getItem("userType") === "Patient" && ableToSwap) ? "td-btn" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
+                        <button className={((localStorage.getItem("userType") === "Patient") && (accepting || currentTherapist)) ? "td-btn" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
 
                         <div className='flex-col flex-centered' style={{ gap: '60px' }}>
                             <div className="flex-centered flex-col" style={{ gap: '20px' }}>
@@ -379,9 +401,9 @@ function TherapistProfile() {
                                         disabled />
                                 </div>
                             </div>
-                            <div className="flex-centered flex-row">
+                            <div className="flex-row">
                                 {reviews && reviews.map((item, index) => (
-                                    <div className="flex-centered flex-col" style={{ "marginLeft": "25px", "marginRight": "25px", "marginBottom": "10px" }}>
+                                    <div className="card flex-centered flex-col" style={{ "marginLeft": "25px", "marginRight": "25px", "marginBottom": "10px", "width": "175px" }}>
                                         <div className="flex-centered flex-col">
                                             <div className='reviews-profile-pic-container'>
                                                 <div className="img-circle-mask" style={{ width: '100px', height: '100px' }}>
@@ -390,7 +412,9 @@ function TherapistProfile() {
                                             </div>
                                             <p>{item[3]}<br />{item[2]}</p><Rating name="1Stars" value={item[1]} max={5} readOnly />
                                         </div>
-                                        <p>{item[0]}</p>
+                                        <div style={{ width: "175px", maxHeight: "150px", overflowY: "auto", overflowX: "hidden" }}>
+                                            <p>{item[0]}</p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -405,7 +429,7 @@ function TherapistProfile() {
                 <div className='popUp'>
                     <form className="flex-col flex-centered main-container" onSubmit={(event) => saveReview(event)}>
                         <FormControl className="flex-col flex-centered main-container">
-                            <textarea value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} />
+                            <textarea maxLength="255" value={userReviewText} onChange={(event) => updText(event, setUserReviewText)} />
                             <Rating name="userReviewRating" value={userReviewStars} max={5} onChange={(event, newValue) => setUserReviewStars(newValue)} required />
                             {ratingError && <FormHelperText>Please fill out stars & text box</FormHelperText>}
                         </FormControl>

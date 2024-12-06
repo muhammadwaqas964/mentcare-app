@@ -15,7 +15,7 @@ def thersProfInfoFunc():
         cursor.execute("""
             SELECT users.userName, therapists.Intro, therapists.Education, 
                    therapists.DaysHours, therapists.Price, 
-                   therapists.specializations, users.profileImg
+                   therapists.specializations, users.profileImg, therapists.acceptingPatients
             FROM users
             JOIN therapists ON users.userID = therapists.userID
             WHERE users.userID = %s AND users.userType = 'Therapist'
@@ -223,10 +223,9 @@ def leaveReviewFunc():
             VALUES ({therapistID}, {userID}, '{review}', {stars}, '{datetime.today().date()}')
         """)
         
-        
         mysql.connection.commit()
         cursor.close()
 
         return jsonify({"reviewSent": 1 }), 200
     except Exception as err:
-        return {"error":  f"{err}"}
+        return {"error":  f"{err}", "reviewSent": 0 }

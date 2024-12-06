@@ -241,7 +241,7 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="left-section flex-row">
                 <div className="navbar-img-circle-mask">
-                    <img src={'/assets/images/Mentcare_Symbol.png'} alt="Logo" className="navbar-profile-pic" />
+                    <img src={'/assets/images/Mentcare_Symbol_Sans_AI_NoLeaf.png'} alt="Logo" className="navbar-profile-pic" />
                 </div>
                 <Link to="/" onClick={() => handleTabClick(`/`)}>
                     <h2 className={`${selectedTab === "/" ? "active-tab" : "selectable-tab"}`}>MentCare</h2>
