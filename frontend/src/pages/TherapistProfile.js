@@ -14,13 +14,15 @@ function TherapistProfile() {
     const [education, setEducation] = useState("");
     const [availability, setAvailability] = useState("");
     const [aboutMe, setAboutMe] = useState("");
-    const [pricing, setPricing] = useState("");
+    const [pricingTxt, setPricingTxt] = useState("");
+    const [pricingNum, setPricingNum] = useState("");
 
     const [specializationsArr, setSpecializationsArr] = useState([]);
     const [educationUpd, setEducationUpd] = useState("");
     const [availabilityUpd, setAvailabilityUpd] = useState("");
     const [aboutMeUpd, setAboutMeUpd] = useState("");
-    const [pricingUpd, setPricingUpd] = useState("");
+    const [pricingUpdTxt, setPricingUpdTxt] = useState("");
+    const [pricingUpdNum, setPricingUpdNum] = useState("");
 
     const [reviews, setReviews] = useState();
     const [reviewSummary, setReviewSummary] = useState({ "avgStars": 0, "individualReviews": [{ "fives": 5, "fours": 4, "threes": 3, "twos": 2, "ones": 1 }] });
@@ -55,7 +57,6 @@ function TherapistProfile() {
                 else {
                     setTherapistPfp('/assets/images/default-profile-pic.jpg')
                 }
-                console.log(data);
                 setTherapistName(data.Therapist[0]);
                 setSpecializations(data.Therapist[5]);
                 setSpecializationsArr(data.Therapist[5].split(','));
@@ -65,8 +66,10 @@ function TherapistProfile() {
                 setAboutMeUpd(data.Therapist[1]);
                 setAvailability(data.Therapist[3]);
                 setAvailabilityUpd(data.Therapist[3]);
-                setPricing(data.Therapist[4]);
-                setPricingUpd(data.Therapist[4]);
+                setPricingTxt(data.Therapist[4]);
+                setPricingUpdTxt(data.Therapist[4]);
+                setPricingNum(data.Therapist[8]);
+                setPricingUpdNum(data.Therapist[8]);
                 setAccepting(data.Therapist[7]);
                 let totRevs = data.fives + data.fours + data.threes + data.twos + data.ones
                 let avgStars = (5 * data.fives + 4 * data.fours + 3 * data.threes + 2 * data.twos + data.ones) / totRevs
@@ -102,7 +105,6 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
                 setCurrentTherapist(data.isCurrentTherapist);
                 setAbleToSwap(data.swapable);
             })
@@ -136,7 +138,8 @@ function TherapistProfile() {
         setEducationUpd(education);
         setAboutMeUpd(aboutMe);
         setAvailabilityUpd(availability);
-        setPricingUpd(pricing);
+        setPricingUpdTxt(pricingTxt);
+        setPricingUpdNum(pricingNum.toFixed(0));
         setEditing(1);
     }
 
@@ -148,7 +151,18 @@ function TherapistProfile() {
 
     const updText = (event, setFunc) => {
         event.preventDefault();
-        setFunc(event.target.value);
+        if (setFunc === setPricingUpdNum) {
+            if (/^[0-9]+$/.test(event.target.value)) {
+                let priceNum = parseInt(event.target.value).toFixed(0);
+                setFunc(priceNum);
+            }
+            else {
+                setFunc(0);
+            }
+        }
+        else {
+            setFunc(event.target.value);
+        }
     }
 
     function selectedSpecialization(e) {
@@ -182,7 +196,8 @@ function TherapistProfile() {
                 educationUpd: educationUpd,
                 aboutMeUpd: aboutMeUpd,
                 availabilityUpd: availabilityUpd,
-                pricingUpd: pricingUpd
+                pricingUpd: pricingUpdTxt,
+                pricingUpdNum: pricingUpdNum
             }),
         })
             .then(res => res.json())
@@ -192,7 +207,8 @@ function TherapistProfile() {
                 setEducation(data.education);
                 setAboutMe(data.aboutMe);
                 setAvailability(data.availability);
-                setPricing(data.pricing);
+                setPricingTxt(data.pricing);
+                setPricingNum(data.pricingNum);
             })
             .catch(err => console.error('Error fetching data:', err));
         setEditing(0);
@@ -213,6 +229,7 @@ function TherapistProfile() {
         })
             .then(res => res.json())
             .then(data => {
+                console.log(data);
                 setCurrentTherapist(data.nowHasTherapist);
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -267,6 +284,12 @@ function TherapistProfile() {
     const clearWaitingQueue = () => {
         toast.clearWaitingQueue();
     }
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    };
 
     return (
         <>
@@ -340,11 +363,13 @@ function TherapistProfile() {
                             <div className='card flex-col'>
                                 <h1>PRICING</h1>
                                 <div className={editing ? "hidden" : "flex-col flex-centered"} style={{ maxWidth: '500px' }}>
-                                    <div>{pricing}</div>
+                                    <div>{pricingTxt}<br /><strong>Price:</strong> ${pricingNum}</div>
                                 </div>
-                                <div className={editing ? "flex-col" : "hidden"}>
-                                    <label>Edit Pricing</label>
-                                    <textarea className='ther-profile-textarea' maxLength="255" value={pricingUpd} onChange={(event) => updText(event, setPricingUpd)} />
+                                <div className={editing ? "flex-col flex-centered" : "hidden"}>
+                                    <label>Edit Pricing Info</label>
+                                    <textarea className='ther-profile-textarea' maxLength="255" value={pricingUpdTxt} onChange={(event) => updText(event, setPricingUpdTxt)} />
+                                    <label>Edit Pricing Number</label>
+                                    <input type="text" className='ther-profile-textarea' min="0" value={pricingUpdNum} style={{ height: "20px", width: "200px" }} onChange={(event) => updText(event, setPricingUpdNum)} onKeyPress={handleKeyPress} />
                                 </div>
                             </div>
                         </div>
@@ -356,6 +381,7 @@ function TherapistProfile() {
                         </div>
 
                         <button className={((localStorage.getItem("userType") === "Patient") && (accepting || currentTherapist)) ? "td-btn" : "hidden"} onClick={(event) => addRemTherapist(event)}>{(currentTherapist) ? "Remove" : "Add"} Therapist</button>
+                        <p className={((localStorage.getItem("userType") === "Patient") && !accepting) ? "td-btn-no-hover flex-centered" : "hidden"}>Therapist is not accepting patients</p>
 
                         <div className='flex-col flex-centered' style={{ gap: '60px' }}>
                             <div className="flex-centered flex-col" style={{ gap: '20px' }}>
@@ -403,14 +429,14 @@ function TherapistProfile() {
                             </div>
                             <div className="flex-row">
                                 {reviews && reviews.map((item, index) => (
-                                    <div className="card flex-centered flex-col" style={{ "marginLeft": "25px", "marginRight": "25px", "marginBottom": "10px", "width": "175px" }}>
+                                    <div className="card flex-centered flex-col" style={{ marginLeft: "25px", marginRight: "25px", marginBottom: "10px", width: "175px" }}>
                                         <div className="flex-centered flex-col">
                                             <div className='reviews-profile-pic-container'>
                                                 <div className="img-circle-mask" style={{ width: '100px', height: '100px' }}>
                                                     <img src={item[4] !== null ? `/assets/profile-pics/${item[4]}` : '/assets/images/default-profile-pic.jpg'} alt='PROFILE PIC' className="profile-pic" />
                                                 </div>
                                             </div>
-                                            <p>{item[3]}<br />{item[2]}</p><Rating name="1Stars" value={item[1]} max={5} readOnly />
+                                            <p>{item[3]}<br />{item[2].slice(0, -13)}</p><Rating name="1Stars" value={item[1]} max={5} readOnly />
                                         </div>
                                         <div style={{ width: "175px", maxHeight: "150px", overflowY: "auto", overflowX: "hidden" }}>
                                             <p>{item[0]}</p>

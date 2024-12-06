@@ -25,7 +25,6 @@ function TherapistDashboard() {
 
     useEffect(() => {
         const therapistId = localStorage.getItem("userID");
-        console.log("THERAPIST ID: ", therapistId);
 
         fetch('http://localhost:5000/therapistDashboardData', {
             method: 'POST',
@@ -39,7 +38,6 @@ function TherapistDashboard() {
                 setSurveyQuestions(JSON.parse(data.survey));
                 setConstSurveyQuestions(JSON.parse(data.survey));
                 setAcceptingStatus(data.accepting);
-                console.log(JSON.parse(data.survey));
             })
             .catch(err => console.error('Error fetching data:', err));
 
@@ -72,6 +70,7 @@ function TherapistDashboard() {
         })
             .then(res => res.json())
             .then(data => {
+                console.log(data);
                 setPatients(data.patientData);
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -89,7 +88,6 @@ function TherapistDashboard() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data);
                 if (data.inserted === 1) {
                     setAcceptingStatus(data.accepting); // We read the new value of acceptingStatus from the backend
                 }
@@ -104,7 +102,10 @@ function TherapistDashboard() {
     const saveSurvey = (event) => {
         event.preventDefault();
         const therapistId = localStorage.getItem("userID");
-        if (surveyQuestions !== constSurveyQuestions) {
+        console.log(surveyQuestions);
+        console.log(constSurveyQuestions);
+
+        if (JSON.stringify(surveyQuestions) !== JSON.stringify(constSurveyQuestions)) {
 
             fetch('http://localhost:5000/therapistUpdateSurvey', {
                 method: 'POST',
@@ -115,19 +116,18 @@ function TherapistDashboard() {
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log(data);
                     if (data.inserted === true) {
                         popupRef.current.className = 'hidden popUp-background';
                         setConstSurveyQuestions(surveyQuestions);
                     }
                     else {
-                        alert("Unable to update survey.");
+                        toast.error("Unable to update survey.");
                     }
                 })
                 .catch(err => console.error('Error fetching data:', err));
         }
         else {
-            alert("Nothing to update.");
+            toast.warning("Nothing to update.");
         }
     }
 
@@ -153,7 +153,6 @@ function TherapistDashboard() {
             }
             return question; // Keep other questions unchanged
         });
-        console.log(updatedQuestions);
         // setSurveyQuestions();
         setSurveyQuestions(updatedQuestions);
     };
@@ -163,7 +162,7 @@ function TherapistDashboard() {
     }
 
     const clearWaitingQueue = () => {
-        // Easy, right 😎
+        // Easy, right
         toast.clearWaitingQueue();
     }
 

@@ -24,14 +24,35 @@ def theraPatListFunc():
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
         cursor.execute(f'''
-                       SELECT users.userName, feedback.feedback, users.userID FROM feedback
-                       INNER JOIN patients ON feedback.patientID = patients.patientID
-                       INNER JOIN users ON patients.userID = users.userID
-                       WHERE patients.mainTherapistID = {userId}
-                       ''')
-        data = cursor.fetchall()
+                SELECT users.userName, users.userID
+                FROM patients, users
+                WHERE users.userID = patients.userID AND patients.mainTherapistID = {userId}
+                ''')
+        patientsInfo = cursor.fetchall()
+        cursor.execute(f'''
+                SELECT feedback.feedback, users.userID
+                FROM feedback, patients, users
+                WHERE users.userID = patients.userID AND patients.patientID = feedback.patientID
+                AND patients.mainTherapistID = {userId}
+                ORDER BY feedbackDate DESC
+                ''')
+        feedbackInfo = cursor.fetchall()
         cursor.close()
-        return jsonify({"patientData" : data}), 200
+
+        feedbackDict = {}
+        for thing in feedbackInfo:
+            feedbackDict[thing[1]] = thing[0]
+
+        returnArray = []
+        for thing in patientsInfo:
+            print(returnArray)
+            if(thing[1] in feedbackDict):
+                returnArray.append((thing[0], feedbackDict[thing[1]], thing[1]))
+            else:
+                returnArray.append((thing[0], "No Feedback Sent", thing[1]))
+            print(returnArray)
+        
+        return jsonify({"patientData" : returnArray}), 200
     except Exception as err:
         return {"error":  f"{err}"}
 
