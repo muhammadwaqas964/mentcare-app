@@ -4,6 +4,8 @@ import io from 'socket.io-client';
 import { DashboardCard } from '../components/DashboardCards.js';
 import Pagination from '../components/Pagination.js';
 import { ToastContainer, toast } from 'react-toastify';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/PatientDashboard.css';
 import '../components/Pagination.css';
@@ -157,6 +159,10 @@ function PatientDashboard() {
     });
 
     useEffect(() => {
+        AOS.init({ duration: 1500 });
+    }, [])
+
+    useEffect(() => {
         const socket = io('http://localhost:5000');
 
         const patientId = localStorage.getItem("userID");
@@ -275,7 +281,8 @@ function PatientDashboard() {
         if (x === 2) {
             await systemSleep(100);
         }
-        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[e.target.parentElement.children.length - 2].children[1];
+        console.log(e.target.parentElement.children[0]);
+        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[0].children[1].children[e.target.parentElement.children[0].children[1].children.length - 1].children[1];
         divParent.className = 'visible popUp-background';
     }
 
@@ -461,7 +468,7 @@ function PatientDashboard() {
     };
 
     return (
-        <div className='patient-dashboard-container'>
+        <div data-aos="fade-up" className='patient-dashboard-container'>
             <ToastContainer
                 limit={1}
                 position="bottom-left"
@@ -487,27 +494,30 @@ function PatientDashboard() {
             {/* Display patient-specific content */}
 
             <div className="cards-container">
-                <DashboardCard title="JOURNALS" extraClasses="patient-card">
-                    {journals && journals.map((row, index) => {
-                        return (
-                            <div key={`journal-${index}`} style={{ width: "100%" }}>
-                                <input className='card-buttons' type='button' value={`Journal ${new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
-                                <div className='hidden popUp-background'>
-                                    <div className='popUp pd-popUp'>
-                                        <h2>Journal Entry #{index + 1}</h2>
-                                        <h3>Date Created: {new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}</h3>
-                                        <textarea defaultValue={row.journalEntry} placeholder='Type here...'></textarea>
-                                        <div className="flex-row" style={{ gap: "10px" }}>
-                                            <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
-                                            <input className='pd-action-btn' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
+                <div className='flex-col flex-centered' style={{ gap: '10px' }}>
+                    <DashboardCard title="JOURNALS" extraClasses="patient-card">
+                        {journals && journals.slice().reverse().map((row, index) => {
+                            const originalIndex = journals.length - 1 - index;
+                            return (
+                                <div key={`journal-${originalIndex}`} style={{ width: "100%" }}>
+                                    <input className='card-buttons' type='button' value={`Journal #${originalIndex + 1} - ${new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}`} onClick={(e) => displayPopUp(e, 1)}></input>
+                                    <div className='hidden popUp-background'>
+                                        <div className='popUp pd-popUp'>
+                                            <h2>Journal Entry #{originalIndex + 1}</h2>
+                                            <h3>Date Created: {new Intl.DateTimeFormat('en-US').format(new Date(row.timeDone))}</h3>
+                                            <textarea defaultValue={row.journalEntry} placeholder='Type here...'></textarea>
+                                            <div className="flex-row" style={{ gap: "10px" }}>
+                                                <input className='pd-action-btn' type='button' value={'CLOSE'} onClick={(e) => hidePopUp(e, 1)}></input>
+                                                <input className='pd-action-btn' type='button' journalid={row.journalID} value={'SAVE'} onClick={(e) => saveJournal(e)}></input>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </DashboardCard>
                     <input className='card-buttons' type='button' value={'CREATE NEW JOURNAL'} onClick={(e) => createJournal(e)}></input>
-                </DashboardCard>
+                </div>
 
                 <DashboardCard title="FEEDBACK" extraClasses="patient-card">
                     {feedback && feedback.map((row, index) => {

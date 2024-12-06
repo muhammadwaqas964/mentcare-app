@@ -188,11 +188,11 @@ a h2 {
 
 /* Add a grey background color to dropdown links on hover */
 .dropdown-items a:hover {
-    background-color: #858585;
+    background-color: rgb(219, 219, 219);
 }
 
 .notifs-dropdown-items a:hover {
-    background-color: #858585;
+    background-color: rgb(219, 219, 219);
 }
 
 .dropdown:hover .dropdown-items {

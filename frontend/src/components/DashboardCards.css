@@ -13,6 +13,8 @@
     text-align: center;
     width: 400px;
     position: relative;
+    border: 2px solid rgb(52, 196, 169);
+    /* overflow-y: scroll; */
 
     &>h1 {
         margin: 0;

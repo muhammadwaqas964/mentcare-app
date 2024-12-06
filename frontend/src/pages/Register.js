@@ -415,17 +415,13 @@ function Register() {
     }
 
     function handleImageFileChange(event, user) {
-        const file = event.target.files[0]; // Get the first file
+        const file = event.target.files[0];
         if (file) {
-            // Create a URL for the selected file
-            console.log(file);
             const fileURL = URL.createObjectURL(file);
-            console.log(fileURL)
             if (user === 'Patient') {
                 setUpdatedPatientProfilePic(true);
                 setPatientProfilePicURL(fileURL)
                 setPatientProfilePic(file);
-                console.log(file);
             } else {
                 setUpdatedTherapistProfilePic(true);
                 setTherapistProfilePicURL(fileURL)

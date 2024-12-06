@@ -130,26 +130,31 @@
 
 .td-patient-text {
     font-size: 16pt;
+    margin-left: 10px;
 }
 
 .td-clickable-active-patient {
+    display: flex;
     align-items: center;
-    border: 2px solid black;
-    gap: 10px;
+    border: 2px solid rgb(52, 196, 169);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    gap: 5px;
 
-    border-radius: 25px;
-    padding: 0px 20px;
-    text-align: center;
+    border-radius: 20px;
+    padding: 20px;
+    /* text-align: center; */
     width: 500px;
-    max-width: 500px;
     position: relative;
-    height: 50px;
+
+    text-overflow: ellipsis;
+    transition: background-color 0.5s, transform 0.5s;
 
     &:hover {
         cursor: pointer;
+        background-color: #e9e9e9;
+        transform: translateX(50px);
     }
-
-    text-overflow: ellipsis;
 }
 
 .td-nowrap-text {

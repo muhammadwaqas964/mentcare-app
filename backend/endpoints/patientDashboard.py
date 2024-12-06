@@ -32,7 +32,10 @@ def patientDashFunc():
             totalResults.append("Nothing")
 
         cursor.execute('''
-                SELECT feedbackID, feedbackDate, feedback FROM feedback WHERE patientID = %s
+                SELECT feedbackID, feedbackDate, feedback, users.userName FROM feedback
+                INNER JOIN therapists ON feedback.therapistID = therapists.therapistID
+                INNER JOIN users ON therapists.userID = users.userID
+                WHERE patientID = %s
                 ''', (patientId, ))
         feedback_data = cursor.fetchall()
         if feedback_data:

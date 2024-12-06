@@ -80,7 +80,7 @@ function LandingPage() {
                     <div className="testimonial-users-container">
                         {testimonials.map((testimonial, index) => (
                             <div className={`testimonial-user ${(index % 2 === 0) ? "left" : "right"}`} key={testimonial.id}>
-                                <div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : testimonial.img}</div>
+                                <div className="profile-picture">{(testimonial.img === null) ? <img src='/assets/images/default-profile-pic.jpg' width={100} height={100}></img> : <img src={`/assets/profile-pics/${testimonial.img}`} width={100} height={100}></img>}</div>
                                 <div className="testimonial">{testimonial.content}</div>
                             </div>
                         ))}
