@@ -62,11 +62,18 @@ def registerPatientFunc():
         #             INSERT INTO users (userName, email, pass, userType, profileImg)
         #             VALUES (%s, %s, %s, 'Patient', %s)
         #             ''', (fullname, email, password, profileImgBinary))
-        cursor.execute('''
-            INSERT INTO users (userName, email, pass, gender, userType)
-            VALUES (%s, %s, %s, %s, 'Patient')
-        ''', (fullname, email, password, gender))
-        mysql.connection.commit()
+        if gender == 'null':
+            cursor.execute('''
+                INSERT INTO users (userName, email, pass, userType)
+                VALUES (%s, %s, %s, 'Patient')
+            ''', (fullname, email, password))
+            mysql.connection.commit()
+        else:
+            cursor.execute('''
+                INSERT INTO users (userName, email, pass, gender, userType)
+                VALUES (%s, %s, %s, %s, 'Patient')
+            ''', (fullname, email, password, gender))
+            mysql.connection.commit()
         print("\nSUCCESSFULLY ADDED USER!\n")
 
         #   Retrive userID of newly created user
@@ -125,23 +132,20 @@ def registerTherapistFunc():
         license = request.form.get('license')
         specsArray = request.form.get('specializations')
 
-        # profileImgBinary = None
         cursor = mysql.connection.cursor()
-        # if profileImgBinary == None:
-        #     cursor.execute('''
-        #             INSERT INTO users (userName, email, pass, userType)
-        #             VALUES (%s, %s, %s, 'Therapist')
-        #             ''', (fullname, email, password))
-        # else:
-        #     cursor.execute('''
-        #             INSERT INTO users (userName, email, pass, userType, profileImg)
-        #             VALUES (%s, %s, %s, 'Therapist', %s)
-        #             ''', (fullname, email, password, profileImgBinary))
-        cursor.execute('''
-            INSERT INTO users (userName, email, pass, gender, userType)
-            VALUES (%s, %s, %s, %s, 'Therapist')
-        ''', (fullname, email, password, gender))
-        mysql.connection.commit()
+
+        if gender == 'null':
+            cursor.execute('''
+                INSERT INTO users (userName, email, pass, userType)
+                VALUES (%s, %s, %s, 'Therapist')
+            ''', (fullname, email, password))
+            mysql.connection.commit()
+        else:
+            cursor.execute('''
+                INSERT INTO users (userName, email, pass, gender, userType)
+                VALUES (%s, %s, %s, %s, 'Therapist')
+            ''', (fullname, email, password, gender))
+            mysql.connection.commit()
 
         #   Retrive userID of newly created user
         cursor.execute("SELECT userID FROM users WHERE email LIKE %s AND pass LIKE %s", (email, password))

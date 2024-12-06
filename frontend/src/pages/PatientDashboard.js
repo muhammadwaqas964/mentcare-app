@@ -434,36 +434,19 @@ function PatientDashboard() {
                 ...prevState,
                 [questionIndex]: value,
             }));
-            //console.log(dailySurveyAnswers);
         }
         else {
-            // if (questionIndex + 1 > therapistSurveyQuestions.length) {
-            //     const surveyData = JSON.parse(incompleteTherapistSurveys[0].survey);
-            //     const newQuestion = { 'question': surveyData[questionIndex]['question'] };
-            //     if (newQuestion) {
-            //         let questions = [...therapistSurveyQuestions];
-            //         questions.push(newQuestion);
-            //         setTherapistSurveyQuestions(questions);
-            //         // console.log(questions);
-            //     }
-            // }
-
-            // console.log(questionIndex);
-            // console.log(therapistSurveyAnswers.length);
             if (parseInt(questionIndex) + 1 > therapistSurveyAnswers.length) {
                 const answer = { [`q${questionIndex + 1}`]: value };
                 let answers = therapistSurveyAnswers;
                 answers.push(answer);
-                // console.log(answers)
                 setTherapistSurveyAnswers(answers);
             }
             else {
-                // console.log("Answer exists: ", questionIndex)
                 let answers = therapistSurveyAnswers;
                 answers[`q${questionIndex + 1}`] = value;
                 setTherapistSurveyAnswers(answers);
             }
-            // console.log(therapistSurveyAnswers);
         }
     };
 

@@ -153,6 +153,20 @@ def delNotifFunc():
         return jsonify({"message" : "Notification succesfully delete!"}), 200
     except Exception as err:
         return {"error":  f"{err}"}
+    
+@app.route('/updateSocketsNavbar', methods=['POST'])
+def updateSocketsNavFunc():
+    try:
+        print("GOT HERE")
+        realUserID = request.json.get('realUserID')
+        #socketsNavbar[realUserID] = request.sid
+        #print("UPDATE NAVBAR SOCKETS CONNECTIONS")
+        print("CURRENT NAVBAR SOCKETS CONNECTIONS: ", socketsNavbar)
+        #print(f"Added socketId {request.sid} for userId {realUserID} to socketsNavbar")
+
+        return jsonify({"message" : "Sockets navbar succesfully updated!"}), 200
+    except Exception as err:
+        return {"error":  f"{err}"}
 
 #############   BEGINNING OF SOCKETIO CODE   ############
 

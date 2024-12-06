@@ -8,6 +8,8 @@ import hidePassword from './assets/images/hide-password.png';
 import ManIcon from '@mui/icons-material/Man';
 import WomanIcon from '@mui/icons-material/Woman';
 import WcIcon from '@mui/icons-material/Wc';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -122,7 +124,8 @@ function Register() {
                 console.log("Email is available for registration.");
                 return true;
             } else {
-                alert("Email already in use!");
+                clearWaitingQueue();
+                toast.error("Email already in use! Please use a different email to continue.");
                 return false;
             }
         } catch (err) {
@@ -140,10 +143,10 @@ function Register() {
                 method: 'GET',
             });
             if (response.ok) {
-                alert("LICENSE NUMBER IS VALID!")
+                // alert("LICENSE NUMBER IS VALID!")
                 return true;
             } else {
-                alert("LICENSE NUMBER IS NOT VALID!");
+                toast.error("License number invalid! Please use a valid number to continue.");
                 return false;
             }
         } catch (err) {
@@ -158,12 +161,9 @@ function Register() {
         if (form.checkValidity()) {
             const fname = infoRefs.current.firstName.value;
             const lname = infoRefs.current.lastName.value;
-            console.log("fname: ", fname)
-            console.log("lname: ", lname)
             const email = infoRefs.current.email.value;
             const password = infoRefs.current.password.value;
             const tosAgreement = infoRefs.current.tosAgreement.checked;
-            console.log(tosAgreement);
             const company = insuranceRefs.current.company.value;
             const insuranceId = insuranceRefs.current.id.value;
             const tier = insuranceRefs.current.tier.value;
@@ -521,12 +521,23 @@ function Register() {
                 genderRefs.current[`${userType}OtherBtn`].style.color = 'purple';
                 setSelectedGender('Other');
             }
-
         }
+    }
+
+    const clearWaitingQueue = () => {
+        toast.clearWaitingQueue();
     }
 
     return (
         <>
+            <ToastContainer
+                limit={1}
+                position="bottom-left"
+                closeButton={false}
+                hideProgressBar={true}
+                pauseOnHover={false}
+                autoClose={3000}
+            />
             {/* Patient Registration Form */}
             <div className={patientFormVisibility}>
 
@@ -691,7 +702,7 @@ function Register() {
 
                             <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>
                                 <label>How tall are you? (in feet)</label>
-                                <input type="number" required className='userIntInput' ref={el => (answersRefs.current.height = el)}></input>
+                                <input type="number" step='0.1' required className='userIntInput' ref={el => (answersRefs.current.height = el)}></input>
                             </div>
 
                             <div className='flex-row flex-centered reg-question-container' style={{ justifyContent: 'space-between' }}>

@@ -94,6 +94,8 @@ def settingsUpdAccDetailsFunc():
             email = data[1]
             profileImg = data[2]
             cursor.close()
+            print(app.socketsNavbar)
+            print(realUserId)
             app.socketio.emit('update-navbar', room=app.socketsNavbar[realUserId])
             print("SUCCESSFULLY UPDATED ACCOUNT DETAILS")
             return jsonify({"inserted" : 1, "userName" : userName, "email" : email, "profileImg" : profileImg}), 200

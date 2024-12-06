@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles/Settings.css'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -50,6 +52,25 @@ function SettingsPage() {
     const patientRef = useRef(null);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        fetch("http://localhost:5000/updateSocketsNavbar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ 'realUserID': localStorage.getItem('realUserID') }),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return res.json();
+            })
+            .then((data) => {
+                console.log(data.message)
+            })
+            .catch((err) => console.error("Error fetching data:", err));
+    }, [])
 
     useEffect(() => {
         const realUserID = localStorage.getItem("realUserID");
@@ -177,6 +198,7 @@ function SettingsPage() {
             // setPfp(`/assets/profile-pics/${data.profileImg}`);
             accDeetsPopupRef.current.className = 'hidden settings-popUp-background';
         } else {
+            clearWaitingQueue();
             toast.error("Updating details failed. Try Again!");
         }
         // console.log("STARTING PROFILE PIC RETRIEVAL");
@@ -349,6 +371,14 @@ function SettingsPage() {
 
     return (
         <div style={{ height: '100vh', position: 'relative' }}>
+            <ToastContainer
+                limit={1}
+                position="bottom-left"
+                closeButton={false}
+                hideProgressBar={true}
+                pauseOnHover={false}
+                autoClose={3000}
+            />
             <div className='settings-main-container'
                 style={{
                     transform: localStorage.getItem('userType') === 'Patient' ? 'translate(-50%, -50%)' : 'translate(-50%, -80%)'

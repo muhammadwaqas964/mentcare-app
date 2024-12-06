@@ -32,8 +32,9 @@ const Navbar = () => {
         isLoggedIn = false;
     }
 
-    function handleTabClick(path) {
+    async function handleTabClick(path) {
         if (path === "/logout") {
+            localStorage.removeItem('realUserID');
             localStorage.setItem("userID", 0);
             localStorage.removeItem("userType");
             setUserData();
@@ -41,6 +42,24 @@ const Navbar = () => {
             return;
         }
         setSelectedTab(path.toLowerCase());
+        // if (path === '/settings') {
+        //     await fetch("http://localhost:5000/updateSocketsNavbar", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({ 'realUserID': localStorage.getItem('realUserID') }),
+        //     })
+        //         .then((res) => {
+        //             if (!res.ok) {
+        //                 throw new Error('Network response was not ok');
+        //             }
+        //             return res.json();
+        //         })
+        //         .then((data) => {
+        //         })
+        //         .catch((err) => console.error("Error fetching data:", err));
+        // }
     }
 
     useEffect(() => {
@@ -52,8 +71,13 @@ const Navbar = () => {
 
         //  Connection
         socket.on('connect', () => {
-            console.log('Connected to server');
-            socket.emit("init-socket-navbar-comm", { "userID": realUserID });
+            if (realUserID !== null) {
+                console.log('Connected to navbar socket');
+                socket.emit("init-socket-navbar-comm", { "userID": realUserID });
+            }
+            else {
+                console.log('Real User ID is null. Unable to connect navbar socket');
+            }
         });
         //  Disconnect
         socket.on('disconnect', () => {
@@ -116,11 +140,11 @@ const Navbar = () => {
 
         // Cleanup on component unmount
         return () => {
-            socket.emit("rem-socket-navbar-comm", { "userID": realUserID });
+            // socket.emit("rem-socket-navbar-comm", { "userID": realUserID });
             socket.off('update-navbar');
             socket.disconnect();
         };
-    }, []);
+    }, [selectedTab]);
 
     useEffect(() => {
         const fakeUserID = localStorage.getItem("userID");
@@ -257,30 +281,46 @@ const Navbar = () => {
                     <>
                         {userData && (
                             <div className="flex-row flex-centered" style={{ gap: '30px' }}>
-                                <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
-                                    <h2 className={`${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
-                                        Dashboard
-                                    </h2>
-                                </Link>
                                 {userData.userType === "Patient" && (
-                                    <Link to={`/therapistlist`} onClick={() => handleTabClick(`/therapistlist`)}>
-                                        <h2 className={`${selectedTab === "/therapistlist" ? "active-tab" : "selectable-tab"}`}>
-                                            Therapist List
-                                        </h2>
-                                    </Link>
+                                    <>
+                                        <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+                                            <h2 className={`${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
+                                                Dashboard
+                                            </h2>
+                                        </Link>
+                                        <Link to={`/therapistlist`} onClick={() => handleTabClick(`/therapistlist`)}>
+                                            <h2 className={`${selectedTab === "/therapistlist" ? "active-tab" : "selectable-tab"}`}>
+                                                Therapist List
+                                            </h2>
+                                        </Link>
+                                        <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                                            <h2 className={`${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
+                                                Chats
+                                            </h2>
+                                        </Link>
+                                    </>
                                 )}
-                                {userData.userType === "Therapist" && isActive && (
-                                    <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile/${localStorage.getItem('realUserID')}`)}>
-                                        <h2 className={`${selectedTab === `/therapistprofile/${localStorage.getItem('realUserID')}` ? "active-tab" : "selectable-tab"}`}>
-                                            Profile
-                                        </h2>
-                                    </Link>
+                                {userData.userType === "Therapist" && isActive ? (
+                                    <>
+                                        <Link to={`/dashboard`} onClick={() => handleTabClick(`/dashboard`)}>
+                                            <h2 className={`${selectedTab === "/dashboard" ? "active-tab" : "selectable-tab"}`}>
+                                                Dashboard
+                                            </h2>
+                                        </Link>
+                                        <Link to={`/therapistprofile/${localStorage.getItem('realUserID')}`} onClick={() => handleTabClick(`/therapistprofile/${localStorage.getItem('realUserID')}`)}>
+                                            <h2 className={`${selectedTab === `/therapistprofile/${localStorage.getItem('realUserID')}` ? "active-tab" : "selectable-tab"}`}>
+                                                Profile
+                                            </h2>
+                                        </Link>
+                                        <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
+                                            <h2 className={`${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
+                                                Chats
+                                            </h2>
+                                        </Link>
+                                    </>
+                                ) : (
+                                    <></>
                                 )}
-                                <Link to={`/chat`} onClick={() => handleTabClick(`/chat`)}>
-                                    <h2 className={`${selectedTab === "/chat" ? "active-tab" : "selectable-tab"}`}>
-                                        Chats
-                                    </h2>
-                                </Link>
                                 {userData ? (
                                     <div className="flex-row user-bell-container">
                                         <div className="dropdown flex-col flex-centered" style={{ gap: "10px", height: "100%" }}>
