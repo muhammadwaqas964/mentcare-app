@@ -13,11 +13,11 @@ import '../components/Pagination.css';
 function PatientDashboard() {
     const [callCount, setCallCount] = useState(0);
     const [journals, setJournals] = useState([]);
-    const [feedback, setFeedback] = useState(null);
+    const [feedback, setFeedback] = useState([]);
     const [dailySurveys, setDailySurveys] = useState([]);
     const [incompleteTherapistSurveys, setIncompleteTherapistSurveys] = useState([]);
     const [completeTherapistSurveys, setCompleteTherapistSurveys] = useState([]);
-    const [invoices, setInvoices] = useState(null);
+    const [invoices, setInvoices] = useState([]);
 
     const [currentPage, setCurrentPage] = useState(1);
     const PageSize = 4;
@@ -26,7 +26,7 @@ function PatientDashboard() {
     const [clickedDailySurveys, setClickedDailySurveys] = useState(null);
     const [dailySurveyAnswers, setDailySurveyAnswers] = useState({});
     const { paginatedDailySurvey, tableLength } = useMemo(() => {
-        if (dailySurveys === "Nothing") {
+        if (dailySurveys.length === 0) {
             return { paginatedDailySurvey: [], tableLength: 0 }; // Return default values if it's null or undefined
         }
 
@@ -70,7 +70,7 @@ function PatientDashboard() {
     const [therapistSurveyAnswers, setTherapistSurveyAnswers] = useState([]);
     const { paginatedTherapistSurvey, tableLength2 } = useMemo(() => {
         // console.log(clickedTherapistSurveys);
-        if (incompleteTherapistSurveys === "Nothing" || incompleteTherapistSurveys.length === 0) {
+        if (incompleteTherapistSurveys.length === 0) {
             return { paginatedTherapistSurvey: [], tableLength2: 0 }; // Return default values if it's null or undefined
         }
 
@@ -104,7 +104,7 @@ function PatientDashboard() {
     //  ---------------------- USED FOR POP UP COMPLETE THERAPIST SURVEYS ----------------------
     const [clickedCompTherapistSurveys, setClickedCompTherapistSurveys] = useState(null);
     const { paginatedCompletedTherapistSurvey, tableLength3 } = useMemo(() => {
-        if (completeTherapistSurveys === "Nothing" || completeTherapistSurveys.length === 0) {
+        if (completeTherapistSurveys.length === 0) {
             return { paginatedCompletedTherapistSurvey: [], tableLength3: 0 }; // Return default values if it's null or undefined
         }
 
@@ -185,11 +185,20 @@ function PatientDashboard() {
                 if (data[0] !== "Nothing") {
                     setJournals(data[0]);
                 }
+                else {
+                    setJournals([]);
+                }
                 if (data[1] !== "Nothing") {
                     setFeedback(data[1]);
                 }
+                else {
+                    setFeedback([]);
+                }
                 if (data[2] !== "Nothing") {
                     setDailySurveys(data[2]);
+                }
+                else {
+                    setDailySurveys([]);
                 }
                 if (data[3] !== "Nothing") {
                     //console.log("IM HERE")
@@ -210,6 +219,9 @@ function PatientDashboard() {
                 }
                 if (data[5] !== "Nothing") {
                     setInvoices(data[5]);
+                }
+                else {
+                    setInvoices([]);
                 }
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -281,8 +293,7 @@ function PatientDashboard() {
         if (x === 2) {
             await systemSleep(100);
         }
-        console.log(e.target.parentElement.children[0]);
-        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[0].children[1].children[e.target.parentElement.children[0].children[1].children.length - 1].children[1];
+        const divParent = x === 1 ? e.target.parentElement.children[1] : e.target.parentElement.children[0].children[1].children[0].children[1];
         divParent.className = 'visible popUp-background';
     }
 
@@ -479,7 +490,7 @@ function PatientDashboard() {
             <div className="cards-container">
                 <div className='flex-col flex-centered' style={{ gap: '10px' }}>
                     <DashboardCard title="JOURNALS" extraClasses="patient-card">
-                        {journals && journals.slice().reverse().map((row, index) => {
+                        {journals.length > 0 && journals.slice().reverse().map((row, index) => {
                             const originalIndex = journals.length - 1 - index;
                             return (
                                 <div key={`journal-${originalIndex}`} style={{ width: "100%" }}>
@@ -503,7 +514,7 @@ function PatientDashboard() {
                 </div>
 
                 <DashboardCard title="FEEDBACK" extraClasses="patient-card">
-                    {feedback && feedback.map((row, index) => {
+                    {feedback.length > 0 && feedback.map((row, index) => {
                         return (
                             <div key={`feedback-${index}`} style={{ width: "100%" }}>
                                 <input className='card-buttons' type='button' value={row.feedback} onClick={(e) => displayPopUp(e, 1)}></input>
@@ -526,7 +537,7 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="DAILY SURVEYS" extraClasses="patient-card">
-                    {dailySurveys && dailySurveys.slice().reverse().map((row, index) => {
+                    {dailySurveys.length > 0 && dailySurveys.slice().reverse().map((row, index) => {
                         return (
                             <div key={`daily-survey-${index}`} style={{ width: "100%" }}>
                                 <input
@@ -547,7 +558,29 @@ function PatientDashboard() {
                                                 return (
                                                     row.weight !== null ? (
                                                         <div className='flex-col pd-question-container' key={`question-${row.dailySurveyID}-${newIndex}`} style={{ width: "100%" }}>
-                                                            <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                            {
+                                                                (newIndex + 1) + (4 * (currentPage - 1)) === 1 ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much do you weigh?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 2) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How tall are you?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 3) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How many calories have you consumed today?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 4) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much water have you drank today?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 5) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much exercise have you had today?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 6) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much sleep have you had?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 7) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: On a scale 1-10, how much energy do you have?</label>
+                                                                ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 8) ? (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: On a scale 1-10, how much stressed are you?</label>
+                                                                ) : (
+                                                                    <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                                )
+                                                            }
+
+                                                            {/* <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label> */}
                                                             <textarea
                                                                 className='pd-textarea'
                                                                 disabled
@@ -558,7 +591,27 @@ function PatientDashboard() {
                                                     ) : (
                                                         <div className='questions-container' key={`questions-${row.dailySurveyID}-${newIndex}`} style={{ width: "100%" }}>
                                                             <div className='flex-col pd-question-container' style={{ width: "100%" }}>
-                                                                <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                                {
+                                                                    (newIndex + 1) + (4 * (currentPage - 1)) === 1 ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much do you weigh?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 2) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How tall are you?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 3) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How many calories have you consumed today?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 4) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much water have you drank today?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 5) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much exercise have you had today?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 6) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: How much sleep have you had?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 7) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: On a scale 1-10, how much energy do you have?</label>
+                                                                    ) : ((newIndex + 1) + (4 * (currentPage - 1)) === 8) ? (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: On a scale 1-10, how much stressed are you?</label>
+                                                                    ) : (
+                                                                        <label>QUESTION #{(newIndex + 1) + (4 * (currentPage - 1))}: </label>
+                                                                    )
+                                                                }
                                                                 <textarea
                                                                     className='pd-textarea'
                                                                     required
@@ -598,7 +651,7 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="INVOICES" extraClasses="patient-card">
-                    {invoices && invoices.map((row, index) => {
+                    {invoices.length > 0 && invoices.map((row, index) => {
                         return (
                             <input
                                 className='card-buttons'
@@ -614,7 +667,7 @@ function PatientDashboard() {
                 </DashboardCard>
 
                 <DashboardCard title="THERAPIST SURVEYS" extraClasses="patient-card">
-                    {incompleteTherapistSurveys && incompleteTherapistSurveys.map((row, index) => {
+                    {incompleteTherapistSurveys.length > 0 && incompleteTherapistSurveys.map((row, index) => {
                         // Parse the 'survey' JSON string into an array of questions
                         const questions = JSON.parse(row.survey);
 
@@ -671,7 +724,7 @@ function PatientDashboard() {
                             </div>
                         );
                     })}
-                    {completeTherapistSurveys && completeTherapistSurveys.map((row, index) => {
+                    {completeTherapistSurveys.length > 0 && completeTherapistSurveys.map((row, index) => {
                         return (
                             <div key={`completed-survey-${index}`} style={{ width: "100%" }}>
                                 <input
