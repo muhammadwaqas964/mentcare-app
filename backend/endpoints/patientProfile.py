@@ -29,8 +29,8 @@ def get_patient_overview(userID):
         cursor.execute('''
             SELECT cds.completionID, ds.dateCreated, cds.weight, cds.height, 
                    cds.calories, cds.water, cds.exercise, cds.sleep, cds.energy, cds.stress
-            FROM dailysurveys ds
-            LEFT JOIN completeddailysurveys cds ON ds.dailySurveyID = cds.dailySurveyID
+            FROM dailySurveys ds
+            LEFT JOIN completedDailySurveys cds ON ds.dailySurveyID = cds.dailySurveyID
             WHERE cds.patientID = (
                 SELECT patientID FROM patients WHERE userID = %s
             )
@@ -112,15 +112,15 @@ def get_patient_overview(userID):
         return jsonify({"error": str(e)}), 500
 
 # Fetch detailed daily survey responses
-@PatientProfileData.route('/daily-survey/<int:completionID>', methods=['GET'])
+@PatientProfileData.route('/daily-survey-details/<int:completionID>', methods=['GET'])
 def get_daily_survey_details(completionID):
     try:
         cursor = mysql.connection.cursor()
         cursor.execute('''
             SELECT cds.completionID, cds.weight, cds.height, cds.calories, cds.water, 
                    cds.exercise, cds.sleep, cds.energy, cds.stress, ds.dateCreated
-            FROM completeddailysurveys cds
-            INNER JOIN dailysurveys ds ON cds.dailySurveyID = ds.dailySurveyID
+            FROM completedDailySurveys cds
+            INNER JOIN dailySurveys ds ON cds.dailySurveyID = ds.dailySurveyID
             WHERE cds.completionID = %s
         ''', (completionID,))
         survey = cursor.fetchone()
@@ -158,8 +158,8 @@ def add_feedback():
         cursor = mysql.connection.cursor()
         cursor.execute('''
             INSERT INTO feedback (therapistID, patientID, feedbackDate, feedback)
-            VALUES (NULL, (SELECT patientID FROM patients WHERE userID = %s), CURDATE(), %s)
-        ''', (userID, feedback))
+            VALUES (%s, (SELECT patientID FROM patients WHERE userID = %s), CURDATE(), %s)
+        ''', (userID, userID, feedback))
         mysql.connection.commit()
         cursor.close()
 

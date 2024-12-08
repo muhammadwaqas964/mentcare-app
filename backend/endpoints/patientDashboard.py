@@ -47,6 +47,27 @@ def patientDashFunc():
         else:
             totalResults.append("Nothing")
 
+        #   Create new daily survey if one doesn't exist
+        cursor.execute('''
+            SELECT dateCreated FROM dailySurveys
+            ORDER BY dateCreated DESC
+            LIMIT 1
+        ''')
+        data = cursor.fetchone()
+        if data:
+            latestDailySurvey = data[0].date()
+            if datetime.today().date() != latestDailySurvey:
+                cursor.execute('''
+                    INSERT INTO dailySurveys (dateCreated) VALUES (NOW())
+                ''')
+                mysql.connection.commit()
+        else:
+            cursor.execute('''
+                    INSERT INTO dailySurveys (dateCreated) VALUES (NOW())
+            ''')
+            mysql.connection.commit()
+
+
         #   Extract incomplete + complete daily surveys        
         cursor.execute('''
                 SELECT
@@ -74,6 +95,7 @@ def patientDashFunc():
             print("DAILY SURVEYS SUCCESSFUL")
             totalResults.append(daily_survey_results)
         else:
+            print("NO DAILY SURVEYS FOUND")
             totalResults.append("Nothing")
         
         #   Extract incomplete therapist survey (if exists)

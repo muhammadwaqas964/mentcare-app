@@ -172,7 +172,7 @@ def settingsRemAccFunc():
             cursor.execute(f'SELECT invoiceID FROM invoices WHERE invoices.patientID = {userId}')
             if(cursor.rowcount > 0):
                 cursor.close()
-                return jsonify({"deletion" : "cant delete, patient owes money"}), 200
+                return jsonify({"deletion" : "Unpaid invoices"}), 500
 
             cursor.execute(f'SELECT userID FROM patients WHERE patients.patientID = {userId}')
             realUserId = cursor.fetchone()[0]
@@ -185,6 +185,10 @@ def settingsRemAccFunc():
             # surveys: deps on patients
             # therapistPatientsList: deps on patients
             cursor.execute(f'''
+                DELETE FROM payments WHERE patientID = {userId}''')
+            cursor.execute(f'''
+                DELETE FROM details WHERE patientID = {userId}''')
+            cursor.execute(f'''
                 DELETE FROM chats WHERE patientID = {userId}''')
             cursor.execute(f'''
                 DELETE FROM completedDailySurveys WHERE patientID = {userId}''')
@@ -196,6 +200,10 @@ def settingsRemAccFunc():
                 DELETE FROM journals WHERE patientID = {userId}''')
             cursor.execute(f'''
                 DELETE FROM surveys WHERE patientID = {userId}''')
+            cursor.execute(f'''
+                DELETE FROM reviews WHERE patientID = {userId}''')
+            cursor.execute(f'''
+                DELETE FROM testimonials WHERE userID = {realUserId}''')
             cursor.execute(f'''
                 DELETE FROM therapistPatientsList WHERE patientID = {userId}''')
             # notifications: deps on users
@@ -210,6 +218,7 @@ def settingsRemAccFunc():
             mysql.connection.commit()
             return jsonify({"deletion" : "successful"}), 200
         elif (userType == "Therapist"):
+            #   Set therapist as Active or Inactive
             cursor.execute(f'''
                 UPDATE therapists 
                 SET isActive = CASE 
@@ -222,18 +231,37 @@ def settingsRemAccFunc():
             cursor.execute(f'SELECT isActive FROM therapists WHERE therapistID = {userId}')
             isActive = cursor.fetchone()[0]
 
+            #   Set therapist relations with patients to Active ONLY IF the patients have this therapist as their mainTherapist
+            if isActive == True:
+                cursor.execute(f'''
+                    UPDATE therapistPatientsList tpl
+                    INNER JOIN patients ON tpl.patientID = patients.patientID
+                    SET tpl.status = 'Active'
+                    WHERE tpl.therapistID = {userId} AND patients.mainTherapistID = {userId};
+                                ''')
+                mysql.connection.commit()
+            
+            #   Set all therapist relations with patients to Inactive
+            else:
+                cursor.execute(f'''
+                    UPDATE therapistPatientsList
+                    SET status = 'Inactive'
+                    WHERE therapistID = {userId}
+                                ''')
+                mysql.connection.commit()
+
             return jsonify({"isActive" : isActive}), 200
         else:
             cursor.close()
-            return jsonify({"deletion" : "cant delete, patient owes money"}), 200
+            return jsonify({"deletion" : "failed"}), 500
         
-        mysql.connection.commit()
+        # mysql.connection.commit()
         
-        if(cursor.rowcount > 0): # We ensure the table was modified
-            cursor.close()
-            return jsonify({"deleted" : 1}), 200
-        else:
-            cursor.close()
-            return jsonify({"deleted" : 0}), 200
+        # if(cursor.rowcount > 0): # We ensure the table was modified
+        #     cursor.close()
+        #     return jsonify({"deleted" : 1}), 200
+        # else:
+        #     cursor.close()
+        #     return jsonify({"deleted" : 0}), 200
     except Exception as err:
         return {"error":  f"{err}"}

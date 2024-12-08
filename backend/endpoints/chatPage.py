@@ -62,6 +62,8 @@ def send_invoice():
         therapist_id = request.json.get('therapistId')
         amount = str(round(float(request.json.get('amountDue')), 2))
 
+        print("GOT HERE GOT HERE GOT HERE")
+
         print(patient_id)
         print(therapist_id)
         print(amount)
@@ -96,7 +98,7 @@ def get_user_chats():
             ''', (choose_id,))
         else:
             cursor.execute('''
-                SELECT t.therapistID, u.userName AS therapistName, c.content, chatStatus, requestStatus
+                SELECT t.therapistID, u.userName AS therapistName, c.content, status, chatStatus, requestStatus
                 FROM therapists t
                 INNER JOIN therapistPatientsList tpl ON t.therapistID = tpl.therapistID
                 INNER JOIN users u ON t.userID = u.userID
@@ -126,7 +128,7 @@ def startChatFunc():
 
         print('got in')
         # Emit the event to the connected socket clients
-        socketio.emit('start-chat-for-patient', {
+        app.socketio.emit('start-chat-for-patient', {
             'therapistID': therapistID
         }, room=app.sockets[str(userID)])
 
@@ -145,7 +147,7 @@ def endChatFunc():
         userID = data[0]
 
         # Emit the event to the connected socket clients
-        socketio.emit('end-chat-for-patient', {
+        app.socketio.emit('end-chat-for-patient', {
             'message':'inactive'
         }, room=app.sockets[str(userID)])
 
@@ -165,7 +167,7 @@ def requestChatFunc():
         userID = data[0]
 
         # Emit the event to the connected socket clients
-        socketio.emit('request-chat', {
+        app.socketio.emit('request-chat', {
             'patientID':patientID
         }, room=app.sockets[str(userID)])
 
@@ -227,7 +229,7 @@ def send_message():
         print(patient_id)
         room = app.sockets[str(userID)]
         print(room)
-        socketio.emit('new-message', { 'patientId': patient_id, 'therapistId': therapist_id, 'message': message, 'sender': sender }, room=room)
+        app.socketio.emit('new-message', { 'patientId': patient_id, 'therapistId': therapist_id, 'message': message, 'sender': sender }, room=room)
         print("New message sent to room " + room + " - " + message)
 
         return jsonify({"message": "Success"}), 200

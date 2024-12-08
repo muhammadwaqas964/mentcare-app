@@ -33,15 +33,15 @@ export default function BasicModalInvoice({ patientId, therapistId }) {
 	const [amount, setAmount] = React.useState('');
 	const [chargingPrice, setChargingPrice] = useState(null);
 	const textFieldRef = useRef(null);
-	useEffect(() => {
-		if (open) {
-			setTimeout(() => {
-				if (textFieldRef.current) {
-					textFieldRef.current.focus();
-				}
-			}, 100);
-		}
-	}, [open]);
+	// useEffect(() => {
+	// 	if (open) {
+	// 		setTimeout(() => {
+	// 			if (textFieldRef.current) {
+	// 				textFieldRef.current.focus();
+	// 			}
+	// 		}, 100);
+	// 	}
+	// }, [open]);
 
 	useEffect(() => {
 		const fetchCharging = async () => {
@@ -64,7 +64,8 @@ export default function BasicModalInvoice({ patientId, therapistId }) {
 		fetchCharging();
 	}, [therapistId]);
 
-	const handleInput = async () => {
+	const handleInput = async (e) => {
+		e.preventDefault();
 		console.log(patientId)
 		console.log(therapistId)
 		console.log(amount)
@@ -74,7 +75,7 @@ export default function BasicModalInvoice({ patientId, therapistId }) {
 			body: JSON.stringify({
 				patientId: patientId,
 				therapistId: therapistId,
-				amountDue: amount,
+				amountDue: amount
 			}),
 		});
 		handleClose();

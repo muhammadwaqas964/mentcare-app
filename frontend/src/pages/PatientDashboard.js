@@ -176,6 +176,7 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
+                console.log(data)
                 //console.log(data[0]);
                 //console.log(data[1]);
                 //console.log(data[2]);
@@ -195,6 +196,8 @@ function PatientDashboard() {
                     setFeedback([]);
                 }
                 if (data[2] !== "Nothing") {
+                    console.log("GOT HERE")
+                    console.log(data[2]);
                     setDailySurveys(data[2]);
                 }
                 else {

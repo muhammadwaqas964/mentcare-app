@@ -6,8 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
-import { ToastContainer, toast } from 'react-toastify';
-
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -286,35 +284,76 @@ function SettingsPage() {
             .catch(err => console.error('Error fetching data:', err));
     }
 
-    const accountChangeHandler = (words) => {
+    const accountChangeHandler = async (words) => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
 
-        fetch('http://localhost:5000/settingsRemoveAccount', {
+        const response = await fetch('http://localhost:5000/settingsRemoveAccount', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ userId: userId, userType: userType }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (userType === 'Therapist' && words === 'Deactivate') {
-                    localStorage.setItem("isActive", data.isActive);
-                    navigate('/deactivated');
-                    return;
-                }
-                else if (userType === 'Therapist' && words === 'Activate') {
-                    localStorage.setItem("isActive", data.isActive);
-                    setAccActionClass("settings-acc-action-btn settings-red-btn");
-                    setWords("DEACTIVATE");
-                    navigate("/settings");
-                    return;
-                }
-                localStorage.setItem("userID", 0);
-                navigate('/')
-            })
-            .catch(err => console.error('Error fetching data:', err));
+        });
+        if (response.ok) {
+            const data = await response.json()
+            console.log(data);
+            if (userType === 'Therapist' && words === 'Deactivate') {
+                localStorage.setItem("isActive", data.isActive);
+                navigate('/deactivated');
+                return;
+            }
+            else if (userType === 'Therapist' && words === 'Activate') {
+                localStorage.setItem("isActive", data.isActive);
+                setAccActionClass("settings-acc-action-btn settings-red-btn");
+                setWords("DEACTIVATE");
+                navigate("/settings");
+                return;
+            }
+            localStorage.setItem("userID", 0);
+            navigate('/')
+        } else {
+            const data = await response.json()
+            if (data.deletion === 'Unpaid invoices') {
+                clearWaitingQueue();
+                toast.error("You are unable to delete your account due to unpaid invoices.");
+            }
+            else {
+                clearWaitingQueue();
+                toast.error("There was a problem deleting your account. Try again later!");
+            }
+        }
+
+        // fetch('http://localhost:5000/settingsRemoveAccount', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({ userId: userId, userType: userType }),
+        // })
+        //     .then((res) => {
+        //         if (!res.ok) {
+        //             throw new Error('Network response was not ok');
+        //         }
+        //         return res.json();
+        //     })
+        //     .then(data => {
+        //         if (userType === 'Therapist' && words === 'Deactivate') {
+        //             localStorage.setItem("isActive", data.isActive);
+        //             navigate('/deactivated');
+        //             return;
+        //         }
+        //         else if (userType === 'Therapist' && words === 'Activate') {
+        //             localStorage.setItem("isActive", data.isActive);
+        //             setAccActionClass("settings-acc-action-btn settings-red-btn");
+        //             setWords("DEACTIVATE");
+        //             navigate("/settings");
+        //             return;
+        //         }
+        //         localStorage.setItem("userID", 0);
+        //         navigate('/')
+        //     })
+        //     .catch(err => console.error('Error fetching data:', err));
     }
 
     function resetInput(e, field) {
