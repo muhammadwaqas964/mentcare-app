@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 const TherapistListPage = () => {
   const [therapists, setTherapists] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryGender, setSearchQueryGender] = useState(["Female", "Male", "Other"]);
+  const [searchQueryGender2, setSearchQueryGender2] = useState(0);
   const [sortCriteria, setSortCriteria] = useState("specialty");
   const [maxPrice, setMaxPrice] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,13 +21,14 @@ const TherapistListPage = () => {
           throw new Error(`Error: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log(data);
         const formattedTherapists = data.map((therapist) => ({
           id: therapist.userID,
           name: therapist.name,
           specialty: therapist.specializations.join(", ") || "No specialty provided",
           profilePic: therapist.profileImg !== null ? `/assets/profile-pics/${therapist.profileImg}` : '/assets/images/Mock_Profile_Picture.jpg',
           gender: therapist.gender || "Not specified",
-          price: therapist.chargingPrice ? `$${therapist.chargingPrice}` : "Contact for pricing",
+          price: therapist.price ? `$${therapist.price}` : "Contact for pricing",
         }));
         setTherapists(formattedTherapists);
       } catch (error) {
@@ -78,11 +81,29 @@ const TherapistListPage = () => {
 
   const filteredTherapists = therapists.filter(
     (therapist) =>
-      (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) && sortCriteria === 'name' ||
+        therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase()) && sortCriteria === 'specialty' ||
+        searchQueryGender.includes(therapist.gender) && sortCriteria === 'gender' ||
+        therapist.price.replace(/[^0-9.-]+/g, "").includes(searchQuery.toLowerCase()) && sortCriteria === 'price') &&
+      searchQueryGender.includes(therapist.gender) &&
       (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
 
+  useEffect(() => {
+    console.log(searchQueryGender);
+    console.log(searchQueryGender2);
+    let stringToUse = { 1: "Female", 2: "Male", 3: "Other" }[searchQueryGender2]
+
+    if (searchQueryGender2 !== 0) {
+      if (searchQueryGender.includes(stringToUse)) {
+        setSearchQueryGender(searchQueryGender.filter(item => item !== stringToUse));
+      } else {
+        setSearchQueryGender([...searchQueryGender, stringToUse]);
+      }
+    }
+    setSearchQueryGender2(0);
+    console.log(searchQueryGender);
+  }, [searchQueryGender2]);
 
   const indexOfLastTherapist = currentPage * therapistsPerPage;
   const indexOfFirstTherapist = indexOfLastTherapist - therapistsPerPage;
@@ -141,6 +162,14 @@ const TherapistListPage = () => {
             boxSizing: "border-box",
           }}
         />
+        <form>
+          <input type="checkbox" id="gender1" name="gender1" value="Female" onChange={() => setSearchQueryGender2(1)} defaultChecked="true" />
+          <label for="gender1">Female</label><br />
+          <input type="checkbox" id="gender2" name="gender2" value="Male" onChange={() => setSearchQueryGender2(2)} defaultChecked="true" />
+          <label for="gender2">Male</label><br />
+          <input type="checkbox" id="gender3" name="gender3" value="Other" onChange={() => setSearchQueryGender2(3)} defaultChecked="true" />
+          <label for="gender3">Other</label><br />
+        </form>
         <input
           type="number"
           placeholder="Max Price"
