@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mentcare"
+name = "mentcare-app"
 authors = [
     {name = "Adrian"},
     {name = "Akul"},
@@ -41,3 +41,6 @@ dependencies = [
     'wsproto',
 ]
 dynamic = ["version"]
+
+[tool.setuptools]
+package-dir = {"" = "backend"}
