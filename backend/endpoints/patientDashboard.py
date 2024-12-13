@@ -55,7 +55,7 @@ def patientDashFunc():
         ''')
         data = cursor.fetchone()
         if data:
-            latestDailySurvey = data.date()
+            latestDailySurvey = data[0].date()
             if datetime.today().date() != latestDailySurvey:
                 cursor.execute('''
                     INSERT INTO dailySurveys (dateCreated) VALUES (NOW())
