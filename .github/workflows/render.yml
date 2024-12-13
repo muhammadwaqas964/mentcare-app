@@ -20,6 +20,16 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
+      - name: Check if frontend branch exists
+        run: |
+          git fetch origin
+          if git show-ref --verify --quiet refs/remotes/origin/frontend; then
+            echo "Frontend branch exists"
+          else
+            echo "Frontend branch does not exist"
+            exit 1  # Exit the job if the branch doesn't exist
+          fi
+      
       # Sync to Frontend Branch
       - name: Switch to frontend branch
         run: |
