@@ -170,7 +170,7 @@ def updateSocketsNavFunc():
 
 #############   BEGINNING OF SOCKETIO CODE   ############
 
-if __name__ == '__app__':
+if __name__ == '__main__':
     socketio.run(app)
 
 #   Initiate socket connection (for whatever page users goes into)

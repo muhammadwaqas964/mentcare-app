@@ -109,7 +109,7 @@ def settingsUpdAccDetailsFunc():
 def settingsUpdInsDetailsFunc():
     try:
         userId = request.json.get('userId')
-        userType = request.json.get('userType')
+        # userType = request.json.get('userType')
         newInsComp = request.json.get('insCompUpd')
         newInsID = request.json.get('insIDUpd')
         newInsTier = request.json.get('insTierUpd')

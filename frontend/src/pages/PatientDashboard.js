@@ -36,7 +36,7 @@ function PatientDashboard() {
 
         const questions = ['weight', 'height', 'calories', 'water', 'exercise', 'sleep', 'energy', 'stress'];
         const transformDailySurveysToQuestions = (dailySurveys) => {
-            return dailySurveys.map(survey => {
+            return dailySurveys.slice().reverse().map(survey => {
                 return questions.map((question, index) => ({
                     [`question${index + 1}`]: survey[question]  // Dynamically assigning the question number (question1, question2, etc.)
                 }));
@@ -48,9 +48,8 @@ function PatientDashboard() {
         // console.log(dailySurveys.slice());
         // console.log(newDailySurveys.slice(firstPageIndex, lastPageIndex));
         let index;
-        if (clickedDailySurveys) {
-            //console.log(clickedDailySurveys)
-            index = parseInt(clickedDailySurveys) - 1;
+        if (clickedDailySurveys !== null) {
+            index = parseInt(clickedDailySurveys);
             // console.log("Content on Current page: ", transformedSurveys[index].slice(firstPageIndex, lastPageIndex));
         }
         else {
@@ -176,7 +175,6 @@ function PatientDashboard() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data)
                 //console.log(data[0]);
                 //console.log(data[1]);
                 //console.log(data[2]);
@@ -196,8 +194,6 @@ function PatientDashboard() {
                     setFeedback([]);
                 }
                 if (data[2] !== "Nothing") {
-                    console.log("GOT HERE")
-                    console.log(data[2]);
                     setDailySurveys(data[2]);
                 }
                 else {
@@ -275,9 +271,8 @@ function PatientDashboard() {
     }
 
     async function displayPopUp(e, x, surveyID, type) {
-        //console.log("CLICKED INDEX: ", surveyID);
         if (type === 'Daily') {
-            setClickedDailySurveys(surveyID + 1);
+            setClickedDailySurveys(surveyID);
         }
         else if (type === 'Incomplete') {
             setClickedTherapistSurveys(surveyID + 1);
@@ -321,7 +316,6 @@ function PatientDashboard() {
             divParent.className = 'hidden popUp-background';
         }
         setCallCount(callCount + 1);
-        console.log(therapistSurveyQuestions);
     }
 
     const clearWaitingQueue = () => {
@@ -541,19 +535,34 @@ function PatientDashboard() {
 
                 <DashboardCard title="DAILY SURVEYS" extraClasses="patient-card">
                     {dailySurveys.length > 0 && dailySurveys.slice().reverse().map((row, index) => {
+                        const dailySurveyDate = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated));
+                        const currentDate = Intl.DateTimeFormat('en-US', { timeZone: 'EST' }).format(new Date());
+                        const isSameDate = (
+                            dailySurveyDate.split('/')[0] === currentDate.split('/')[0] &&
+                            dailySurveyDate.split('/')[1] === currentDate.split('/')[1] &&
+                            dailySurveyDate.split('/')[2] === currentDate.split('/')[2]
+                        );
                         return (
                             <div key={`daily-survey-${index}`} style={{ width: "100%" }}>
                                 <input
                                     type='button'
                                     className='card-buttons'
                                     dailysurveyid={row.dailySurveyID}
-                                    value={row.weight !== null ? `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}` : `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US').format(new Date(row.dateCreated))}`}
+                                    value={
+                                        isSameDate
+                                            ? (row.weight === null
+                                                ? `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated))}`
+                                                : `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated))}`)
+                                            : (row.weight !== null
+                                                ? `COMPLETED Daily Survey ${new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated))}`
+                                                : `(NEW) Daily Survey ${new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated))}`)
+                                    }
                                     onClick={(e) => displayPopUp(e, 1, index, 'Daily')}
                                 />
                                 <form className='hidden popUp-background' dailysurveyid={row.dailySurveyID} onSubmit={(e) => submitDailySurvey(e, 3)}>
                                     <div className='pd-popUp pd-questions-container' style={{ width: "400px" }}>
-                                        <h2>Daily Survey #{index + 1}</h2>
-                                        <h3>Date: {new Date(row.dateCreated).toDateString()}</h3>
+                                        <h2>Daily Survey #{dailySurveys.length - index}</h2>
+                                        <h3>Date: {new Intl.DateTimeFormat('en-US', { timeZone: 'UTC' }).format(new Date(row.dateCreated))}</h3>
                                         {paginatedDailySurvey && paginatedDailySurvey.length > 0 ? (
                                             paginatedDailySurvey.map((newRow, newIndex) => {
                                                 const rowProperties = ['weight', 'height', 'calories', 'water', 'exercise', 'sleep', 'energy', 'stress'];

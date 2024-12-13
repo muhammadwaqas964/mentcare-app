@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 const TherapistListPage = () => {
@@ -11,6 +11,12 @@ const TherapistListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [therapistsPerPage, setTherapistsPerPage] = useState(1);
   const navigate = useNavigate();
+
+  const genderBtns = useRef({
+    femaleBtn: null,
+    maleBtn: null,
+    otherBtn: null
+  })
 
   // Fetch therapists data
   useEffect(() => {
@@ -81,10 +87,10 @@ const TherapistListPage = () => {
 
   const filteredTherapists = therapists.filter(
     (therapist) =>
-      (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) && sortCriteria === 'name' ||
-        therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase()) && sortCriteria === 'specialty' ||
-        searchQueryGender.includes(therapist.gender) && sortCriteria === 'gender' ||
-        therapist.price.replace(/[^0-9.-]+/g, "").includes(searchQuery.toLowerCase()) && sortCriteria === 'price') &&
+      (therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        therapist.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // searchQueryGender.includes(therapist.gender) ||
+        therapist.price.replace(/[^0-9.-]+/g, "").includes(searchQuery.toLowerCase())) &&
       searchQueryGender.includes(therapist.gender) &&
       (!maxPrice || parseFloat(therapist.price.replace(/[^0-9.-]+/g, "")) <= parseFloat(maxPrice))
   );
@@ -93,6 +99,38 @@ const TherapistListPage = () => {
     console.log(searchQueryGender);
     console.log(searchQueryGender2);
     let stringToUse = { 1: "Female", 2: "Male", 3: "Other" }[searchQueryGender2]
+
+    //  Change gender buttons
+    if (searchQueryGender2 === 1) {
+      if (genderBtns.current.femaleBtn.parentElement.children[1].style.color === 'rgb(52, 196, 169)') {
+        genderBtns.current.femaleBtn.parentElement.children[1].style.color = 'white';
+        genderBtns.current.femaleBtn.parentElement.children[1].style.backgroundColor = 'rgb(52, 196, 169)';
+      }
+      else {
+        genderBtns.current.femaleBtn.parentElement.children[1].style.color = 'rgb(52, 196, 169)';
+        genderBtns.current.femaleBtn.parentElement.children[1].style.backgroundColor = 'white';
+      }
+    }
+    else if (searchQueryGender2 === 2) {
+      if (genderBtns.current.maleBtn.parentElement.children[1].style.color === 'rgb(52, 196, 169)') {
+        genderBtns.current.maleBtn.parentElement.children[1].style.color = 'white';
+        genderBtns.current.maleBtn.parentElement.children[1].style.backgroundColor = 'rgb(52, 196, 169)';
+      }
+      else {
+        genderBtns.current.maleBtn.parentElement.children[1].style.color = 'rgb(52, 196, 169)';
+        genderBtns.current.maleBtn.parentElement.children[1].style.backgroundColor = 'white';
+      }
+    }
+    else if (searchQueryGender2 === 3) {
+      if (genderBtns.current.otherBtn.parentElement.children[1].style.color === 'rgb(52, 196, 169)') {
+        genderBtns.current.otherBtn.parentElement.children[1].style.color = 'white';
+        genderBtns.current.otherBtn.parentElement.children[1].style.backgroundColor = 'rgb(52, 196, 169)';
+      }
+      else {
+        genderBtns.current.otherBtn.parentElement.children[1].style.color = 'rgb(52, 196, 169)';
+        genderBtns.current.otherBtn.parentElement.children[1].style.backgroundColor = 'white';
+      }
+    }
 
     if (searchQueryGender2 !== 0) {
       if (searchQueryGender.includes(stringToUse)) {
@@ -137,75 +175,144 @@ const TherapistListPage = () => {
         Therapist List
       </h1>
 
-      <div
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          gap: "20px",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Search therapists by name or specialization..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setCurrentPage(1);
-          }}
+      <div className="flex-col flex-centered">
+        <div
           style={{
-            width: "50%",
-            padding: "10px",
-            border: "2px solid #34c4a9",
-            borderRadius: "5px",
-            boxSizing: "border-box",
+            marginBottom: "0px",     // EDITED THIS LINE (was 20px)
+            display: "flex",
+            gap: "20px",
+            justifyContent: "center",
+            alignItems: "center",
+            width: '800px'
           }}
-        />
-        <form>
-          <input type="checkbox" id="gender1" name="gender1" value="Female" onChange={() => setSearchQueryGender2(1)} defaultChecked="true" />
-          <label for="gender1">Female</label><br />
-          <input type="checkbox" id="gender2" name="gender2" value="Male" onChange={() => setSearchQueryGender2(2)} defaultChecked="true" />
-          <label for="gender2">Male</label><br />
-          <input type="checkbox" id="gender3" name="gender3" value="Other" onChange={() => setSearchQueryGender2(3)} defaultChecked="true" />
-          <label for="gender3">Other</label><br />
-        </form>
-        <input
-          type="number"
-          placeholder="Max Price"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
-          style={{
-            width: "30%",
-            padding: "10px",
-            border: "2px solid #34c4a9",
-            borderRadius: "5px",
-            margin: "10px",
-            boxSizing: "border-box",
-          }}
-        />
-        <div>
-          <label htmlFor="sort-dropdown" style={{ marginRight: "10px" }}>
-            Sort By:
-          </label>
-          <select
-            id="sort-dropdown"
-            value={sortCriteria}
-            onChange={(e) => handleSort(e.target.value)}
+        >
+          <input
+            type="text"
+            placeholder="Search therapists by name or specialization..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             style={{
+              width: "70%",
               padding: "10px",
               border: "2px solid #34c4a9",
               borderRadius: "5px",
-              backgroundColor: "#fff",
-              color: "#007460",
+              fontSize: '11pt',
               boxSizing: "border-box",
             }}
+          />
+
+          <div style={{ width: '30%' }}>
+            <label htmlFor="sort-dropdown" style={{ marginRight: "10px" }}>
+              Sort By:
+            </label>
+            <select
+              id="sort-dropdown"
+              value={sortCriteria}
+              onChange={(e) => handleSort(e.target.value)}
+              style={{
+                padding: "10px",
+                border: "2px solid #34c4a9",
+                borderRadius: "5px",
+                backgroundColor: "#fff",
+                color: "#007460",
+                boxSizing: "border-box",
+              }}
+            >
+              <option value="specialty">Specialty</option>
+              <option value="name">Name</option>
+              <option value="price">Price</option>
+              <option value="gender">Gender</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex-row flex-centered" style={{ width: '800px' }}>
+          Filter By:
+          <form
+            className="flex-row flex-centered"
+            style={{
+              margin: '10px',
+              gap: '10px'
+            }}
           >
-            <option value="specialty">Specialty</option>
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-            <option value="gender">Gender</option>
-          </select>
+            <div>
+              <input style={{ display: 'none' }} type="checkbox" id="gender1" name="gender1" value="Female" ref={el => (genderBtns.current.femaleBtn = el)} onChange={() => setSearchQueryGender2(1)} defaultChecked="true" />
+              <label
+                for="gender1"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'rgb(52, 196, 169)',
+                  border: '2px solid rgb(52, 196, 169)',
+                  borderRadius: '5px',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '11pt',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  userSelect: 'none'
+                }}
+              >
+                Female
+              </label>
+            </div>
+            <div>
+              <input style={{ display: 'none' }} type="checkbox" id="gender2" name="gender2" value="Male" ref={el => (genderBtns.current.maleBtn = el)} onChange={() => setSearchQueryGender2(2)} defaultChecked="true" />
+              <label
+                for="gender2"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'rgb(52, 196, 169)',
+                  border: '2px solid rgb(52, 196, 169)',
+                  borderRadius: '5px',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '11pt',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  userSelect: 'none'
+                }}
+              >
+                Male
+              </label>
+            </div>
+            <div>
+              <input style={{ display: 'none' }} type="checkbox" id="gender3" name="gender3" value="Other" ref={el => (genderBtns.current.otherBtn = el)} onChange={() => setSearchQueryGender2(3)} defaultChecked="true" />
+              <label
+                for="gender3"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'rgb(52, 196, 169)',
+                  border: '2px solid rgb(52, 196, 169)',
+                  borderRadius: '5px',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  fontSize: '11pt',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  userSelect: 'none'
+                }}
+              >
+                Other
+              </label>
+            </div>
+          </form>
+          <input
+            type="number"
+            placeholder="Max Price..."
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            style={{
+              // width: "30%",
+              padding: "10px",
+              border: "2px solid #34c4a9",
+              borderRadius: "5px",
+              margin: "10px",
+              fontSize: '11pt',
+              boxSizing: "border-box",
+            }}
+          />
         </div>
       </div>
 

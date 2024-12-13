@@ -85,7 +85,7 @@ function Login() {
                         className='password-toggle-btn'
                         onClick={() => togglePasswordVisibility()}
                     />
-                    <Link to={'/forgot_password'}>Forgot Password?</Link>
+                    {/* <Link to={'/forgot_password'}>Forgot Password?</Link> */}
                 </div>
 
                 <div className='flex-col flex-centered margin-top-15'>

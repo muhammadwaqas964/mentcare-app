@@ -84,7 +84,7 @@ def patientDashFunc():
                 FROM dailySurveys ds
                 LEFT JOIN completedDailySurveys cds
                     ON ds.dailySurveyID = cds.dailySurveyID
-                WHERE (cds.dailySurveyID IS NULL)
+                WHERE (DATE(ds.dateCreated) = CURDATE())
                     OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
                 ''', (patientId, ))
         daily_survey_data = cursor.fetchall()
