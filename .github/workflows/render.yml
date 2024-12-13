@@ -60,7 +60,7 @@ jobs:
 
       - name: Push changes to frontend branch
         run: |
-          git push origin frontend
+          git push origin dev:frontend
 
       # Sync to Backend Branch
       - name: Switch to backend branch
@@ -123,4 +123,4 @@ jobs:
 
       - name: Push changes to backend branch
         run: |
-          git push origin backend
+          git push origin dev:backend
