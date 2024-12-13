@@ -22,7 +22,7 @@ jobs:
 
       # Sync to Frontend Branch
       - name: Switch to frontend branch
-        run: git checkout frontend
+        run: git checkout -- frontend
 
       - name: Copy frontend-specific folders from dev branch
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       # Sync to Backend Branch
       - name: Switch to backend branch
-        run: git checkout backend
+        run: git checkout -- backend
 
       - name: Copy backend-specific folders from dev branch
         run: |
