@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mentcare"
+authors = [
+    {name = "Adrian"},
+    {name = "Akul"},
+    {name = "Anish"},
+    {name = "Fausto"},
+    {name = "Joel"},
+]
+description = "Package for making mentcare pytestable"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["one", "two"]
+dependencies = [
+    'bidict',
+    'blinker',
+    'click',
+    'colorama',
+    'Flask',
+    'Flask-Cors',
+    'Flask-MySQLdb',
+    'Flask-SocketIO',
+    'h11',
+    'iniconfig',
+    'itsdangerous',
+    'Jinja2',
+    'MarkupSafe',
+    'mysqlclient',
+    'packaging',
+    'pluggy',
+    'pytest',
+    'python-dotenv',
+    'python-engineio',
+    'python-socketio',
+    'simple-websocket',
+    'Werkzeug',
+    'wsproto',
+]
+dynamic = ["version"]
