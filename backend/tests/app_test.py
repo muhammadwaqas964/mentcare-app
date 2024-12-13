@@ -16,6 +16,7 @@ def test_endpointNumberOneFunc(mock_connection):
     mock_connection.cursor.return_value = mock_cursor
     mock_cursor.rowcount = 0
     mock_cursor.execute.return_value = 0
+    mock_cursor.fetchall.return_value = 123
 
     response = app.test_client().post('/endpointOne', json={})
     assert response.status_code == 200
