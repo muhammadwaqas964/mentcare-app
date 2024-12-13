@@ -29,17 +29,17 @@ jobs:
       - name: Copy frontend-specific folders from dev branch
         run: |
           # Checkout the specific folders from the dev branch
-          git checkout dev -- /frontend/public /frontend/src /frontend/package-lock.json /frontend/package.json
+          git checkout dev -- ./frontend/public ./frontend/src ./frontend/package-lock.json ./frontend/package.json
 
       - name: Replace strings in frontend files
         run: |
           # Replace "http://localhost:5000/" with "https://mentcare-backend.onrender.com/" in all frontend files
-          find /frontend/src -type f -exec sed -i 's/http:\/\/localhost:5000\//https:\/\/mentcare-backend.onrender.com\//g' {} +
+          find ./frontend/src -type f -exec sed -i 's/http:\/\/localhost:5000\//https:\/\/mentcare-backend.onrender.com\//g' {} +
 
       - name: Stage and commit changes to frontend branch
         run: |
           # Stage the changes
-          git add /frontend/public /frontend/src /frontend/package-lock.json /frontend/package.json
+          git add ./frontend/public ./frontend/src ./frontend/package-lock.json ./frontend/package.json
 
           # Commit changes if there are any
           if git diff --cached --quiet; then
@@ -60,7 +60,7 @@ jobs:
       - name: Copy backend-specific folders from dev branch
         run: |
           # Checkout the specific folders from the dev branch
-          git checkout dev -- /backend/endpoints /backend/app.py /backend/requirements.txt
+          git checkout dev -- ./backend/endpoints ./backend/app.py ./backend/requirements.txt
 
       - name: Replace first 20 lines of a file with 21 different lines
         run: |
@@ -93,15 +93,15 @@ jobs:
 
           # Replace the first 20 lines of the target file with the new lines
           # Append the remaining lines after the first 21 lines
-          tail -n +20 /backend/app.py >> temp_lines.txt
+          tail -n +20 ./backend/app.py >> temp_lines.txt
           
           # Move the new content into the original file
-          mv temp_lines.txt /backend/app.py
+          mv temp_lines.txt ./backend/app.py
 
       - name: Stage and commit changes to backend branch
         run: |
           # Stage the changes
-          git add /backend/endpoints /backend/app.py /backend/requirements.txt
+          git add ./backend/endpoints ./backend/app.py ./backend/requirements.txt
 
           # Commit changes if there are any
           if git diff --cached --quiet; then
