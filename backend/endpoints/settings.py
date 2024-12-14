@@ -9,6 +9,50 @@ settingsPageData = Blueprint('settingsPageData', __name__)
 
 @settingsPageData.route('/settingsAccountData', methods=['POST'])
 def settingsPageDataFunc():
+    """
+    Fetch User Account Data
+    ---
+    tags:
+      - Settings
+    parameters:
+      - name: realUserID
+        in: body
+        type: integer
+        required: true
+        description: Real User ID
+      - name: userID
+        in: body
+        type: integer
+        required: true
+        description: User ID
+      - name: userType
+        in: body
+        type: string
+        required: true
+        description: User Type (Patient or Therapist)
+    responses:
+      200:
+        description: Returns user account details
+        schema:
+          type: object
+          properties:
+            userName:
+              type: string
+            email:
+              type: string
+            patientPrivacy:
+              type: boolean
+            insComp:
+              type: string
+            insID:
+              type: string
+            insTier:
+              type: string
+            isActive:
+              type: boolean
+      500:
+        description: Internal server error
+    """
     try:
         realUserId = int(request.json.get('realUserID'))
         userId = request.json.get('userID')
@@ -49,6 +93,62 @@ def settingsPageDataFunc():
 
 @settingsPageData.route('/settingsUpdAccDetails', methods=['POST'])
 def settingsUpdAccDetailsFunc():
+    """
+    Update Account Details
+    ---
+    tags:
+      - Settings
+    parameters:
+      - name: realUserID
+        in: formData
+        type: integer
+        required: true
+        description: Real User ID
+      - name: userID
+        in: formData
+        type: integer
+        required: true
+        description: User ID
+      - name: userType
+        in: formData
+        type: string
+        required: true
+        description: User Type (Patient or Therapist)
+      - name: userNameUpd
+        in: formData
+        type: string
+        required: true
+        description: New User Name
+      - name: emailUpd
+        in: formData
+        type: string
+        required: true
+        description: New Email Address
+      - name: pfpFile
+        in: formData
+        type: file
+        required: false
+        description: New Profile Picture
+    responses:
+      200:
+        description: Successfully updated user account details
+        schema:
+          type: object
+          properties:
+            inserted:
+              type: integer
+              description: Indicates success (1 for success)
+            userName:
+              type: string
+            email:
+              type: string
+            profileImg:
+              type: string
+      404:
+        description: User not found
+      500:
+        description: Internal server error
+    """
     try:
         realUserId = request.form.get('realUserID')
         userId = request.form.get('userID')
@@ -107,6 +207,55 @@ def settingsUpdAccDetailsFunc():
     
 @settingsPageData.route('/settingsUpdInsDetails', methods=['POST'])
 def settingsUpdInsDetailsFunc():
+    """
+    Update Insurance Details
+    ---
+    tags:
+      - Settings
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: Patient ID
+      - name: userType
+        in: body
+        type: string
+        required: true
+        description: User Type (Patient)
+      - name: insCompUpd
+        in: body
+        type: string
+        required: true
+        description: New Insurance Company
+      - name: insIDUpd
+        in: body
+        type: string
+        required: true
+        description: New Insurance ID
+      - name: insTierUpd
+        in: body
+        type: string
+        required: true
+        description: New Insurance Tier
+    responses:
+      200:
+        description: Successfully updated insurance details
+        schema:
+          type: object
+          properties:
+            inserted:
+              type: integer
+              description: Indicates success (1 for success)
+            insComp:
+              type: string
+            insID:
+              type: string
+            insTier:
+              type: string
+      500:
+        description: Internal server error
+    """
     try:
         userId = request.json.get('userId')
         # userType = request.json.get('userType')
@@ -143,6 +292,33 @@ def settingsUpdInsDetailsFunc():
 
 @settingsPageData.route('/settingsUpdPrivacy', methods=['POST'])
 def settingsUpdPrivacyFunc():
+    """
+    Update Privacy Settings
+    ---
+    tags:
+      - Settings
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: Patient ID
+      - name: patientPrivacy
+        in: body
+        type: boolean
+        required: true
+        description: New Privacy Setting
+    responses:
+      200:
+        description: Privacy settings updated successfully.
+        schema:
+          type: object
+          properties:
+            inserted:
+              type: boolean
+      500:
+        description: Internal server error.
+    """
     try:
         userId = request.json.get('userId')
         newPrivacy = request.json.get('patientPrivacy')
@@ -162,6 +338,34 @@ def settingsUpdPrivacyFunc():
 
 @settingsPageData.route('/settingsRemoveAccount', methods=['POST'])
 def settingsRemAccFunc():
+    """
+    Remove User Account
+    ---
+    tags:
+      - Settings
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: User ID
+      - name: userType
+        in: body
+        type: string
+        required: true
+        description: User Type (Patient or Therapist)
+    responses:
+      200:
+        description: Account removal success message.
+        schema:
+          type: object
+          properties:
+            deletion:
+              type: string
+              description: Deletion status.
+      500:
+        description: Error while removing account.
+    """
     try:
         userId = request.json.get('userId')
         userType = request.json.get('userType')
