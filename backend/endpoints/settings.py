@@ -82,7 +82,6 @@ def settingsPageDataFunc():
             data3 = cursor.fetchall()
             isActive = int(data3[0][0])
         cursor.close()
-
         print({"userName" : data1[0][0], "email" : data1[0][1], "patientPrivacy" : data2[0][0], "insuranceCompany" : data2[0][1], "insuranceID" : data2[0][2], "insuranceTier" : data2[0][3], "isActive" : isActive })
         
         return jsonify({"userName" : data1[0][0], "email" : data1[0][1],
