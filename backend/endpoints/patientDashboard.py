@@ -11,10 +11,38 @@ import app
 
 PatientDashboardData = Blueprint('PatientDashboardData', __name__)
 
-@PatientDashboardData.route("/getJournals", methods=['POST'])
-def getJournalsFunc():
+@PatientDashboardData.route("/patientDashboardData", methods=['POST'])
+def patientDashFunc():
+    """
+    Fetch Patient Dashboard Data
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+    responses:
+      200:
+        description: Patient dashboard data fetched successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+      500:
+        description: Internal server error
+    """
     try:
-        patientID = request.json.get('patientID')
+        totalResults = []
+        patientId = request.json.get('patientId')
         cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
@@ -178,6 +206,33 @@ def getInvoicesFunc():
     
 @PatientDashboardData.route("/saveJournal", methods=['POST'])
 def save():
+    """
+    Save Journal Entry
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              journalId:
+                type: integer
+                example: 101
+              journalEntry:
+                type: string
+                example: "This is a journal entry."
+    responses:
+      200:
+        description: Journal entry saved successfully
+      500:
+        description: Internal server error
+    """
     try:
         journalEntry = request.json.get('journalEntry')
         patientId = request.json.get('patientId')
@@ -205,6 +260,30 @@ def save():
     
 @PatientDashboardData.route("/sendFeedback", methods=['POST'])
 def sendFeedbackFunc():
+    """
+    Send Feedback to a Therapist
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              feedback:
+                type: string
+                example: "Great session with the therapist."
+    responses:
+      200:
+        description: Feedback sent successfully
+      500:
+        description: Internal server error
+    """
     try:
         # print("GOT HERE")
         therapistID = request.json.get('therapistID')
@@ -231,6 +310,45 @@ def sendFeedbackFunc():
 #   Send the newly completed therapist survey to patient & therapist (therapist is WIP)
 @PatientDashboardData.route("/completeTherapistSurvey", methods=['POST'])
 def sendTherapistSurveyFunc():
+    """
+    Complete Therapist Survey
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userID:
+                type: integer
+                example: 1
+              patientID:
+                type: integer
+                example: 2
+              surveyID:
+                type: integer
+                example: 101
+              questions:
+                type: array
+                items:
+                  type: string
+                example: ["How was your day?", "How do you feel?"]
+              answers:
+                type: array
+                items:
+                  type: string
+                example: ["Good", "Happy"]
+    responses:
+      200:
+        description: Survey submitted successfully
+      404:
+        description: Therapist not found
+      500:
+        description: Internal server error
+    """
     try:
         userID = request.json.get('userID')
         patientID = request.json.get('patientID')
@@ -276,6 +394,54 @@ def sendTherapistSurveyFunc():
     
 @PatientDashboardData.route("/completeDailySurvey", methods=['POST'])
 def sendDailySurveyFunc():
+    """
+    Complete Daily Survey
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              dailySurveyID:
+                type: integer
+                example: 102
+              weight:
+                type: number
+                example: 70.5
+              height:
+                type: number
+                example: 175
+              calories:
+                type: integer
+                example: 1500
+              water:
+                type: integer
+                example: 8
+              exercise:
+                type: integer
+                example: 60
+              sleep:
+                type: number
+                example: 7.5
+              energy:
+                type: integer
+                example: 8
+              stress:
+                type: integer
+                example: 2
+    responses:
+      200:
+        description: Daily survey completed successfully
+      500:
+        description: Internal server error
+    """
     try:
         data = request.get_json()
         
