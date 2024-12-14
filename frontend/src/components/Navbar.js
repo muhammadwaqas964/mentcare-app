@@ -31,6 +31,7 @@ const Navbar = () => {
     } else {
         isLoggedIn = false;
     }
+    console.log(fakeUserID);
 
     async function handleTabClick(path) {
         if (path === "/logout") {
@@ -273,7 +274,7 @@ const Navbar = () => {
             </div>
 
             <div className="right-section">
-                {!isLoggedIn ? (
+                {!isLoggedIn || !userData ? (
                     <Link to={`/login`} onClick={() => handleTabClick(`/login`)}>
                         <h2 className={`${selectedTab === "/login" ? "active-tab" : "selectable-tab"}`}>Login</h2>
                     </Link>

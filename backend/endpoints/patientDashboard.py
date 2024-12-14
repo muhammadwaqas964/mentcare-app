@@ -11,43 +11,54 @@ import app
 
 PatientDashboardData = Blueprint('PatientDashboardData', __name__)
 
-@PatientDashboardData.route("/patientDashboardData", methods=['POST'])
-def patientDashFunc():
+@PatientDashboardData.route("/getJournals", methods=['POST'])
+def getJournalsFunc():
     try:
-        totalResults = []
-        patientId = request.json.get('patientId')
+        patientID = request.json.get('patientID')
         cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
-                ''', (patientId, ))
+                ''', (patientID, ))
         data = cursor.fetchall()
         if data:
-            #print("DATA: ", data)
             columns = [column[0] for column in cursor.description]
             results = [dict(zip(columns, row)) for row in data]
-            #print("RESULTS: ", results)
-            # print("JOURNALS SUCCESSFUL")
-            totalResults.append(results)
+            return jsonify(results), 200
         else:
-            totalResults.append("Nothing")
+            return jsonify({"message":"no journals found"}), 404
 
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getFeedback", methods=['POST'])
+def getFeedbackFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT feedbackID, feedbackDate, feedback, users.userName FROM feedback
                 INNER JOIN therapists ON feedback.therapistID = therapists.therapistID
                 INNER JOIN users ON therapists.userID = users.userID
                 WHERE patientID = %s
-                ''', (patientId, ))
+                ''', (patientID, ))
         feedback_data = cursor.fetchall()
         if feedback_data:
             feedback_columns = [column[0] for column in cursor.description]
             feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
-            #print("Feedback RESULTS: ", feedback_results)
-            # print("FEEDBACK SUCCESSFUL")
-            totalResults.append(feedback_results)
+            return jsonify(feedback_results), 200
         else:
-            totalResults.append("Nothing")
+            return jsonify({"message":"no feedback found"}), 404
 
-        #   Create new daily survey if one doesn't exist
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getDailySurveys", methods=['POST'])
+def getDailySurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+
+        #   Create a daily survey if one doesn't exist
         cursor.execute('''
             SELECT dateCreated FROM dailySurveys
             ORDER BY dateCreated DESC
@@ -67,7 +78,6 @@ def patientDashFunc():
             ''')
             mysql.connection.commit()
 
-
         #   Extract incomplete + complete daily surveys        
         cursor.execute('''
                 SELECT
@@ -86,86 +96,83 @@ def patientDashFunc():
                     ON ds.dailySurveyID = cds.dailySurveyID
                 WHERE (DATE(ds.dateCreated) = CURDATE())
                     OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
-                ''', (patientId, ))
+                ''', (patientID, ))
         daily_survey_data = cursor.fetchall()
         if daily_survey_data:
             daily_survey_columns = [column[0] for column in cursor.description]
             daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
-            # print("Daily Survey RESULTS: ", daily_survey_results)
-            # print("DAILY SURVEYS SUCCESSFUL")
-            totalResults.append(daily_survey_results)
+            return jsonify(daily_survey_results), 200
         else:
-            # print("NO DAILY SURVEYS FOUND")
-            totalResults.append("Nothing")
-        
-        #   Extract incomplete therapist survey (if exists)
-        cursor.execute('''
-                SELECT therapistID FROM therapistPatientsList WHERE patientID = %s AND status = 'Active';
-                ''', (patientId, ))
-        therapistId = 0
-        if(cursor.rowcount > 0):
-            therapistId = cursor.fetchone()[0]
-        if (therapistId != 0):
-            cursor.execute('''
-                    SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
-                    INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
-                    INNER JOIN users ON therapists.userID = users.userID
-                    WHERE surveys.therapistID = %s AND surveys.patientID = %s;
-                ''', (therapistId, patientId ))
-            incomp_surveys_data = cursor.fetchall()
-            if (incomp_surveys_data):
-                incomp_surveys_columns = [column[0] for column in cursor.description]
-                incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
-                #print("Incomplete Survey RESULTS: ", incomp_surveys_results)
-                # print("INCOMPLETE THERAPIST SURVEYS SUCCESSFUL")
-                totalResults.append(incomp_surveys_results)
-            else:
-                totalResults.append("Nothing")
-        else:
-            totalResults.append("Nothing")
+            return jsonify({"message":"no daily surveys found"}), 404
 
-        
-        #   Extract complete therapist surveys (if exists)
-        if therapistId != 0:
-            cursor.execute('''
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getIncompleteTherapistSurveys", methods=['POST'])
+def getIncompleteTherapistSurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
+                INNER JOIN patients ON surveys.patientID = patients.patientID
+                INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                INNER JOIN users ON therapists.userID = users.userID
+                WHERE patients.patientID = %s AND surveys.therapistID = patients.mainTherapistID;
+            ''', (patientID, ))
+        incomp_surveys_data = cursor.fetchall()
+        if (incomp_surveys_data):
+            incomp_surveys_columns = [column[0] for column in cursor.description]
+            incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
+            return jsonify(incomp_surveys_results), 200
+        else:
+            return jsonify({"message":"no incomplete therapist surveys found"}), 404
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getCompleteTherapistSurveys", methods=['POST'])
+def getCompleteTherapistSurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
                     SELECT users.userName, JSON_EXTRACT(completedSurveys.questions, '$.survey') AS questions,
                     JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone , completedSurveys.completionID,
                     completedSurveys.dateDone
                     FROM completedSurveys
+                    INNER JOIN patients ON completedSurveys.patientID = patients.patientID
                     INNER JOIN therapists ON completedSurveys.therapistID = therapists.therapistID
                     INNER JOIN users ON therapists.userID = users.userID
-                    WHERE completedSurveys.patientID = %s and therapists.therapistID = %s;
-                    ''', (patientId, therapistId))
-            comp_surveys_data = cursor.fetchall()
-            if comp_surveys_data:
-                comp_surveys_columns = [column[0] for column in cursor.description]
-                comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
-                # print("COMPLETE THERAPIST SURVEYS SUCCESSFUL")
-                totalResults.append(comp_surveys_results)
-            else:
-                totalResults.append("Nothing")
+                    WHERE completedSurveys.patientID = %s AND completedSurveys.therapistID = patients.mainTherapistID;
+                    ''', (patientID, ))
+        comp_surveys_data = cursor.fetchall()
+        if comp_surveys_data:
+            comp_surveys_columns = [column[0] for column in cursor.description]
+            comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
+            return jsonify(comp_surveys_results), 200
         else:
-            totalResults.append("Nothing")
+            return jsonify({"message":"no complete therapist surveys found"}), 404
+    except Exception as err:
+        return {"error":  f"{err}"}
 
-        #   Extract invoices (if exists):
+@PatientDashboardData.route("/getInvoices", methods=['POST'])
+def getInvoicesFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT users.userName, invoices.invoiceID, invoices.amountDue, invoices.dateCreated FROM invoices
                 INNER JOIN therapists ON invoices.therapistID = therapists.therapistID
                 INNER JOIN users ON therapists.userID = users.userID
                 WHERE invoices.patientID = %s;
-                ''', (patientId, ))
+                ''', (patientID, ))
         invoices_data = cursor.fetchall()
         if invoices_data:
             invoices_columns = [column[0] for column in cursor.description]
             invoices_results = [dict(zip(invoices_columns, row)) for row in invoices_data]
-            #print("Invoices RESULTS: ", invoices_results)
-            # print("INVOICES SUCCESSFUL")
-            totalResults.append(invoices_results)
+            return jsonify(invoices_results), 200
         else:
-            totalResults.append("Nothing")
-
-        cursor.close()
-        return jsonify(totalResults)
+            return jsonify({"message":"no complete therapist surveys found"}), 404
     except Exception as err:
         return {"error":  f"{err}"}
     
