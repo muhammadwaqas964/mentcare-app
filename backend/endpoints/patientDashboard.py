@@ -42,7 +42,7 @@ def patientDashFunc():
     """
     try:
         totalResults = []
-        patientId = request.json.get('patientId')
+        patientID = request.json.get('patientID')
         cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
