@@ -31,7 +31,7 @@ def get_therapists():
             JOIN 
                 users u ON t.userID = u.userID
             WHERE 
-                u.userType = 'Therapist' AND t.acceptingPatients = 1
+                u.userType = 'Therapist' AND t.acceptingPatients = 1 AND t.isActive = 1
         ''')
         data = cursor.fetchall()
         cursor.close()

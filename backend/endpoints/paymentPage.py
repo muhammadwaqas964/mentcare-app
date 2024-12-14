@@ -10,10 +10,6 @@ from datetime import date;
 
 paymentPageData = Blueprint('paymentPageData', __name__)
 
-@paymentPageData.route('/endpointOne', methods=['GET'])
-def sample_endpoint_function():
-    return jsonify({"data" : "I exist"}), 200
-
 @paymentPageData.route('/getDetails', methods=['POST'])
 def get_details():
     try:
@@ -22,7 +18,9 @@ def get_details():
         cursor = mysql.connection.cursor()
         cursor.execute('''SELECT * from details WHERE patientID = %s''', (patient_id,))
         details = cursor.fetchall()
+        print("details")
         print(details)
+        print("\n\n")
 
         mysql.connection.commit()
         cursor.close()

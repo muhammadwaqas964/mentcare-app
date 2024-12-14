@@ -1,5 +1,6 @@
 from flask import request, jsonify, json, Blueprint
 from app import mysql
+import app
 from datetime import datetime
 
 # Define the Blueprint
@@ -185,6 +186,13 @@ def addRemTheraFunc():
         """)
         therapistID = cursor.fetchone()[0]
 
+        cursor.execute(f"""
+            SELECT userName
+            FROM users, patients
+            WHERE users.userID = patients.userID AND patients.patientID = {userID}
+        """)
+        patientName = cursor.fetchone()[0]
+
         if(currentlyTherapist):
             cursor.execute(f"""
                 UPDATE patients
@@ -196,6 +204,13 @@ def addRemTheraFunc():
                 SET status = 'Inactive'
                 WHERE patientID = {userID} AND therapistID = {therapistID}
             """)
+
+            cursor.execute(f'''
+                INSERT INTO notifications(userID, message, redirectLocation)
+                VALUES ({urlUserID}, "Patient {patientName} has removed themself from your service.", "/dashboard")''')
+            if str(urlUserID) in app.socketsNavbar:
+                app.socketio.emit("update-navbar", room=app.socketsNavbar[str(urlUserID)])
+
         else:
             cursor.execute(f"""
                 UPDATE patients
@@ -221,7 +236,13 @@ def addRemTheraFunc():
                     INSERT INTO therapistPatientsList (therapistID, patientID, status, chatStatus, requestStatus)
                     VALUES ({therapistID}, {userID}, 'Active', 'Inactive', 'Inactive')
                 """)
-        
+
+            cursor.execute(f'''
+                INSERT INTO notifications(userID, message, redirectLocation)
+                VALUES ({urlUserID}, "Patient {patientName} has added themself from your service.", "/dashboard")''')
+            if str(urlUserID) in app.socketsNavbar:
+                app.socketio.emit("update-navbar", room=app.socketsNavbar[str(urlUserID)])
+
         mysql.connection.commit()
         cursor.execute(f"""
             SELECT mainTherapistID
@@ -230,6 +251,16 @@ def addRemTheraFunc():
         """)
         hasThera = cursor.fetchone()[0]
         cursor.close()
+
+        if(False):
+            cursor.execute(f"SELECT userID FROM therapists WHERE therapists.therapistID = {mainTherapistID}")
+            theraUserID = cursor.fetchone()[0]
+            cursor.execute(f'''
+                INSERT INTO notifications(userID, message)
+                VALUES ({theraUserID}, "Patient {patientName} has left Mentcare.")''')
+            if str(theraUserID) in app.socketsNavbar:
+                app.socketio.emit("update-navbar", room=app.socketsNavbar[str(theraUserID)])
+
 
         return jsonify({"nowHasTherapist": hasThera }), 200
     except Exception as err:

@@ -24,7 +24,7 @@ def get_charging():
 
         mysql.connection.commit()
         cursor.close()
-        print(charging[0][0])
+        # print(charging)
 
         return jsonify(charging)
     
@@ -96,7 +96,7 @@ def get_user_chats():
                 INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
                 WHERE tpl.therapistID = %s
             ''', (choose_id,))
-        else:
+        elif user_type == "Patient":
             cursor.execute('''
                 SELECT t.therapistID, u.userName AS therapistName, c.content, status, chatStatus, requestStatus
                 FROM therapists t
@@ -105,6 +105,8 @@ def get_user_chats():
                 INNER JOIN chats c ON tpl.patientID = c.patientID AND tpl.therapistID = c.therapistID
                 WHERE tpl.patientID = %s
             ''', (choose_id,))
+        else:
+            return jsonify({"error": "Invalid user type"}), 500
 
         data = cursor.fetchall()
         columns = [column[0] for column in cursor.description]
@@ -125,9 +127,6 @@ def startChatFunc():
         cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patientID, ))
         data = cursor.fetchone()
         userID = data[0]
-
-        print('got in')
-        #fkasndk
         # Emit the event to the connected socket clients
         if str(userID) in app.sockets:
             app.socketio.emit('start-chat-for-patient', {
@@ -221,7 +220,7 @@ def send_message():
             cursor.execute('SELECT userID FROM therapists WHERE therapistID = %s', (therapist_id, ))
             data = cursor.fetchone()
             userID = data[0]
-        else:
+        elif sender == 'T':
             cursor = mysql.connection.cursor()
             cursor.execute('SELECT userID FROM patients WHERE patientID = %s', (patient_id, ))
             data = cursor.fetchone()

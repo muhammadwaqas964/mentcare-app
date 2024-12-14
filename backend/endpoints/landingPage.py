@@ -24,7 +24,6 @@ def send_testimonials():
 @landingPageData.route('/getTestimonials', methods=['GET'])
 def get_testimonials():
     try:
-        print("haha")
         cursor = mysql.connection.cursor()
         cursor.execute("""
             SELECT testimonials.testimonialID, testimonials.content, users.profileImg, users.userName
