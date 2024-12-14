@@ -12,10 +12,50 @@ paymentPageData = Blueprint('paymentPageData', __name__)
 
 @paymentPageData.route('/endpointOne', methods=['GET'])
 def sample_endpoint_function():
+    """
+    Sample Endpoint
+    ---
+    tags:
+      - Payment
+    responses:
+      200:
+        description: Successful response
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+                  example: "I exist"
+    """
     return jsonify({"data" : "I exist"}), 200
 
 @paymentPageData.route('/getDetails', methods=['POST'])
 def get_details():
+    """
+    Get Payment Details
+    ---
+    tags:
+      - Payment
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+            required:
+              - patientId
+    responses:
+      200:
+        description: Payment details fetched successfully
+      500:
+        description: Internal server error
+    """
     try:
         patient_id = request.json.get('patientId')
 
@@ -34,6 +74,87 @@ def get_details():
 
 @paymentPageData.route('/submitPayment', methods=['POST'])
 def submit_payment():
+    """
+    Submit Payment
+    ---
+    tags:
+      - Payment
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              invoiceId:
+                type: integer
+                example: 101
+              amount:
+                type: number
+                format: float
+                example: 150.75
+              cardNum:
+                type: string
+                example: "1234567890123456"
+              cvc:
+                type: string
+                example: "123"
+              expDate:
+                type: string
+                example: "12/25"
+              firstName:
+                type: string
+                example: "John"
+              lastName:
+                type: string
+                example: "Doe"
+              city:
+                type: string
+                example: "New York"
+              billingAddress:
+                type: string
+                example: "123 Main St"
+              state:
+                type: string
+                example: "NY"
+              country:
+                type: string
+                example: "USA"
+              zip:
+                type: string
+                example: "10001"
+              phone:
+                type: string
+                example: "+1234567890"
+              check:
+                type: boolean
+                example: true
+              alreadyIn:
+                type: boolean
+                example: false
+            required:
+              - patientId
+              - invoiceId
+              - amount
+              - cardNum
+              - cvc
+              - expDate
+              - firstName
+              - lastName
+              - billingAddress
+              - city
+              - state
+              - zip
+              - phone
+    responses:
+      200:
+        description: Payment submitted successfully
+      500:
+        description: Internal server error
+    """
     try: 
         patient_id = request.json.get('patientId')
         invoice_id = request.json.get('invoiceId')
