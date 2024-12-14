@@ -281,7 +281,7 @@ function PatientDashboard() {
             .then(data => {
                 if (data) {
                     setIncompleteTherapistSurveys(data);
-                    setTherapistSurveyQuestions(JSON.parse(data.survey));
+                    setTherapistSurveyQuestions(data.survey);
                 }
             })
             .catch(err => console.error('Error fetching data:', err));
@@ -318,13 +318,13 @@ function PatientDashboard() {
 
         //  Connection
         socket.on('connect', () => {
-            console.log('Connected to server');
+            console.log(`Connected to Patient Dashboard server (userID = ${patientID}`);
             // console.log(patientId)
             socket.emit("init-socket-comm", { "userID": patientID });
         });
         //  Disconnect
         socket.on('disconnect', () => {
-            console.log('Disconnected from server');
+            console.log(`Disconnected from Patient Dashboard server (userID = ${patientID}`);
         });
 
         // Update daily surveys list
@@ -431,7 +431,6 @@ function PatientDashboard() {
             .then(data => {
                 clearWaitingQueue();
                 toast.success('Saved Journal!');
-                console.log("Successfully saved the journal");
             })
             .catch(err => console.error('Error fetching data:', err));
     }
@@ -495,8 +494,8 @@ function PatientDashboard() {
         const patientId = localStorage.getItem("userID");
         const userID = localStorage.getItem("realUserID");
         const surveyID = e.target.getAttribute('incomptherapistsurveyid');
-        console.log(therapistSurveyQuestions);
-        console.log(therapistSurveyAnswers);
+        // console.log(therapistSurveyQuestions);
+        // console.log(therapistSurveyAnswers);
 
 
         fetch('http://localhost:5000/completeTherapistSurvey', {

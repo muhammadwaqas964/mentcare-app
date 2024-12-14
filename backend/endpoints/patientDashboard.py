@@ -11,8 +11,8 @@ import app
 
 PatientDashboardData = Blueprint('PatientDashboardData', __name__)
 
-@PatientDashboardData.route("/patientDashboardData", methods=['POST'])
-def patientDashFunc():
+@PatientDashboardData.route("/getJournals", methods=['POST'])
+def getJournalsFunc():
     """
     Fetch Patient Dashboard Data
     ---
