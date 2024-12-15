@@ -9,6 +9,7 @@ options = webdriver.ChromeOptions()
 options.add_argument("--no-sandbox")
 options.add_argument("--disable-dev-shm-usage")
 options.add_argument("--headless")
+options.add_argument('--disable-gpu')
 
 service = Service("./chromedriver-win64/chromedriver.exe")
 driver = webdriver.Chrome(service=service, options=options)
@@ -16,10 +17,9 @@ driver = webdriver.Chrome(service=service, options=options)
 # driver_path = "E:/CS490/cs490_gp/tests/chromedriver-win64/chromedriver.exe"
 # brave_path = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
 
-# option = webdriver.ChromeOptions()
-# option.binary_location = brave_path
+# options.binary_location = brave_path
 # service = Service(executable_path=driver_path)
-# driver = webdriver.Chrome(service=service, options=option)
+# driver = webdriver.Chrome(service=service, options=options)
 
 
 
