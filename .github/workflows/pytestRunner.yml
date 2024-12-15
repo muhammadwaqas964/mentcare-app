@@ -37,6 +37,7 @@ jobs:
         run: python -m pytest --ignore=./tests
       - name: Run Selenium
         run: |
+          cd ./tests
           python test_therapistsurveys.py
       - name: Push changes to main branch
         if: github.ref == 'refs/heads/dev' && success()
