@@ -1,14 +1,19 @@
 name: Run Python tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - dev  # This ensures it triggers on push to the 'dev' branch
 
 jobs:
   build:
     name: Run tests
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.10"]
 
     steps:
       - uses: szenius/set-timezone@v1.2
@@ -26,4 +31,13 @@ jobs:
           pip install -U pytest
           pip install -e .
       - name: Run Pytest
-        run: python -m pytest
+        run: python -m pytest --ignore=./tests
+      - name: Push changes to main branch
+        if: github.ref == 'refs/heads/dev' && success()  # Runs only if the push was to 'dev' and tests pass
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch --all  # Fetch all branches, including 'main'
+          git checkout main  # Checkout the 'main' branch
+          git merge dev --allow-unrelated-histories  # Merge with the --allow-unrelated-histories flag
+          git push origin main  # Push the merged changes to 'main'
