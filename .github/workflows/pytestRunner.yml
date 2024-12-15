@@ -70,10 +70,7 @@ jobs:
         run: |
           sudo systemctl start mysql
           sudo systemctl status mysql
-          until mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"; do
-            echo "Waiting for MySQL to be ready..."
-            sleep 5
-          done
+          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
           cd ./frontend
           yarn start &
           cd ../backend
