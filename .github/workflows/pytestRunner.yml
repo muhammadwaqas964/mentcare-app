@@ -58,7 +58,7 @@ jobs:
           docker cp ./dump.sql mysql:/tmp/dump.sql
           echo "docker ls 2"
           docker exec mysql ls -al /tmp
-          docker exec -i mysql mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${MYSQL_DATABASE} < ./dump.sql
+          docker exec -i mysql mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
       - name: Install frontend dependencies
         run: |
           cd ./frontend
