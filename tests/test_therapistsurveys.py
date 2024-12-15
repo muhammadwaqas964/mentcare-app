@@ -5,8 +5,22 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 import time
 
+options = webdriver.ChromeOptions()
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--headless")
+
 service = Service("./chromedriver-win64/chromedriver.exe")
-driver = webdriver.Chrome(service=service)
+driver = webdriver.Chrome(service=service, options=options)
+
+# driver_path = "E:/CS490/cs490_gp/tests/chromedriver-win64/chromedriver.exe"
+# brave_path = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+
+# option = webdriver.ChromeOptions()
+# option.binary_location = brave_path
+# service = Service(executable_path=driver_path)
+# driver = webdriver.Chrome(service=service, options=option)
+
 
 
 try:
@@ -15,20 +29,22 @@ try:
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
     email_input.send_keys("john.smith@example.com")
+    time.sleep(1)
     
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
     password_input.send_keys("password123")
+    time.sleep(1)
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
     wait.until(EC.url_contains("/dashboard"))
     print("Login successful, now on the dashboard.")
 
-    time.sleep(2) 
+    time.sleep(5) 
     survey_buttons = driver.find_elements(By.CSS_SELECTOR, ".card-buttons")
     survey_clicked = False
     for button in survey_buttons:
-        if "(New) Survey)" in button.get_attribute("value"):
+        if "(NEW) Survey" in button.get_attribute("value"):
             print(f"Found an incomplete therapist survey button: {button.get_attribute('value')}")
             button.click()
             survey_clicked = True
@@ -43,6 +59,7 @@ try:
                 question.clear()
                 question.send_keys(f"Sample answer {idx + 1}")
                 print(f"Answered question {idx + 1} with 'Sample answer {idx + 1}'.")
+                time.sleep(1)
 
         try:
             submit_button = driver.find_element(By.CSS_SELECTOR, ".pd-action-btn[type='submit']")
