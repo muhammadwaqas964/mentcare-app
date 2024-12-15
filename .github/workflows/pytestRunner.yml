@@ -33,6 +33,7 @@ jobs:
           pip install -r requirements.txt
           pip install -U pytest
           pip install -e .
+          pip install webdriver-manager  # Install webdriver-manager to handle the ChromeDriver
       - name: Run Pytest
         run: python -m pytest --ignore=./tests
       - name: Install Chromium and ChromeDriver
