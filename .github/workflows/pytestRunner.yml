@@ -40,6 +40,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
+      - name: Set up MySQL database with Docker
+        run: |
+          docker run --name mysql -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -p 3306:3306 -d mysql:latest
+          sleep 30  # Give MySQL some time to start
+      # Copy dump.sql to the Docker container and load it
+      - name: Load database dump into MySQL
+        run: |
+          docker cp ./dump.sql mysql:/dump.sql
+          docker exec -i mysql mysql -u root -proot_password my_test_db < /dump.sql
       - name: Run Selenium Tests
         run: |
           cd ./tests
