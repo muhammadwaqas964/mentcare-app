@@ -55,6 +55,8 @@ jobs:
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           docker exec mysql-docker ls -al /tmp
           docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
+          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
+          docker exec mysql-docker hostname
       - name: Install frontend dependencies
         run: |
           cd ./frontend
