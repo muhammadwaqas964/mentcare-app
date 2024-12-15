@@ -73,6 +73,8 @@ jobs:
           flask run &
           sleep 60
           cd ../tests
+          curl -X POST http://localhost:5000/endpointOne -d '{}' -H "Content-Type: application/json"
+          curl http://localhost:5000/endpointTwo
           python test_therapistsurveys.py
       - name: Run Selenium Tests
         run: |
