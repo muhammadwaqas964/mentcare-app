@@ -68,6 +68,12 @@ jobs:
         run: chmod +x ./frontend/node_modules/.bin/react-scripts
       - name: Run React frontend and Flask backend
         run: |
+          sudo systemctl start mysql
+          sudo systemctl status mysql
+          until mysql -h mysql-docker -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 5
+          done
           cd ./frontend
           yarn start &
           cd ../backend
