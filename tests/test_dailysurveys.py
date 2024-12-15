@@ -5,8 +5,16 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 import time
 
-service = Service("./chromedriver-win64/chromedriver.exe")
-driver = webdriver.Chrome(service=service)
+# service = Service("./chromedriver-win64/chromedriver.exe")
+# driver = webdriver.Chrome(service=service)
+
+driver_path = "E:/CS490/cs490_gp/tests/chromedriver-win64/chromedriver.exe"
+brave_path = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+
+option = webdriver.ChromeOptions()
+option.binary_location = brave_path
+service = Service(executable_path=driver_path)
+driver = webdriver.Chrome(service=service, options=option)
 
 try:
     driver.get("http://localhost:3000/login")
@@ -42,6 +50,7 @@ try:
                 question.clear()
                 question.send_keys(f"Sample answer {idx + 1}")
                 print(f"Answered question {idx + 1} with 'Sample answer {idx + 1}'.")
+                time.sleep(1)
 
         try:
             submit_button = driver.find_element(By.CSS_SELECTOR, ".pd-action-btn[type='submit']")
