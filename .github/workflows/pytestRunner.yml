@@ -61,12 +61,15 @@ jobs:
           yarn install  # Ensure all dependencies are installed
       - name: Ensure react-scripts has execution permissions
         run: chmod +x ./frontend/node_modules/.bin/react-scripts
-      - name: Run Selenium Tests
+      - name: Run React frontend and Flask backend
         run: |
           cd ./frontend
-          yarn start
+          yarn start &
           cd ../backend
-          flask run
+          flask run &
+          wait  # Ensure the services are running before moving to the next step
+      - name: Run Selenium Tests
+        run: |
           cd ../tests
           python test_therapistsurveys.py
       - name: Push changes to main branch
