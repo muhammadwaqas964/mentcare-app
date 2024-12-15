@@ -27,5 +27,7 @@ jobs:
           pip install -r requirements.txt
           pip install -U pytest
           pip install -e .
+      - name: cd
+        run: cd
       - name: Run Pytest
         run: python -m pytest
