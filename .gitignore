@@ -168,3 +168,4 @@ backend/node_modules/
 start-all.bat
 start-backend.bat
 start-frontend.bat
+.gitignore
