@@ -39,6 +39,7 @@ try:
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
+    time.sleep(30)
     wait.until(EC.url_contains("/dashboard"))
     print("Login successful, now on the dashboard.")
 
