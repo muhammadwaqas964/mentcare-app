@@ -357,7 +357,7 @@ def initializeSocketCommunication(data):
     userId = data.get('userID')
     socketId = request.sid
     socketsNavbar[userId] = socketId
-    print("CURRENT SOCKETS CONNECTIONS: ", socketsNavbar)
+    print("CURRENT NAVBAR SOCKETS CONNECTIONS: ", socketsNavbar)
     print(f"Added socketId {socketId} for userId {userId} to socketsNavbar")
 
 #   Removes socket connection for the user's navbar
