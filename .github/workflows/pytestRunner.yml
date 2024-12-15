@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+env:
+  MYSQL_ROOT_PASSWORD: "tanner25"
+  MYSQL_DATABASE: "mentcare"
+
 jobs:
   build:
     name: Run tests
@@ -42,7 +46,7 @@ jobs:
           sudo apt-get install -y chromium-browser chromium-chromedriver
       - name: Set up MySQL database with Docker
         run: |
-          docker run --name mysql -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -p 3306:3306 -d mysql:latest
+          docker run --name mysql -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} -p 3306:3306 -d mysql:latest
           sleep 30  # Give MySQL some time to start
       # Copy dump.sql to the Docker container and load it
       - name: Load database dump into MySQL
