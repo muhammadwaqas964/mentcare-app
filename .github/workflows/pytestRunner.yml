@@ -72,6 +72,8 @@ jobs:
           cd ../backend
           flask run &
           sleep 60
+          cd ../tests
+          python test_therapistsurveys.py
       - name: Run Selenium Tests
         run: |
           ls
