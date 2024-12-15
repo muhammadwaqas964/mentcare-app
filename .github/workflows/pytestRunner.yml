@@ -67,7 +67,7 @@ jobs:
           yarn start &
           cd ../backend
           flask run &
-          sleep(10)
+          sleep(60)
       - name: Run Selenium Tests
         run: |
           cd ../tests
