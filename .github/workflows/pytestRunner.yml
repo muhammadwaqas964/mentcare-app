@@ -39,5 +39,5 @@ jobs:
           git config user.email "github-actions@github.com"
           git fetch --all  # Fetch all branches, including 'main'
           git checkout main  # Checkout the 'main' branch
-          git merge dev  # Merge the 'dev' branch into 'main'
+          git merge dev --allow-unrelated-histories  # Merge with the --allow-unrelated-histories flag
           git push origin main  # Push the merged changes to 'main'
