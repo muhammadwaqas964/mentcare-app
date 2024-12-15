@@ -46,7 +46,7 @@ jobs:
           sudo apt-get install -y chromium-browser chromium-chromedriver
       - name: Set up MySQL database with Docker
         run: |
-          docker run --name mysql -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} -p 3306:3306 -d mysql:latest
+          docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 60  # Give MySQL some time to start
       # Copy dump.sql to the Docker container and load it
       - name: Load database dump into MySQL
@@ -54,11 +54,11 @@ jobs:
           echo "ls"
           ls
           echo "docker ls 1"
-          docker exec mysql ls -al /tmp
-          docker cp ./dump.sql mysql:/tmp/dump.sql
+          docker exec mysql-docker ls -al /tmp
+          docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           echo "docker ls 2"
-          docker exec mysql ls -al /tmp
-          docker exec -i mysql mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
+          docker exec mysql-docker ls -al /tmp
+          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
       - name: Install frontend dependencies
         run: |
           cd ./frontend
