@@ -55,6 +55,12 @@ jobs:
           echo "docker ls 2"
           docker exec mysql ls -al /tmp
           docker exec -i mysql mysql -u root -proot_password my_test_db < ./dump.sql
+      - name: Install frontend dependencies
+        run: |
+          cd ./frontend
+          yarn install  # Ensure all dependencies are installed
+      - name: Ensure react-scripts has execution permissions
+        run: chmod +x ./frontend/node_modules/.bin/react-script
       - name: Run Selenium Tests
         run: |
           cd ./frontend
