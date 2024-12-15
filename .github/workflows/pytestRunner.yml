@@ -70,7 +70,8 @@ jobs:
           sleep 60
       - name: Run Selenium Tests
         run: |
-          cd ../tests
+          ls
+          cd ./tests
           python test_therapistsurveys.py
       - name: Push changes to main branch
         if: github.ref == 'refs/heads/dev' && success()
