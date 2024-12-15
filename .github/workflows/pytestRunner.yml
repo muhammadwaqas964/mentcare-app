@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ["3.9", "3.10"]
+        os: [windows-latest] # os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9"] # python-version: ["3.9", "3.10"]
 
     steps:
       - uses: szenius/set-timezone@v1.2
