@@ -58,8 +58,8 @@ jobs:
           docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
           docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT @@hostname;"
           docker exec mysql-docker bash -c "echo $MYSQL_HOST"
+          sudo systemctl start mysql
           sudo systemctl status mysql
-          echo "sudo systemctl start mysql"
       - name: Install frontend dependencies
         run: |
           cd ./frontend
