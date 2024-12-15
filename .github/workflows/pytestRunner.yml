@@ -57,7 +57,11 @@ jobs:
           docker exec -i mysql mysql -u root -proot_password my_test_db < ./dump.sql
       - name: Run Selenium Tests
         run: |
-          cd ./tests
+          cd ./frontend
+          yarn start
+          cd ../backend
+          flask run
+          cd ../tests
           python test_therapistsurveys.py
       - name: Push changes to main branch
         if: github.ref == 'refs/heads/dev' && success()
