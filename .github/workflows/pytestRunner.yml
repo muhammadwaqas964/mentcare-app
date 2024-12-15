@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 env:
-  MYSQL_ROOT_PASSWORD: "tanner25"
-  MYSQL_DATABASE: "mentcare"
+  MYSQL_ROOT_PASSWORD: "root_password"
+  MYSQL_DATABASE: "my_test_db"
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
           docker cp ./dump.sql mysql:/tmp/dump.sql
           echo "docker ls 2"
           docker exec mysql ls -al /tmp
-          docker exec -i mysql mysql -u root -proot_password my_test_db < ./dump.sql
+          docker exec -i mysql mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${MYSQL_DATABASE} < ./dump.sql
       - name: Install frontend dependencies
         run: |
           cd ./frontend
