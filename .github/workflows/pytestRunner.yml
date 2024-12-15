@@ -49,9 +49,11 @@ jobs:
         run: |
           echo "ls"
           ls
-          echo "docker ls"
+          echo "docker ls 1"
           docker exec mysql ls -al /tmp
           docker cp ./dump.sql mysql:/tmp/dump.sql
+          echo "docker ls 2"
+          docker exec mysql ls -al /tmp
           docker exec -i mysql mysql -u root -proot_password my_test_db < /tmp/dump.sql
       - name: Run Selenium Tests
         run: |
