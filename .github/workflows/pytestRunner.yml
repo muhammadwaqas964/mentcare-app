@@ -5,6 +5,9 @@ on:
     branches:
       - dev  # This ensures it triggers on push to the 'dev' branch
 
+permissions:
+  contents: write  # Ensure write access to repository contents
+
 jobs:
   build:
     name: Run tests
