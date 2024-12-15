@@ -12,6 +12,9 @@ service = Service("./chromedriver-win64/chromedriver.exe")
 driver = webdriver.Chrome(service=service)
 
 try:
+    driver.get("http://localhost:3000/")
+    time.sleep(3)
+
     driver.get("http://localhost:3000/login")
 
     wait = WebDriverWait(driver, 10)
