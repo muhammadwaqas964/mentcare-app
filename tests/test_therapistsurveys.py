@@ -31,15 +31,22 @@ try:
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
     email_input.send_keys("john.smith@example.com")
+    print(email_input)
+    print(email_input.text)
     time.sleep(1)
     
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
     password_input.send_keys("password123")
+    print(password_input)
+    print(password_input.text)
     time.sleep(1)
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
+    print(login_button)
+    print(login_button.text)
     login_button.click()
     time.sleep(30)
+    print("got here 1")
     wait.until(EC.url_contains("/dashboard"))
     print("Login successful, now on the dashboard.")
 
