@@ -47,7 +47,10 @@ jobs:
       - name: Set up MySQL database with Docker
         run: |
           docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
-          sleep 60  # Give MySQL some time to start
+          until docker exec mysql-docker mysqladmin ping -h localhost --silent; do
+            echo "Waiting for MySQL to start..."
+            sleep 5
+          done
       # Copy dump.sql to the Docker container and load it
       - name: Load database dump into MySQL
         run: |
@@ -58,7 +61,7 @@ jobs:
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           echo "docker ls 2"
           docker exec mysql-docker ls -al /tmp
-          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
+          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < mysql-docker:/tmp/dump.sql
       - name: Install frontend dependencies
         run: |
           cd ./frontend
