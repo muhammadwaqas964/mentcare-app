@@ -35,6 +35,15 @@ jobs:
           pip install -e .
       - name: Run Pytest
         run: python -m pytest --ignore=./tests
+      - name: Download Google Chrome installer
+        run: |
+          Invoke-WebRequest -Uri "https://dl.google.com/chrome/install/375.126/chrome_installer.exe" -OutFile "chrome_installer.exe"
+      - name: Install Google Chrome
+        run: |
+          Start-Process -FilePath "chrome_installer.exe" -ArgumentList "/silent /install" -NoNewWindow -Wait
+      - name: Verify Google Chrome installation
+        run: |
+          & "C:\Program Files\Google\Chrome\Application\chrome.exe" --version
       - name: Run Selenium
         run: |
           cd ./tests
