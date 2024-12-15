@@ -19,6 +19,7 @@ const PatientOverview = () => {
           `http://127.0.0.1:5000/patient-overview/${userID}`
         );
         setPatientData(response.data);
+        console.log(response.data)
         setLoading(false);
       } catch (err) {
         setError("Error fetching patient data.");
@@ -166,13 +167,13 @@ const PatientOverview = () => {
             data={
               selectedMetrics.length > 0
                 ? selectedMetrics.map((metricKey) => ({
-                    x: formattedSurveys.map((survey) => survey.surveyDate),
-                    y: formattedSurveys.map((survey) => survey[metricKey]),
-                    type: "scatter",
-                    mode: "lines+markers",
-                    name: metrics.find((metric) => metric.key === metricKey)
-                      .name,
-                  }))
+                  x: formattedSurveys.map((survey) => survey.surveyDate),
+                  y: formattedSurveys.map((survey) => survey[metricKey]),
+                  type: "scatter",
+                  mode: "lines+markers",
+                  name: metrics.find((metric) => metric.key === metricKey)
+                    .name,
+                }))
                 : []
             }
             layout={{

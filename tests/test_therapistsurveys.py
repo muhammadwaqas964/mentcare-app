@@ -28,6 +28,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 try:
     driver.get("http://localhost:3000/login")
     wait = WebDriverWait(driver, 45)
+    time.sleep(1)
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
     email_input.send_keys("john.smith@example.com")

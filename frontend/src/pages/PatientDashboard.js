@@ -9,15 +9,19 @@ import 'aos/dist/aos.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/PatientDashboard.css';
 import '../components/Pagination.css';
+import Plot from "react-plotly.js";
 
 function PatientDashboard() {
     const [callCount, setCallCount] = useState(0);
+    const [currentTherapist, setCurrentTherapist] = useState([]);
     const [journals, setJournals] = useState([]);
     const [feedback, setFeedback] = useState([]);
     const [dailySurveys, setDailySurveys] = useState([]);
     const [incompleteTherapistSurveys, setIncompleteTherapistSurveys] = useState([]);
     const [completeTherapistSurveys, setCompleteTherapistSurveys] = useState([]);
     const [invoices, setInvoices] = useState([]);
+    const [selectedMetrics, setSelectedMetrics] = useState([]);
+    const [multiMetric, setMultiMetric] = useState(false);
 
     const [currentPage, setCurrentPage] = useState(1);
     const PageSize = 4;
@@ -73,7 +77,7 @@ function PatientDashboard() {
             return { paginatedTherapistSurvey: [], tableLength2: 0 }; // Return default values if it's null or undefined
         }
 
-        console.log(therapistSurveyQuestions);
+        // console.log(therapistSurveyQuestions);
         const firstPageIndex = (currentPage - 1) * PageSize;
         const lastPageIndex = firstPageIndex + PageSize;
         const transformSurveysToQuestions = (incompleteTherapistSurveys) => {
@@ -112,10 +116,11 @@ function PatientDashboard() {
         const lastPageIndex = firstPageIndex + PageSize;
         const transformSurveysToQuestions = (completeTherapistSurveys) => {
             // const survey = incompleteTherapistSurveys['survey'];
-            console.log(completeTherapistSurveys);
+            // console.log(completeTherapistSurveys);
             return completeTherapistSurveys.slice().reverse().map(survey => {
                 const questions = JSON.parse(survey.questions);
                 const answers = JSON.parse(survey.answers);
+                // console.log(answers);
                 //console.log(completeTherapistSurveys);
                 return questions.map((question, index) => ({
                     [`question${index + 1}`]: {
@@ -233,6 +238,24 @@ function PatientDashboard() {
         //         }
         //     })
         //     .catch(err => console.error('Error fetching data:', err));
+        fetch('http://localhost:5000/getCurrentTherapist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ patientID }), // Send patientId in the body
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.message) {
+                    setCurrentTherapist([]);
+                }
+                else {
+                    console.log(data);
+                    setCurrentTherapist(data);
+                }
+            })
+            .catch(err => console.error('Error fetching data:', err));
 
         fetch('http://localhost:5000/getJournals', {
             method: 'POST',
@@ -283,6 +306,7 @@ function PatientDashboard() {
                     setDailySurveys([]);
                 }
                 else {
+                    console.log(data);
                     setDailySurveys(data);
                 }
             })
@@ -299,13 +323,10 @@ function PatientDashboard() {
             .then(data => {
                 if (data.message) {
                     setIncompleteTherapistSurveys([]);
-                    console.log('GOT HERE 1')
                     setTherapistSurveyQuestions([]);
                 }
                 else {
-                    console.log(data);
                     setIncompleteTherapistSurveys(data);
-                    console.log("GOT HERE 2")
                     setTherapistSurveyQuestions(JSON.parse(data[0].survey));
                 }
             })
@@ -361,6 +382,24 @@ function PatientDashboard() {
         // Update daily surveys list
         socket.on('submit-daily-survey', () => {
             console.log('DAILY SURVEY SUCCESSFULLY SUBMITTED');
+            fetch('http://localhost:5000/getDailySurveys', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ patientID }), // Send patientId in the body
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        setDailySurveys([]);
+                    }
+                    else {
+                        console.log(data);
+                        setDailySurveys(data);
+                    }
+                })
+                .catch(err => console.error('Error fetching data:', err));
         })
 
         // Update therapist surveys list
@@ -437,6 +476,7 @@ function PatientDashboard() {
             // console.log(divParent);
             divParent.className = 'hidden popUp-background';
         }
+        setTherapistSurveyAnswers([]);
         setCallCount(callCount + 1);
     }
 
@@ -568,15 +608,69 @@ function PatientDashboard() {
                 const answer = { [`q${questionIndex + 1}`]: value };
                 let answers = therapistSurveyAnswers;
                 answers.push(answer);
+                // console.log("\nPUSHED: ", answers);
                 setTherapistSurveyAnswers(answers);
             }
             else {
                 let answers = therapistSurveyAnswers;
-                answers[`q${questionIndex + 1}`] = value;
-                setTherapistSurveyAnswers(answers);
+                if (answers[parseInt(questionIndex)].hasOwnProperty(`q${parseInt(questionIndex) + 1}`) === false) {
+                    const answer = { [`q${questionIndex + 1}`]: value };
+                    answers.splice(parseInt(questionIndex), 0, answer);
+                    // console.log("\nSPLICED: ", answers);
+                    setTherapistSurveyAnswers(answers);
+                }
+                else {
+                    answers[parseInt(questionIndex)][`q${parseInt(questionIndex) + 1}`] = value;
+                    // console.log("\nUPDATED: ", answers);
+                    setTherapistSurveyAnswers(answers);
+                }
             }
         }
     };
+
+    const metrics = [
+        { name: "Weight", key: "weight" },
+        { name: "Height", key: "height" },
+        { name: "Calories", key: "calories" },
+        { name: "Water", key: "water" },
+        { name: "Exercise", key: "exercise" },
+        { name: "Sleep", key: "sleep" },
+        { name: "Energy", key: "energy" },
+        { name: "Stress", key: "stress" },
+    ];
+
+    const toggleMetric = (metricKey) => {
+        if (multiMetric) {
+            setSelectedMetrics((prev) =>
+                prev.includes(metricKey)
+                    ? prev.filter((key) => key !== metricKey)
+                    : [...prev, metricKey]
+            );
+        } else {
+            setSelectedMetrics([metricKey]);
+        }
+    };
+
+    const toggleMultiMetric = () => {
+        setMultiMetric(!multiMetric);
+        setSelectedMetrics([]); // Reset selections
+    };
+
+    const uniqueDays = Array.from(
+        new Set(dailySurveys.map((survey) => survey.dateCreated))
+    );
+
+    const formattedSurveys = uniqueDays
+        .map((date) => {
+            const survey = dailySurveys.find((s) => s.dateCreated === date && s.weight !== null); // Exclude surveys with null weight
+            if (!survey) return null; // Handle cases where no valid survey is found
+            return {
+                ...survey,
+                dateCreated: new Date(date).toLocaleDateString(), // Format date as MM/DD/YYYY
+            };
+        })
+        .filter(Boolean) // Remove null values from the resulting array
+        .sort((a, b) => new Date(a.dateCreated) - new Date(b.dateCreated));
 
     return (
         <div className='flex-col' style={{ gap: '20px' }}>
@@ -606,6 +700,34 @@ function PatientDashboard() {
                 {/* Display patient-specific content */}
 
                 <div className="cards-container">
+                    <DashboardCard title="CURRENT THERAPIST" extraClasses="patient-card">
+                        {currentTherapist.length > 0 &&
+                            <div className='flex-row' style={{ gap: '20px' }}>
+                                <div className='profile-pic-container'>
+                                    <div className="img-circle-mask" style={{ width: '125px', height: '125px', border: '1px solid black' }}>
+                                        <img src={currentTherapist[0].profileImg ? `/assets/profile-pics/${currentTherapist[0].profileImg}` : '/assets/images/default-profile-pic.jpg'} alt='PROFILE PIC' className="profile-pic" />
+                                    </div>
+                                </div>
+                                <div className='flex-col flex-centered' style={{ gap: '10px' }}>
+                                    <div style={{ fontSize: '16pt' }}>
+                                        {currentTherapist[0].userName}
+                                    </div>
+                                    <button className='card-buttons' style={{ width: 'initial' }} onClick={() => navigate(`/therapistProfile/${currentTherapist[0].userID}`)}>VIEW PROFILE</button>
+                                </div>
+                            </div>
+                        }
+                        {currentTherapist.length === 0 &&
+                            <div className='flex-col flex-centered' style={{ fontSize: '16pt', width: '70%', height: '100%' }}>
+                                <div>
+                                    None at this moment.
+                                </div>
+                                <div>
+                                    Visit the Therapist List tab to add a therapist!
+                                </div>
+                            </div>
+                        }
+                    </DashboardCard>
+
                     <div className='flex-col flex-centered' style={{ gap: '10px' }}>
                         <DashboardCard title="JOURNALS" extraClasses="patient-card">
                             {journals.length > 0 && journals.slice().reverse().map((row, index) => {
@@ -934,6 +1056,102 @@ function PatientDashboard() {
                     })} */}
                     </DashboardCard>
                 </div >
+                <div className="graph-section flex-row flex-centered" style={{ width: '80%', padding: '40px' }}>
+                    <div className="graph-controls" style={{ width: '20%', margin: 'initial' }}>
+                        <label style={{ fontWeight: "bold", color: "#20c997" }}>
+                            Which metric(s) do you want to see?
+                        </label>
+                        <div className="metric-buttons">
+                            {metrics.map((metric) => (
+                                <button
+                                    key={metric.key}
+                                    style={{
+                                        backgroundColor: selectedMetrics.includes(metric.key)
+                                            ? "#20c997"
+                                            : "#ddd",
+                                        color: selectedMetrics.includes(metric.key)
+                                            ? "white"
+                                            : "black",
+                                    }}
+                                    onClick={() => toggleMetric(metric.key)}
+                                >
+                                    {metric.name}
+                                </button>
+                            ))}
+                            <label style={{ marginTop: "10px" }}>
+                                <input
+                                    type="checkbox"
+                                    checked={multiMetric}
+                                    onChange={toggleMultiMetric}
+                                />
+                                Show Multiple Metrics
+                            </label>
+                        </div>
+                    </div>
+                    <div className="graph-container" style={{ width: '80%' }}>
+                        <Plot
+                            data={
+                                selectedMetrics.length > 0
+                                    ? selectedMetrics.map((metricKey) => ({
+                                        x: formattedSurveys.map((survey) => survey.dateCreated),
+                                        y: formattedSurveys.map((survey) => survey[metricKey]),
+                                        type: "scatter",
+                                        mode: "lines+markers",
+                                        name: metrics.find((metric) => metric.key === metricKey)
+                                            .name,
+                                    }))
+                                    : []
+                            }
+                            layout={{
+                                xaxis: { title: "Date" },
+                                yaxis: {
+                                    title:
+                                        selectedMetrics.length === 1
+                                            ? (() => {
+                                                const metric = metrics.find((m) => m.key === selectedMetrics[0]);
+                                                if (metric) {
+                                                    switch (metric.key) {
+                                                        case "weight":
+                                                            return "Weight (kg)";
+                                                        case "height":
+                                                            return "Height (feet)";
+                                                        case "calories":
+                                                            return "Calories (kcal)";
+                                                        case "water":
+                                                            return "Water Intake (liters)";
+                                                        case "exercise":
+                                                            return "Exercise Duration (hours)";
+                                                        case "sleep":
+                                                            return "Sleep Duration (hours)";
+                                                        case "energy":
+                                                            return "Energy Level (1-10)";
+                                                        case "stress":
+                                                            return "Stress Level (1-10)";
+                                                        default:
+                                                            return "Value";
+                                                    }
+                                                }
+                                                return "Value";
+                                            })()
+                                            : "Values", // Use a generic title for multiple metrics
+                                },
+                                showlegend: true,
+                                margin: { t: 100 },
+                                title: {
+                                    text: "VIEW YOUR DAILY SURVEY ANSWERS",
+                                    font: {
+                                        color: "#20c997",
+                                        family: "Arial, sans-serif",
+                                        size: 23,
+                                        weight: "bold",
+                                    },
+                                },
+                            }}
+                            style={{ width: "100%", height: "100%" }}
+                            useResizeHandler={true}
+                        />
+                    </div>
+                </div>
             </div >
         </div>
     );

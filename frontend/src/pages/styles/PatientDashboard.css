@@ -148,3 +148,14 @@ h3 {
     font-size: 14pt;
     height: 60px;
 }
+
+.view-therap-profile-btn {
+    padding: 10px 15px;
+    background-color: rgb(52, 196, 169);
+    border: medium;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+}

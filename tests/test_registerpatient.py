@@ -12,6 +12,22 @@ driver = webdriver.Chrome(service=service)
 
 try:
     driver.get("http://localhost:3000/register")
+    script = """
+    var testMessage = document.createElement('div');
+    testMessage.innerHTML = <div>FEATURE #2: SIGN UP AS A PATIENT</div>";
+    testMessage.style.position = "fixed";
+    testMessage.style.bottom = "10px";
+    testMessage.style.left = "10px";
+    testMessage.style.backgroundColor = "yellow";
+    testMessage.style.color = "black";
+    testMessage.style.zIndex = "9999";
+    testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
+    document.body.appendChild(testMessage);
+    """
+    driver.execute_script(script)
+    time.sleep(2)
+
     wait = WebDriverWait(driver, 10)
 
     print("Filling personal details...")

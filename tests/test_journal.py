@@ -10,12 +10,28 @@ service = Service("./chromedriver-win64/chromedriver.exe")
 driver = webdriver.Chrome(service=service)
 
 try:
-    driver.get("http://localhost:3000/")
-    time.sleep(3)
+    # driver.get("http://localhost:3000/")
+    # time.sleep(3)
 
     driver.get("http://localhost:3000/login")
+    time.sleep(2)
 
     wait = WebDriverWait(driver, 10)
+    script = """
+    var testMessage = document.createElement('div');
+    testMessage.innerText = "FEATURE #5: VIEWING, CREATING AND SAVING JOURNALS";
+    testMessage.style.position = "fixed";
+    testMessage.style.bottom = "10px";
+    testMessage.style.left = "10px";
+    testMessage.style.backgroundColor = "yellow";
+    testMessage.style.color = "black";
+    testMessage.style.zIndex = "9999";
+    testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
+    document.body.appendChild(testMessage);
+    """
+    driver.execute_script(script)
+
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
 
     email_input.send_keys("john.smith@example.com")

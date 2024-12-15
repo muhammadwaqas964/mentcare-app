@@ -10,6 +10,21 @@ driver = webdriver.Chrome(service=service)
 
 try:
     driver.get("http://localhost:3000/login")
+    script = """
+    var testMessage = document.createElement('div');
+    testMessage.innerHTML = <div>FEATURE #18: LOGGED IN USER CAN SUBMIT A TESTIMONIAL</div>";
+    testMessage.style.position = "fixed";
+    testMessage.style.bottom = "10px";
+    testMessage.style.left = "10px";
+    testMessage.style.backgroundColor = "yellow";
+    testMessage.style.color = "black";
+    testMessage.style.zIndex = "9999";
+    testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
+    document.body.appendChild(testMessage);
+    """
+    driver.execute_script(script)
+
     wait = WebDriverWait(driver, 10)
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
@@ -25,7 +40,7 @@ try:
     print("Login successful!")
     time.sleep(2)
 
-    driver.get("http://localhost:3000/") 
+    driver.get("http://localhost:3000/")
 
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(2)

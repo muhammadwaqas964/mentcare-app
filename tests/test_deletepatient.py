@@ -1,20 +1,21 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.action_chains import ActionChains
 import time
 
 service = Service("./chromedriver-win64/chromedriver.exe")
-
 driver = webdriver.Chrome(service=service)
 
 try:
-    driver.get("http://localhost:3000/")
+    driver.get("http://localhost:3000/login")
+    wait = WebDriverWait(driver, 15)
+
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerHTML = "FEATURE #1: <strong>VIEW LANDING PAGE</strong>, SIGN UP, LOG IN, AND <strong>LOG OUT</strong>";
+    testMessage.innerText = "<div>FEATURE #16: PATIENT CAN DELETE ACCOUNT</div>";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";
@@ -26,26 +27,19 @@ try:
     document.body.appendChild(testMessage);
     """
     driver.execute_script(script)
-    time.sleep(3)
-    
-    driver.get("http://localhost:3000/login") 
 
-    wait = WebDriverWait(driver, 10)
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
-
-    email_input.send_keys("john.smith@example.com") 
-    time.sleep(1)
-
+    email_input.send_keys("john.smith@example.com")
+    
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
     password_input.send_keys("password123")
-    time.sleep(1)
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
-    time.sleep(1)
-
     wait.until(EC.url_contains("/dashboard"))
+    print("Login successful, now on the dashboard.")
 
+    time.sleep(3) 
     dropdown_trigger = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "navbar-profile-pic-container")))
     time.sleep(1)
 
@@ -53,16 +47,36 @@ try:
     actions.move_to_element(dropdown_trigger).perform()
     time.sleep(1)
 
-    logout_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Log Out")))
+    settings_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Log Out")))
+    settings_button.click()
 
-    logout_button.click()
-
-    wait.until(EC.url_contains("/login"))
+    wait.until(EC.url_contains("/settings"))
     time.sleep(3)
 
-    current_url = driver.current_url
-    assert "/login" in current_url, f"Failed to redirect to login: {current_url}"
-    print("Logout test passed!")
+    delete_acc = driver.find_element_by_xpath("//button[text()='DELETE ACCOUNT']")
+    ActionChains(driver).move_to_element(delete_acc).click().perform()
+
+    wait.until(EC.url_to_be("http://localhost:3000"))
+    time.sleep(3)
+
+    driver.get("http://localhost:3000/login")
+    time.sleep(1)
+
+    email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
+    email_input.send_keys("john.smith@example.com")
+    time.sleep(1)
+    
+    password_input = driver.find_element(By.CLASS_NAME, "password-input")
+    password_input.send_keys("password123")
+    time.sleep(1)
+
+    login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
+    login_button.click()
+    time.sleep(8)
 
 finally:
-    driver.quit()
+    try:
+        driver.quit()
+    except Exception as e:
+        print(f"Error while quitting the driver: {e}")
+    print("Program ended.")

@@ -22,14 +22,15 @@ try:
 
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerText = "ACCEPTING PATIENTS INDICATOR.";
+    testMessage.innerText = "<div>FEATURE #8: ACCEPTING PATIENTS INDICATOR</div>";
     testMessage.style.position = "fixed";
-    testMessage.style.top = "10px";
+    testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";
     testMessage.style.backgroundColor = "yellow";
     testMessage.style.color = "black";
     testMessage.style.zIndex = "9999";
     testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
     document.body.appendChild(testMessage);
     """
     driver.execute_script(script)
