@@ -27,7 +27,7 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), opti
 
 try:
     driver.get("http://localhost:3000/login")
-    wait = WebDriverWait(driver, 15)
+    wait = WebDriverWait(driver, 45)
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
     email_input.send_keys("john.smith@example.com")
@@ -47,6 +47,9 @@ try:
     login_button.click()
     time.sleep(30)
     print("got here 1")
+    logs = driver.get_log('browser')  # Get browser logs
+    for log in logs:
+        print(f"Console Error: {log['message']}")
     print(driver.current_url)
     wait.until(EC.url_contains("/dashboard"))
     print(driver.current_url)
