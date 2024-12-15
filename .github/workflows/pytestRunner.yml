@@ -44,13 +44,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
-      - name: Set up MySQL database with Docker
-        run: |
           docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30
-      # Copy dump.sql to the Docker container and load it
-      - name: Load database dump into MySQL
-        run: |
           docker exec mysql-docker ls -al /tmp
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           docker exec mysql-docker ls -al /tmp
@@ -60,14 +55,9 @@ jobs:
           docker exec mysql-docker bash -c "echo $MYSQL_HOST"
           sudo systemctl start mysql
           sudo systemctl status mysql
-      - name: Install frontend dependencies
-        run: |
           cd ./frontend
           yarn install  # Ensure all dependencies are installed
-      - name: Ensure react-scripts has execution permissions
-        run: chmod +x ./frontend/node_modules/.bin/react-scripts
-      - name: Run React frontend and Flask backend
-        run: |
+          chmod +x ./frontend/node_modules/.bin/react-scripts
           sudo systemctl start mysql
           sudo systemctl status mysql
           docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
@@ -80,6 +70,17 @@ jobs:
           curl -X POST http://localhost:5000/endpointOne -d '{}' -H "Content-Type: application/json"
           curl http://localhost:5000/endpointTwo
           python test_therapistsurveys.py
+      # - name: Set up MySQL database with Docker
+        # run: |
+      # Copy dump.sql to the Docker container and load it
+      # - name: Load database dump into MySQL
+        # run: |
+      # - name: Install frontend dependencies
+      #   run: |
+      # - name: Ensure react-scripts has execution permissions
+        # run: 
+      # - name: Run React frontend and Flask backend
+        # run: |
       - name: Run Selenium Tests
         run: |
           ls
