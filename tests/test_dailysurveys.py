@@ -51,6 +51,7 @@ try:
                 submit_button.click()
                 print("Survey submitted successfully. Exiting program.")
                 assert True
+                time.sleep(3)
                 break 
         except Exception:
             print("No SUBMIT button found. Checking for NEXT button.")
