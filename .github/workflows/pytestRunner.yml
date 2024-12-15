@@ -57,7 +57,7 @@ jobs:
           sudo systemctl status mysql
           cd ./frontend
           yarn install  # Ensure all dependencies are installed
-          chmod +x /node_modules/.bin/react-scripts
+          chmod +x ./node_modules/.bin/react-scripts
           cd ../
           sudo systemctl start mysql
           sudo systemctl status mysql
