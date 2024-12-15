@@ -5,6 +5,9 @@ on:
     branches:
       - dev  # This ensures it triggers on push to the 'dev' branch
 
+permissions:
+  contents: write  # Ensure write access to repository contents
+
 jobs:
   build:
     name: Run tests
@@ -33,11 +36,13 @@ jobs:
       - name: Run Pytest
         run: python -m pytest --ignore=./tests
       - name: Push changes to main branch
-        if: github.ref == 'refs/heads/dev' && success()  # Runs only if the push was to 'dev' and tests pass
+        if: github.ref == 'refs/heads/dev' && success()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git fetch --all  # Fetch all branches, including 'main'
           git checkout main  # Checkout the 'main' branch
-          git merge dev --allow-unrelated-histories  # Merge with the --allow-unrelated-histories flag
-          git push origin main  # Push the merged changes to 'main'
+          git merge dev -X theirs --allow-unrelated-histories  # Resolve conflicts automatically in favor of dev
+          git push https://github.com/${{ github.repository }}.git HEAD:main  # Push to the 'main' branch using GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the automatically created GITHUB_TOKEN for authentication
