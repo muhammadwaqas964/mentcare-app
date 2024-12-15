@@ -439,7 +439,7 @@ def sendTherapistSurveyFunc():
         surveyID = request.json.get('surveyID')
 
         questions = request.json.get('questions')
-        surveyQuestions= json.dumps({"survey": questions})
+        surveyQuestions = json.dumps({"survey": questions}, ensure_ascii=False)
         answers = request.json.get('answers')
         surveyAnswers = json.dumps({"answers" : answers})
         currentDate = datetime.now()
