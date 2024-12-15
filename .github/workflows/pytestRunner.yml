@@ -60,7 +60,7 @@ jobs:
           cd ./frontend
           yarn install  # Ensure all dependencies are installed
       - name: Ensure react-scripts has execution permissions
-        run: chmod +x ./frontend/node_modules/.bin/react-script
+        run: chmod +x ./frontend/node_modules/.bin/react-scripts
       - name: Run Selenium Tests
         run: |
           cd ./frontend
