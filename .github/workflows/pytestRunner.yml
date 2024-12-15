@@ -47,7 +47,7 @@ jobs:
       - name: Set up MySQL database with Docker
         run: |
           docker run --name mysql -e MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }} -e MYSQL_DATABASE=${{ env.MYSQL_DATABASE }} -p 3306:3306 -d mysql:latest
-          sleep 30  # Give MySQL some time to start
+          sleep 60  # Give MySQL some time to start
       # Copy dump.sql to the Docker container and load it
       - name: Load database dump into MySQL
         run: |
