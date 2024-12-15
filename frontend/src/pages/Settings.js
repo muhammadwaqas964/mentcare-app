@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import './styles/Settings.css'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
-import { ToastContainer, toast } from 'react-toastify';
-
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -95,7 +95,7 @@ function SettingsPage() {
                 setEmail(data.email);
                 setEmailUpd(data.email);
 
-                setPatientPrivacy(data.patientPrivacy);
+                setPatientPrivacy(data.patientPrivacy ? "True" : "False");
 
                 setInsComp(data.insComp);
                 setInsCompUpd(data.insComp);
@@ -157,6 +157,10 @@ function SettingsPage() {
         }
     }, [accountActive]);
 
+    useEffect(() => {
+        AOS.init({ duration: 1500 });
+    }, [])
+
     const editAccDetails = () => {
         accDeetsPopupRef.current.className = 'settings-popUp-background';
     }
@@ -191,6 +195,10 @@ function SettingsPage() {
         });
         if (response.ok) {
             const data = await response.json()
+
+            clearWaitingQueue();
+            toast.success("Saved account details!");
+
             setUserName(data.userName);
             setUserNameUpd(data.userName);
             setEmail(data.email);
@@ -201,36 +209,6 @@ function SettingsPage() {
             clearWaitingQueue();
             toast.error("Updating details failed. Try Again!");
         }
-        // console.log("STARTING PROFILE PIC RETRIEVAL");
-        // let imageExists = false;
-        // fetch("http://localhost:5000/retriveProfilePic", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",  // Ensure the request is sent as JSON
-        //     },
-        //     body: JSON.stringify({ realUserID }),
-        // })
-        //     .then((res) => {
-        //         if (res.ok) {
-        //             imageExists = true;
-        //         }
-        //         return res.json();
-        //     })
-        //     .then((data) => {
-        //         if (imageExists) {
-        //             setPfp(`/assets/profile-pics/${data.profileImg}`);
-        //             setPfpUpd(`/assets/profile-pics/${data.profileImg}`);
-        //             imageExists = false;
-        //         }
-        //         else {
-        //             setPfp('/assets/images/default-profile-pic.jpg');
-        //             setPfpUpd('/assets/images/default-profile-pic.jpg');
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error fetching image:", error);
-        //     });
-        // return false;
     }
 
     const editInsDetails = () => {
@@ -244,12 +222,12 @@ function SettingsPage() {
         setInsTierUpd(insTier);
     }
 
-    const saveInsDetails = (event) => {
+    const saveInsDetails = async (event) => {
         event.preventDefault();
 
         const userId = localStorage.getItem("userID");
 
-        fetch('http://localhost:5000/settingsUpdInsDetails', {
+        const response = await fetch('http://localhost:5000/settingsUpdInsDetails', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -258,15 +236,20 @@ function SettingsPage() {
                 userId: userId, insCompUpd: insCompUpd === "" ? insComp : insCompUpd,
                 insIDUpd: insIDUpd === "" ? insID : insIDUpd, insTierUpd: insTierUpd === "" ? insTier : insTierUpd
             }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                setInsComp(data.insComp);
-                setInsID(data.insID);
-                setInsTier(data.insTier);
-                insInfoPopupRef.current.className = 'hidden popUp-background';
-            })
-            .catch(err => console.error('Error fetching data:', err));
+        });
+        if (response.ok) {
+            const data = await response.json()
+            clearWaitingQueue();
+            toast.success('Saved insurance details!')
+
+            setInsComp(data.insComp);
+            setInsID(data.insID);
+            setInsTier(data.insTier);
+            insInfoPopupRef.current.className = 'hidden settings-popUp-background';
+        } else {
+            clearWaitingQueue();
+            toast.error("Updating details failed. Try Again!");
+        }
     }
 
     const privacyHandler = (event) => {
@@ -286,47 +269,47 @@ function SettingsPage() {
             .catch(err => console.error('Error fetching data:', err));
     }
 
-    const accountChangeHandler = (words) => {
+    const accountChangeHandler = async (words) => {
         const userId = localStorage.getItem("userID");
         const userType = localStorage.getItem("userType");
 
-        fetch('http://localhost:5000/settingsRemoveAccount', {
+        const response = await fetch('http://localhost:5000/settingsRemoveAccount', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ userId: userId, userType: userType }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (userType === 'Therapist' && words === 'Deactivate') {
-                    localStorage.setItem("isActive", data.isActive);
-                    navigate('/deactivated');
-                    return;
-                }
-                else if (userType === 'Therapist' && words === 'Activate') {
-                    localStorage.setItem("isActive", data.isActive);
-                    setAccActionClass("settings-acc-action-btn settings-red-btn");
-                    setWords("DEACTIVATE");
-                    navigate("/settings");
-                    return;
-                }
-                localStorage.setItem("userID", 0);
-                navigate('/')
-            })
-            .catch(err => console.error('Error fetching data:', err));
+        });
+        if (response.ok) {
+            const data = await response.json()
+            if (userType === 'Therapist' && words === 'Deactivate') {
+                localStorage.setItem("isActive", data.isActive);
+                navigate('/deactivated');
+                return;
+            }
+            else if (userType === 'Therapist' && words === 'Activate') {
+                localStorage.setItem("isActive", data.isActive);
+                setAccActionClass("settings-acc-action-btn settings-red-btn");
+                setWords("DEACTIVATE");
+                navigate("/settings");
+                return;
+            }
+            localStorage.setItem("userID", 0);
+            navigate('/')
+        } else {
+            const data = await response.json()
+            if (data.deletion === 'Unpaid invoices') {
+                clearWaitingQueue();
+                toast.error("You are unable to delete your account due to unpaid invoices.");
+            }
+            else {
+                clearWaitingQueue();
+                toast.error("There was a problem deleting your account. Try again later!");
+            }
+        }
     }
 
     function resetInput(e, field) {
-        // if (field === 'name') {
-        //     setUserNameUpd(userName);
-        //     e.target.parentElement.parentElement.children[0].value = userName;
-        // }
-        // else if (field === 'email') {
-        //     setEmailUpd(email);
-        //     e.target.parentElement.parentElement.children[0].value = email;
-        // }
-
         switch (field) {
             case 'name':
                 setUserNameUpd(userName);
@@ -370,7 +353,7 @@ function SettingsPage() {
     }
 
     return (
-        <div style={{ height: '100vh', position: 'relative' }}>
+        <div data-aos="fade-up" className='flex-col flex-centered' style={{ gap: '40px', justifyContent: 'space-around', marginBottom: '40px' }}>
             <ToastContainer
                 limit={1}
                 position="bottom-left"
@@ -379,11 +362,7 @@ function SettingsPage() {
                 pauseOnHover={false}
                 autoClose={3000}
             />
-            <div className='settings-main-container'
-                style={{
-                    transform: localStorage.getItem('userType') === 'Patient' ? 'translate(-50%, -50%)' : 'translate(-50%, -80%)'
-                }}
-            >
+            <div className='settings-main-container'>
                 <div className="flex-col flex-centered">
                     <div className='flex-col flex-centered'>
                         <h1>Account Details</h1>
@@ -412,13 +391,9 @@ function SettingsPage() {
                         <button className='settings-btn' type="button" onClick={() => editAccDetails()}>Edit Details</button>
                     </div>
                     <div ref={patientRef} className="hidden settings-popUp-background" style={{ width: '100%' }}>
-                        <label htmlFor="theme">Allow therapists to see old records?</label><br />
-                        <select name="theme" id="theme" defaultValue={patientPrivacy} onChange={(event) => privacyHandler(event)}>
-                            <option value="False">No</option>
-                            <option value="True">Yes</option>
-                        </select>
+
                         <hr style={{ "width": "100%", "height": "2px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
-                        <h1>Insurance Information</h1>
+                        <h1>Insurance Details</h1>
                         <div className='flex-row flex-centered' style={{ gap: "10px" }}>
                             <div className='flex-col flex-centered' style={{ textAlign: "right" }}>
                                 <p>Insurance Company:</p>
@@ -441,6 +416,16 @@ function SettingsPage() {
                         <option value="dark">Dark</option>
                     </select>
                     <br /><br /> */}
+                    <div className={localStorage.getItem('userType') === 'Patient' ? '' : 'hidden'} style={{ width: '100%' }}>
+                        <h1>Privacy Details</h1>
+                        <label htmlFor="theme">Allow therapists to see old records?</label><br />
+                        <select name="theme" id="theme" value={patientPrivacy == "True" ? "True" : "False"} onChange={(event) => privacyHandler(event)}>
+                            <option value="False">No</option>
+                            <option value="True">Yes</option>
+                        </select>
+                        <hr style={{ "width": "100%", "height": "2px", "border": "none", "marginTop": "25px", "marginBottom": "-10px", "backgroundColor": "black" }} />
+                    </div>
+
                     <button className={accActionClass} type="button" onClick={() => accountChangeHandler(words)}>{words} Account</button>
                 </div>
             </div >
@@ -533,7 +518,7 @@ function SettingsPage() {
                             </div>
                         </div>
                         <div className="flex-row flex-centered" style={{ gap: "10px" }}>
-                            <input className='settings-btn' type="button" onClick={(e) => saveAccDetails(e)} value="Save Details" />
+                            <input className='settings-btn' type="button" onClick={(e) => saveInsDetails(e)} value="Save Details" />
                             <button className='settings-btn' type="button" onClick={() => cancelEditInsDetails()}>Cancel Details</button>
                         </div>
                     </form>

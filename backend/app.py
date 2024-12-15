@@ -4,6 +4,7 @@ from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from datetime import datetime
 from io import BytesIO
+from flasgger import Swagger #added for API documentation
 app = Flask(__name__)
 CORS(app, origins="http://localhost:3000")
 socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"])
@@ -17,6 +18,9 @@ app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
 app.config["MYSQL_DB"] = "cs490_GP"
 
 mysql = MySQL(app)
+
+# Initialize Swagger
+swagger = Swagger(app)
 
 from endpoints.example import examplePageStuff
 app.register_blueprint(examplePageStuff)
@@ -64,12 +68,85 @@ app.register_blueprint(TherapistDashboardData)
 from endpoints.settings import settingsPageData
 app.register_blueprint(settingsPageData)
 
+@app.before_request
+def handle_options():
+    if request.method == "OPTIONS":
+        response = app.make_response("")
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response, 200
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
 @app.route("/")
 def defaultFunc():
-    return {"status": "Backend is alive"}
+    """
+    Check Backend Status
+    ---
+    tags:
+      - General
+    responses:
+      200:
+        description: Backend status
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "Backend is alive"
+    """
+    # return {"status": "Backend is alive"}
+    response = jsonify({'status': 'Backend is alive'})
+    response.status_code = 200
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 @app.route("/navbarData", methods=['POST'])
 def navbarDataFunc():
+    """
+    Fetch Navbar Data
+    ---
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            fakeUserID:
+              type: integer
+              description: Fake user ID
+            userType:
+              type: string
+              description: User type (e.g., Patient or Therapist)
+    responses:
+      200:
+        description: Navbar data fetched successfully
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              userID:
+                type: integer
+              userName:
+                type: string
+              userType:
+                type: string
+      404:
+        description: User not found
+    """
     try:
         fakeUserId = request.json.get('fakeUserID')
         userType = request.json.get('userType')
@@ -108,9 +185,22 @@ def navbarDataFunc():
             else:
                 totalResults.append(None)
             
-            return jsonify(totalResults)
+            # return jsonify(totalResults)
+            response = jsonify(totalResults)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            return jsonify({"message" : "User not found"}), 404
+            response = jsonify({"message" : "User not found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
     except Exception as err:
         return {"error":  f"{err}"}
@@ -132,14 +222,47 @@ def retriveProfilePicFunc():
             #     img_stream = BytesIO(profile_img_data)
             #     return send_file(img_stream, mimetype='image/jpeg')
             # else:
-            return jsonify({"profileImg": data[0]}), 200
+            response = jsonify({"profileImg": data[0]})
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            return jsonify({"error": "Profile image is null"}), 404
+            response = jsonify({"error": "Profile image is null"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @app.route('/deleteNotification', methods=['POST'])
 def delNotifFunc():
+    """
+    Delete a Notification
+    ---
+    tags:
+      - Notifications
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            notificationID:
+              type: integer
+              example: 1
+    responses:
+      200:
+        description: Notification deleted successfully
+      500:
+        description: Internal Server Error
+    """
     try:
         notificationID = request.json.get('notificationID')
 
@@ -150,12 +273,39 @@ def delNotifFunc():
         mysql.connection.commit()
         cursor.close()
 
-        return jsonify({"message" : "Notification succesfully delete!"}), 200
+        response = jsonify({"message" : "Notification succesfully delete!"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @app.route('/updateSocketsNavbar', methods=['POST'])
 def updateSocketsNavFunc():
+    """
+    Update Navbar Sockets
+    ---
+    tags:
+      - Sockets
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            realUserID:
+              type: integer
+              example: 101
+    responses:
+      200:
+        description: Navbar sockets updated successfully
+      500:
+        description: Internal Server Error
+    """
     try:
         print("GOT HERE")
         realUserID = request.json.get('realUserID')
@@ -164,13 +314,19 @@ def updateSocketsNavFunc():
         print("CURRENT NAVBAR SOCKETS CONNECTIONS: ", socketsNavbar)
         #print(f"Added socketId {request.sid} for userId {realUserID} to socketsNavbar")
 
-        return jsonify({"message" : "Sockets navbar succesfully updated!"}), 200
+        response = jsonify({"message" : "Sockets navbar succesfully updated!"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return {"error":  f"{err}"}
 
 #############   BEGINNING OF SOCKETIO CODE   ############
 
-if __name__ == '__app__':
+if __name__ == '__main__':
     socketio.run(app)
 
 #   Initiate socket connection (for whatever page users goes into)

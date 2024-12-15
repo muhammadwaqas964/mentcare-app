@@ -12,16 +12,106 @@ registrationPageData = Blueprint('registrationPageData', __name__)
 
 @registrationPageData.route("/validateUserEmail", methods=['POST'])
 def validateEmailFunc():
+    """
+    Validate User Email
+    ---
+    tags:
+      - Registration
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                example: "test@example.com"
+            required:
+              - email
+    responses:
+      200:
+        description: Email is valid for registration
+      409:
+        description: Email is already registered
+      500:
+        description: Internal server error
+    """
+
     email = request.json.get('email')
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT email FROM users WHERE email LIKE %s", (email, ))
     if(cursor.rowcount > 0):
-        return jsonify({"message" : "Email/User already exists"}), 409
+        response = jsonify({"message" : "Email/User already exists"})
+        response.status_code = 409
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     else:
-        return jsonify({"message" : "Email is good for use"}), 200
+        response = jsonify({"message" : "Email is good for use"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     
 @registrationPageData.route("/registerPatient", methods=['POST'])
 def registerPatientFunc():
+    """
+    Register Patient
+    ---
+    tags:
+      - Registration
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              fname:
+                type: string
+                example: "John"
+              lname:
+                type: string
+                example: "Doe"
+              email:
+                type: string
+                example: "john.doe@example.com"
+              password:
+                type: string
+                example: "password123"
+              gender:
+                type: string
+                example: "Male"
+              profileImg:
+                type: string
+                format: binary
+              company:
+                type: string
+                example: "InsuranceCo"
+              insuranceId:
+                type: string
+                example: "INS123456"
+              tier:
+                type: string
+                example: "Gold"
+            required:
+              - fname
+              - lname
+              - email
+              - password
+    responses:
+      200:
+        description: Patient successfully registered
+      400:
+        description: Invalid data or missing fields
+      500:
+        description: Internal server error
+    """
     try:
         fname = request.form.get('fname')
         lname = request.form.get('lname')
@@ -116,12 +206,69 @@ def registerPatientFunc():
         patientID = data[0]
 
         cursor.close()
-        return jsonify({"message" : "User successfully registered", "patientID" : patientID, "userID" : userID}), 200
+        response = jsonify({"message" : "User successfully registered", "patientID" : patientID, "userID" : userID})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return jsonify({"error":  f"{err}"}), 400
     
 @registrationPageData.route("/registerTherapist", methods=['POST'])
 def registerTherapistFunc():
+    """
+    Register Therapist
+    ---
+    tags:
+      - Registration
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              fname:
+                type: string
+                example: "Alice"
+              lname:
+                type: string
+                example: "Smith"
+              email:
+                type: string
+                example: "alice.smith@example.com"
+              password:
+                type: string
+                example: "securepassword"
+              gender:
+                type: string
+                example: "Female"
+              license:
+                type: string
+                example: "LIC-123456"
+              specializations:
+                type: string
+                example: "Anxiety, Depression"
+              profileImg:
+                type: string
+                format: binary
+            required:
+              - fname
+              - lname
+              - email
+              - password
+              - license
+              - specializations
+    responses:
+      200:
+        description: Therapist successfully registered
+      400:
+        description: Invalid data or missing fields
+      500:
+        description: Internal server error
+    """
     try:
         fname = request.form.get('fname')
         lname = request.form.get('lname')
@@ -188,6 +335,12 @@ def registerTherapistFunc():
 
         cursor.close()
 
-        return jsonify({"message" : "User successfully registered", "therapistID" : therapistID, "userID" : userID}), 200
+        response = jsonify({"message" : "User successfully registered", "therapistID" : therapistID, "userID" : userID})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return jsonify({"error":  f"{err}"}), 400

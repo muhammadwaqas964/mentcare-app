@@ -1,0 +1,48 @@
+name: Run Python tests
+
+on:
+  push:
+    branches:
+      - dev  # This ensures it triggers on push to the 'dev' branch
+
+permissions:
+  contents: write  # Ensure write access to repository contents
+
+jobs:
+  build:
+    name: Run tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest] # os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9"] # python-version: ["3.9", "3.10"]
+
+    steps:
+      - uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "America/New_York"
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -U pytest
+          pip install -e .
+      - name: Run Pytest
+        run: python -m pytest --ignore=./tests
+      - name: Push changes to main branch
+        if: github.ref == 'refs/heads/dev' && success()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git fetch --all  # Fetch all branches, including 'main'
+          git checkout main  # Checkout the 'main' branch
+          git merge dev -X theirs --allow-unrelated-histories  # Resolve conflicts automatically in favor of dev
+          git push https://github.com/${{ github.repository }}.git HEAD:main  # Push to the 'main' branch using GITHUB_TOKEN
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the automatically created GITHUB_TOKEN for authentication

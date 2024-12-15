@@ -79,9 +79,9 @@ const PatientOverview = () => {
 
   return (
     <div className="patient-overview">
-      <div className="profile-section">
+      <div className="profile-section flex-col flex-centered">
         <img
-          src={profileImg || "https://via.placeholder.com/100"}
+          src={profileImg ? `/assets/profile-pics/${profileImg}` : "https://via.placeholder.com/100"}
           alt="Profile"
           className="profile-picture"
         />

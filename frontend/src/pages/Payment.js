@@ -15,9 +15,7 @@ function Payment() {
     const location = useLocation(); // Get the location object
     const { invoiceID, amountDue, therapistName } = location.state || {}
     const notifySuccess = () => {
-        toast('Payment Success!', {
-            autoClose: false,
-        });
+        toast.success('Payment Successful! Redirecting to dashboard.');
     };
     const notifyFail = () => toast("Payment Failed!");
 
@@ -74,8 +72,8 @@ function Payment() {
                         amount: amountDue,
                         cardNum: data[0][2],
                         cvc: data[0][3],
-                        month: data[0][4].substring(5, 7),
-                        year: data[0][4].substring(0, 4),
+                        month: new Date(data[0][4]).getMonth() + 1,
+                        year: new Date(data[0][4]).getFullYear(),
                         firstName: data[0][5],
                         lastName: data[0][6],
                         city: data[0][7],
@@ -145,7 +143,7 @@ function Payment() {
                 notifySuccess();
                 setTimeout(() => {
                     window.location.href = "http://localhost:3000/dashboard";
-                }, 500);
+                }, 2000);
             } else {
                 notifyFail();
             }
@@ -162,33 +160,45 @@ function Payment() {
 
     return (
         <div className="payment-page">
-            <ToastContainer />
+            <ToastContainer
+                limit={1}
+                position="bottom-left"
+                closeButton={false}
+                hideProgressBar={true}
+                pauseOnHover={false}
+                autoClose={3000}
+            />
             <div>
                 <Box className="payment-main-container" component="form" onSubmit={handleSubmit}>
                     <Grid>
                         <Row className="row-spacing title">
-                            <Col><h1>Payment</h1></Col>
+                            <Col><h1 style={{ margin: 0 }}>Payment</h1></Col>
                         </Row>
                         <Row className="row-spacing title">
-                            <Col><h2 style={{ color: 'black' }}>Invoice to: {therapistName}<br />Amount: {amountDue}$</h2></Col>
+                            <Col><h2 style={{ color: 'black', margin: 0 }}>Invoice to: {therapistName}<br />Amount: {amountDue}$</h2></Col>
                         </Row>
                         <Row>
-                            <Col><h2 style={{ color: 'black' }}>Payment Method</h2></Col>
+                            <Col><h2 style={{ color: 'black', margin: 0, marginTop: 15, marginBottom: 10 }}>Payment Method</h2></Col>
                         </Row>
                         <Row gutterWidth={30} style={{ gap: '20px' }}>
-                            <Col className='payment-label'>Card Number:<br /><TextField required size='small' style={{ width: 250 }} name='cardNum' value={formInput.cardNum} onChange={handleChange} variant='filled' label="Card" /></Col>
-                            <Col className='payment-label'>Expiration Date:<br />
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Card Number:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='cardNum' value={formInput.cardNum} onChange={handleChange} variant='filled' label="Card" /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Expiration Date:</div>
                                 <div style={{ display: "flex", gap: "10px" }}>
                                     <TextField required name='month' style={{ width: 80 }} value={formInput.month} onChange={handleChange} variant='filled' label="Month" size='small' />
                                     <TextField required name='year' style={{ width: 80 }} value={formInput.year} onChange={handleChange} variant='filled' label="Year" size='small' />
                                 </div>
                             </Col>
-                            <Col className='payment-label'>Security Code:<br /><TextField required name='cvc' style={{ width: 100 }} value={formInput.cvc} onChange={handleChange} variant='filled' size='small' label='Code' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Security Code:</div>
+                                <TextField required name='cvc' style={{ width: 100 }} value={formInput.cvc} onChange={handleChange} variant='filled' size='small' label='Code' /></Col>
                         </Row>
                     </Grid>
-                    <Grid style={{ width: '100%' }}>
+                    <Grid className='flex-col' style={{ width: '100%', gap: '10px' }}>
                         <Row>
-                            <Col><h2 style={{ color: 'black' }}>Billing Information</h2></Col>
+                            <Col><h2 style={{ color: 'black', margin: 0, marginTop: 10, marginBottom: 5 }}>Billing Information</h2></Col>
                         </Row>
                         {/* <Row gutterWidth={30} style={{ gap: '20px' }}>
                         <Col className='payment-label'>Card Number:<br /><TextField required size='small' style={{ width: 250 }} name='cardNum' value={formInput.cardNum} onChange={handleChange} variant='filled' label="Card" /></Col>
@@ -201,27 +211,55 @@ function Payment() {
                         <Col className='payment-label'>Security Code:<br /><TextField required name='cvc' style={{ width: 100 }} value={formInput.cvc} onChange={handleChange} variant='filled' size='small' label='Code' /></Col>
                     </Row> */}
                         <Row gutterWidth={30} style={{ gap: '20px', width: 'max-content' }}>
-                            <Col className='payment-label'>First Name and Last Name:<br />
+                            <Col className='payment-label'>
                                 <div style={{ display: "flex", gap: "10px", width: 'max-content' }}>
-                                    <TextField required size='small' style={{ width: 120 }} name='firstName' value={formInput.firstName} onChange={handleChange} variant='filled' label="First" />
-                                    <TextField required size='small' style={{ width: 120 }} name='lastName' value={formInput.lastName} onChange={handleChange} variant='filled' label="Last" />
+                                    <div className='flex-col' style={{ gap: '5px' }}>
+                                        <div>First Name:</div>
+                                        <TextField required size='small' style={{ width: 120 }} name='firstName' value={formInput.firstName} onChange={handleChange} variant='filled' label="First" />
+                                    </div>
+                                    <div className='flex-col' style={{ gap: '5px' }}>
+                                        <div>Last Name:</div>
+                                        <TextField required size='small' style={{ width: 120 }} name='lastName' value={formInput.lastName} onChange={handleChange} variant='filled' label="Last" />
+                                    </div>
                                 </div>
                             </Col>
-                            <Col className='payment-label'>City:<br /><TextField required size='small' style={{ width: 250 }} name='city' value={formInput.city} onChange={handleChange} variant='filled' label='City' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>City:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='city' value={formInput.city} onChange={handleChange} variant='filled' label='City' /></Col>
                         </Row>
                         <Row gutterWidth={30} style={{ gap: '20px', width: 'max-content' }}>
-                            <Col className='payment-label'>Billing Address:<br /><TextField required size='small' style={{ width: 250 }} name='billingAddress' value={formInput.billingAddress} onChange={handleChange} variant='filled' label='Billing' /></Col>
-                            <Col className='payment-label'>State/Province:<br /><TextField required size='small' style={{ width: 250 }} name='state' value={formInput.state} onChange={handleChange} variant='filled' label='Place' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Billing Address:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='billingAddress' value={formInput.billingAddress} onChange={handleChange} variant='filled' label='Billing' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>State/Province:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='state' value={formInput.state} onChange={handleChange} variant='filled' label='Place' /></Col>
                         </Row>
                         <Row gutterWidth={30} style={{ gap: '20px', width: 'max-content' }}>
-                            <Col className='payment-label'>Country:<br /><TextField required size='small' style={{ width: 250 }} name='country' value={formInput.country} onChange={handleChange} variant='filled' label='Country' /></Col>
-                            <Col className='payment-label'>Zip or Postal Code:<br /><TextField required size='small' style={{ width: 250 }} name='zip' value={formInput.zip} onChange={handleChange} variant='filled' label='Post' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Country:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='country' value={formInput.country} onChange={handleChange} variant='filled' label='Country' /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Zip or Postal Code:</div>
+                                <TextField required size='small' style={{ width: 250 }} name='zip' value={formInput.zip} onChange={handleChange} variant='filled' label='Post' /></Col>
                         </Row>
                         <Row gutterWidth={30} style={{ gap: '20px', width: 'max-content' }}>
-                            <Col className='payment-label'>Phone Number:<br /><TextField size='small' style={{ width: 250 }} name='phone' value={formInput.phone} onChange={handleChange} variant='filled' label="Number" /></Col>
+                            <Col className='payment-label flex-col' style={{ gap: '5px' }}>
+                                <div>Phone Number:</div>
+                                <TextField size='small' style={{ width: 250 }} name='phone' value={formInput.phone} onChange={handleChange} variant='filled' label="Number" /></Col>
                         </Row>
                     </Grid>
-                    <FormControlLabel control={<Checkbox checked={save} onChange={handleDetails} />} label="Save payment details" />
+                    <FormControlLabel
+                        className='flex-centered' control={<Checkbox checked={save}
+                            onChange={handleDetails} />} label="Save payment details"
+                        slotProps={{
+                            typography: {
+                                sx: {
+                                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+                                },
+                            },
+                        }}
+                    />
                     <Button style={{ marginTop: '20px' }} variant='contained' type='submit'>Submit</Button>
                 </Box>
             </div>

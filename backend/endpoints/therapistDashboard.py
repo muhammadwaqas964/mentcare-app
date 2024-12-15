@@ -5,6 +5,32 @@ TherapistDashboardData = Blueprint('TherapistDashboardData', __name__)
     
 @TherapistDashboardData.route("/therapistDashboardData", methods=['POST'])
 def theraDashFunc():
+    """
+    Fetch Therapist Dashboard Data
+    ---
+    tags:
+      - Therapist Dashboard
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: Therapist ID
+    responses:
+      200:
+        description: Returns the therapist's dashboard data
+        schema:
+          type: object
+          properties:
+            accepting:
+              type: integer
+              description: Whether the therapist is accepting new patients
+            survey:
+              type: object
+              description: Survey content
+      500:
+        description: Internal server error
+    """
     try:
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
@@ -14,12 +40,52 @@ def theraDashFunc():
         cursor.execute(f'SELECT content -> "$.survey" AS surveyData FROM therapists WHERE therapistID = {userId}')
         data = cursor.fetchall()
         cursor.close()
-        return jsonify({"accepting": int(accepting), "survey" : data[0]}), 200
+        response = jsonify({"accepting": int(accepting), "survey" : data[0]})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @TherapistDashboardData.route("/therapistsPatientsList", methods=['POST'])
 def theraPatListFunc():
+    """
+    Fetch Therapist's Patients List
+    ---
+    tags:
+      - Therapist Dashboard
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: Therapist ID
+    responses:
+      200:
+        description: Returns the list of patients and their feedback
+        schema:
+          type: object
+          properties:
+            patientData:
+              type: array
+              items:
+                type: object
+                properties:
+                  patientName:
+                    type: string
+                    description: Name of the patient
+                  feedback:
+                    type: string
+                    description: Feedback provided by the patient
+                  patientID:
+                    type: integer
+                    description: Patient ID
+      500:
+        description: Internal server error
+    """
     try:
         userId = request.json.get('userId')
         cursor = mysql.connection.cursor()
@@ -52,12 +118,49 @@ def theraPatListFunc():
                 returnArray.append((thing[0], "No Feedback Sent", thing[1]))
             print(returnArray)
         
-        return jsonify({"patientData" : returnArray}), 200
+        response = jsonify({"patientData" : returnArray})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return {"error":  f"{err}"}
 
 @TherapistDashboardData.route("/therapistsAcceptingStatus", methods=['POST'])
 def theraAcceptFunc():
+    """
+    Update Therapist Accepting Status
+    ---
+    tags:
+      - Therapist Dashboard
+    parameters:
+      - name: userId
+        in: body
+        type: integer
+        required: true
+        description: Therapist ID
+      - name: acceptingStatus
+        in: body
+        type: integer
+        required: true
+        description: New accepting status
+    responses:
+      200:
+        description: Updates the therapist's accepting status
+        schema:
+          type: object
+          properties:
+            inserted:
+              type: integer
+              description: Whether the update was successful (1 for success)
+            accepting:
+              type: integer
+              description: The updated accepting status
+      500:
+        description: Internal server error
+    """
     try:
         userId = request.json.get('userId')
         accepting = True if request.json.get('acceptingStatus') == 1 else False # "accepting" mirrors the value of "acceptingStatus" from the frontend
@@ -69,17 +172,63 @@ def theraAcceptFunc():
         if(cursor.rowcount > 0): # We ensure the table was modified
             cursor.close()
             if(accepting): # If "accepting" was 1, we tell the frontend it is now 0; Vice versa
-                return jsonify({"inserted": 1, "accepting" : 0}), 200
+                response = jsonify({"inserted": 1, "accepting" : 0})
+                response.status_code = 200
+                response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+                return response
             else:
-                return jsonify({"inserted": 1, "accepting" : 1}), 200
+                response = jsonify({"inserted": 1, "accepting" : 1})
+                response.status_code = 200
+                response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+                return response
         else:
             cursor.close()
-            return jsonify({"inserted": 0, "accepting" : 0}), 200
+            response = jsonify({"inserted": 0, "accepting" : 0})
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @TherapistDashboardData.route("/therapistUpdateSurvey", methods=['POST'])
 def theraUpdSurveyFunc():
+    """
+    Update Therapist Survey Data
+    ---
+    tags:
+      - Therapist Dashboard
+    parameters:
+      - name: surveyToSubmit
+        in: body
+        type: string
+        required: true
+        description: Survey data to be updated
+      - name: therapistId
+        in: body
+        type: integer
+        required: true
+        description: Therapist ID
+    responses:
+      200:
+        description: Updates the survey data of the therapist
+        schema:
+          type: object
+          properties:
+            inserted:
+              type: boolean
+              description: Whether the update was successful
+      500:
+        description: Internal server error
+    """
     try:
         surveyData = str(request.json.get('surveyToSubmit'))
         therapistId = request.json.get('therapistId')
@@ -92,9 +241,21 @@ def theraUpdSurveyFunc():
         mysql.connection.commit()
         if(cursor.rowcount > 0): # We ensure the table was modified
             cursor.close()
-            return jsonify({"inserted": True}), 200
+            response = jsonify({"inserted": True})
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
             cursor.close()
-            return jsonify({"inserted": False}), 200
+            response = jsonify({"inserted": False})
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
     except Exception as err:
         return jsonify({"error":  f"{err}"})

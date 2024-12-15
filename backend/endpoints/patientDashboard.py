@@ -11,41 +11,124 @@ import app
 
 PatientDashboardData = Blueprint('PatientDashboardData', __name__)
 
-@PatientDashboardData.route("/patientDashboardData", methods=['POST'])
-def patientDashFunc():
+@PatientDashboardData.route("/getJournals", methods=['POST'])
+def getJournalsFunc():
+    """
+    Fetch Patient Dashboard Data
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+    responses:
+      200:
+        description: Patient dashboard data fetched successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+      500:
+        description: Internal server error
+    """
     try:
         totalResults = []
-        patientId = request.json.get('patientId')
+        patientID = request.json.get('patientID')
         cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT journalID, journalEntry, timeDone FROM journals WHERE patientID = %s
-                ''', (patientId, ))
+                ''', (patientID, ))
         data = cursor.fetchall()
         if data:
-            #print("DATA: ", data)
             columns = [column[0] for column in cursor.description]
             results = [dict(zip(columns, row)) for row in data]
-            #print("RESULTS: ", results)
-            print("JOURNALS SUCCESSFUL")
-            totalResults.append(results)
+            response = jsonify(results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            totalResults.append("Nothing")
+            response = jsonify({"message":"no journals found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getFeedback", methods=['POST'])
+def getFeedbackFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT feedbackID, feedbackDate, feedback, users.userName FROM feedback
                 INNER JOIN therapists ON feedback.therapistID = therapists.therapistID
                 INNER JOIN users ON therapists.userID = users.userID
                 WHERE patientID = %s
-                ''', (patientId, ))
+                ''', (patientID, ))
         feedback_data = cursor.fetchall()
         if feedback_data:
             feedback_columns = [column[0] for column in cursor.description]
             feedback_results = [dict(zip(feedback_columns, row)) for row in feedback_data]
-            #print("Feedback RESULTS: ", feedback_results)
-            print("FEEDBACK SUCCESSFUL")
-            totalResults.append(feedback_results)
+            response = jsonify(feedback_results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            totalResults.append("Nothing")
+            response = jsonify({"message":"no feedback found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
+
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getDailySurveys", methods=['POST'])
+def getDailySurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+
+        #   Create a daily survey if one doesn't exist
+        cursor.execute('''
+            SELECT dateCreated FROM dailySurveys
+            ORDER BY dateCreated DESC
+            LIMIT 1
+        ''')
+        data = cursor.fetchone()
+        if data:
+            latestDailySurvey = data[0].date()
+            if datetime.today().date() != latestDailySurvey:
+                cursor.execute('''
+                    INSERT INTO dailySurveys (dateCreated) VALUES (NOW())
+                ''')
+                mysql.connection.commit()
+        else:
+            cursor.execute('''
+                    INSERT INTO dailySurveys (dateCreated) VALUES (NOW())
+            ''')
+            mysql.connection.commit()
 
         #   Extract incomplete + complete daily surveys        
         cursor.execute('''
@@ -63,101 +146,174 @@ def patientDashFunc():
                 FROM dailySurveys ds
                 LEFT JOIN completedDailySurveys cds
                     ON ds.dailySurveyID = cds.dailySurveyID
-                WHERE (cds.dailySurveyID IS NULL)
+                WHERE (DATE(ds.dateCreated) = CURDATE())
                     OR (cds.dailySurveyID IS NOT NULL AND cds.patientID = %s)
-                ''', (patientId, ))
+                ''', (patientID, ))
         daily_survey_data = cursor.fetchall()
         if daily_survey_data:
             daily_survey_columns = [column[0] for column in cursor.description]
             daily_survey_results = [dict(zip(daily_survey_columns, row)) for row in daily_survey_data]
-            # print("Daily Survey RESULTS: ", daily_survey_results)
-            print("DAILY SURVEYS SUCCESSFUL")
-            totalResults.append(daily_survey_results)
+            response = jsonify(daily_survey_results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            totalResults.append("Nothing")
-        
-        #   Extract incomplete therapist survey (if exists)
-        cursor.execute('''
-                SELECT therapistID FROM therapistPatientsList WHERE patientID = %s AND status = 'Active';
-                ''', (patientId, ))
-        therapistId = 0
-        if(cursor.rowcount > 0):
-            therapistId = cursor.fetchone()[0]
-        if (therapistId != 0):
-            cursor.execute('''
-                    SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
-                    INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
-                    INNER JOIN users ON therapists.userID = users.userID
-                    WHERE surveys.therapistID = %s AND surveys.patientID = %s;
-                ''', (therapistId, patientId ))
-            incomp_surveys_data = cursor.fetchall()
-            if (incomp_surveys_data):
-                incomp_surveys_columns = [column[0] for column in cursor.description]
-                incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
-                #print("Incomplete Survey RESULTS: ", incomp_surveys_results)
-                print("INCOMPLETE THERAPIST SURVEYS SUCCESSFUL")
-                totalResults.append(incomp_surveys_results)
-            else:
-                totalResults.append("Nothing")
-        else:
-            totalResults.append("Nothing")
+            response = jsonify({"message":"no daily surveys found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
-        
-        #   Extract complete therapist surveys (if exists)
-        if therapistId != 0:
-            cursor.execute('''
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getIncompleteTherapistSurveys", methods=['POST'])
+def getIncompleteTherapistSurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
+                SELECT users.userName, JSON_EXTRACT(surveys.content, '$.survey') AS survey, surveys.dateCreated, surveys.surveyID FROM surveys
+                INNER JOIN patients ON surveys.patientID = patients.patientID
+                INNER JOIN therapists ON surveys.therapistID = therapists.therapistID
+                INNER JOIN users ON therapists.userID = users.userID
+                WHERE patients.patientID = %s AND surveys.therapistID = patients.mainTherapistID;
+            ''', (patientID, ))
+        incomp_surveys_data = cursor.fetchall()
+        if (incomp_surveys_data):
+            incomp_surveys_columns = [column[0] for column in cursor.description]
+            incomp_surveys_results = [dict(zip(incomp_surveys_columns, row)) for row in incomp_surveys_data]
+            response = jsonify(incomp_surveys_results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
+        else:
+            response = jsonify({"message":"no incomplete therapist surveys found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@PatientDashboardData.route("/getCompleteTherapistSurveys", methods=['POST'])
+def getCompleteTherapistSurveysFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
+        cursor.execute('''
                     SELECT users.userName, JSON_EXTRACT(completedSurveys.questions, '$.survey') AS questions,
                     JSON_EXTRACT(completedSurveys.answers, '$.answers') AS answers, completedSurveys.dateDone , completedSurveys.completionID,
                     completedSurveys.dateDone
                     FROM completedSurveys
+                    INNER JOIN patients ON completedSurveys.patientID = patients.patientID
                     INNER JOIN therapists ON completedSurveys.therapistID = therapists.therapistID
                     INNER JOIN users ON therapists.userID = users.userID
-                    WHERE completedSurveys.patientID = %s and therapists.therapistID = %s;
-                    ''', (patientId, therapistId))
-            comp_surveys_data = cursor.fetchall()
-            if comp_surveys_data:
-                comp_surveys_columns = [column[0] for column in cursor.description]
-                comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
-                print("COMPLETE THERAPIST SURVEYS SUCCESSFUL")
-                totalResults.append(comp_surveys_results)
-            else:
-                totalResults.append("Nothing")
+                    WHERE completedSurveys.patientID = %s AND completedSurveys.therapistID = patients.mainTherapistID;
+                    ''', (patientID, ))
+        comp_surveys_data = cursor.fetchall()
+        if comp_surveys_data:
+            comp_surveys_columns = [column[0] for column in cursor.description]
+            comp_surveys_results = [dict(zip(comp_surveys_columns, row)) for row in comp_surveys_data]
+            response = jsonify(comp_surveys_results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            totalResults.append("Nothing")
+            response = jsonify({"message":"no complete therapist surveys found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
+    except Exception as err:
+        return {"error":  f"{err}"}
 
-        #   Extract invoices (if exists):
+@PatientDashboardData.route("/getInvoices", methods=['POST'])
+def getInvoicesFunc():
+    try:
+        patientID = request.json.get('patientID')
+        cursor = mysql.connection.cursor()
         cursor.execute('''
                 SELECT users.userName, invoices.invoiceID, invoices.amountDue, invoices.dateCreated FROM invoices
                 INNER JOIN therapists ON invoices.therapistID = therapists.therapistID
                 INNER JOIN users ON therapists.userID = users.userID
                 WHERE invoices.patientID = %s;
-                ''', (patientId, ))
+                ''', (patientID, ))
         invoices_data = cursor.fetchall()
         if invoices_data:
             invoices_columns = [column[0] for column in cursor.description]
             invoices_results = [dict(zip(invoices_columns, row)) for row in invoices_data]
-            #print("Invoices RESULTS: ", invoices_results)
-            print("INVOICES SUCCESSFUL")
-            totalResults.append(invoices_results)
+            response = jsonify(invoices_results)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            totalResults.append("Nothing")
-
-        cursor.close()
-        return jsonify(totalResults)
+            response = jsonify({"message":"no complete therapist surveys found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @PatientDashboardData.route("/saveJournal", methods=['POST'])
 def save():
+    """
+    Save Journal Entry
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              journalId:
+                type: integer
+                example: 101
+              journalEntry:
+                type: string
+                example: "This is a journal entry."
+    responses:
+      200:
+        description: Journal entry saved successfully
+      500:
+        description: Internal server error
+    """
     try:
         journalEntry = request.json.get('journalEntry')
         patientId = request.json.get('patientId')
         journalId = request.json.get('journalId') if request.json.get('journalId') else "null"
-        print("Journal ID: " + journalId + "\n")
+        # print("Journal ID: " + journalId + "\n")
         cursor = mysql.connection.cursor()
         if journalId == "null":
             currentDate = datetime.now()
-            print(currentDate)
+            # print(currentDate)
             cursor.execute('''
                     INSERT INTO journals (patientID, journalEntry, timeDone)
                     VALUES (%s, %s, %s)
@@ -170,28 +326,113 @@ def save():
                     ''', (journalEntry, patientId, journalId))
         mysql.connection.commit()
         cursor.close()
-        return jsonify({"message" : "Journal saved successfully"}), 200
+        response = jsonify({"message" : "Journal saved successfully"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return {"error":  f"{err}"}
     
 @PatientDashboardData.route("/sendFeedback", methods=['POST'])
 def sendFeedbackFunc():
+    """
+    Send Feedback to a Therapist
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              feedback:
+                type: string
+                example: "Great session with the therapist."
+    responses:
+      200:
+        description: Feedback sent successfully
+      500:
+        description: Internal server error
+    """
     try:
-        print("GOT HERE")
-        patientID = request.json.get('patientId')
+        # print("GOT HERE")
+        therapistID = request.json.get('therapistID')
+        patientID = request.json.get('patientID')
         feedback = request.json.get('feedback')
-        # Emit the event to the connected socket clients
-        app.socketio.emit('new-feedback', {
-            'feedback': feedback
-        }, room=app.sockets[patientID])
 
-        return jsonify({"message": "Success"}), 200
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT userID FROM patients WHERE patientID = %s", (patientID, ))
+        realUserID = cursor.fetchone()[0]
+
+        cursor.execute("INSERT INTO feedback (therapistID, patientID, feedbackDate, feedback) VALUES (%s, %s, NOW(), %s)", (therapistID, patientID, feedback))
+        mysql.connection.commit()
+
+        # Emit the event to the connected socket clients
+        if str(realUserID) in app.sockets:
+            app.socketio.emit('new-feedback', {
+                'feedback': feedback
+            }, room=app.sockets[str(realUserID)])
+
+        response = jsonify({"message": "Success"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return jsonify({"error": str(err)}), 500
     
 #   Send the newly completed therapist survey to patient & therapist (therapist is WIP)
 @PatientDashboardData.route("/completeTherapistSurvey", methods=['POST'])
 def sendTherapistSurveyFunc():
+    """
+    Complete Therapist Survey
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              userID:
+                type: integer
+                example: 1
+              patientID:
+                type: integer
+                example: 2
+              surveyID:
+                type: integer
+                example: 101
+              questions:
+                type: array
+                items:
+                  type: string
+                example: ["How was your day?", "How do you feel?"]
+              answers:
+                type: array
+                items:
+                  type: string
+                example: ["Good", "Happy"]
+    responses:
+      200:
+        description: Survey submitted successfully
+      404:
+        description: Therapist not found
+      500:
+        description: Internal server error
+    """
     try:
         userID = request.json.get('userID')
         patientID = request.json.get('patientID')
@@ -208,8 +449,14 @@ def sendTherapistSurveyFunc():
         therapistID = cursor.fetchone()
         
         if therapistID is None:
-            print("TherapistID not found for surveyID:", surveyID)
-            return jsonify({"error": "Therapist not found for this survey."}), 404
+            # print("TherapistID not found for surveyID:", surveyID)
+            response = jsonify({"error": "Therapist not found for this survey."})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         
         therapistID = therapistID[0]
 
@@ -220,7 +467,7 @@ def sendTherapistSurveyFunc():
         mysql.connection.commit()
 
         # Log success after inserting
-        print("Survey inserted successfully.")
+        # print("Survey inserted successfully.")
         
         cursor.execute('''
                 DELETE FROM surveys WHERE surveyID = %s    
@@ -231,12 +478,66 @@ def sendTherapistSurveyFunc():
         if str(userID) in app.sockets:
             app.socketio.emit('submit-therapist-survey', room=app.sockets[str(userID)])
         # Return a success response
-        return jsonify({"message": "Success"}), 200
+        response = jsonify({"message": "Success"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return jsonify({"error": str(err)}), 500
     
 @PatientDashboardData.route("/completeDailySurvey", methods=['POST'])
 def sendDailySurveyFunc():
+    """
+    Complete Daily Survey
+    ---
+    tags:
+      - Patient Dashboard
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              patientId:
+                type: integer
+                example: 1
+              dailySurveyID:
+                type: integer
+                example: 102
+              weight:
+                type: number
+                example: 70.5
+              height:
+                type: number
+                example: 175
+              calories:
+                type: integer
+                example: 1500
+              water:
+                type: integer
+                example: 8
+              exercise:
+                type: integer
+                example: 60
+              sleep:
+                type: number
+                example: 7.5
+              energy:
+                type: integer
+                example: 8
+              stress:
+                type: integer
+                example: 2
+    responses:
+      200:
+        description: Daily survey completed successfully
+      500:
+        description: Internal server error
+    """
     try:
         data = request.get_json()
         
@@ -261,19 +562,26 @@ def sendDailySurveyFunc():
         cursor.close()
 
         # Emit the event to the connected socket clients
-        app.socketio.emit('submit-daily-survey', {
-            'patientID': fakeUserID,
-            'dailySurveyID': dailySurveyID,
-            'weight': weight,
-            'height': height,
-            'calories': calories,
-            'water': water,
-            'exercise': exercise,
-            'sleep': sleep,
-            'energy': energy,
-            'stress': stress
-        }, room=app.sockets[realUserID])
+        if str(realUserID) in app.sockets:
+            app.socketio.emit('submit-daily-survey', {
+                'patientID': fakeUserID,
+                'dailySurveyID': dailySurveyID,
+                'weight': weight,
+                'height': height,
+                'calories': calories,
+                'water': water,
+                'exercise': exercise,
+                'sleep': sleep,
+                'energy': energy,
+                'stress': stress
+            }, room=app.sockets[realUserID])
 
-        return jsonify({"message": "Survey data submitted successfully!"}), 200
+        response = jsonify({"message": "Survey data submitted successfully!"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
         return jsonify({"error": str(err)}), 500

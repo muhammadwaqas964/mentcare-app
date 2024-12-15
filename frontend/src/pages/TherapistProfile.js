@@ -4,6 +4,8 @@ import './styles/TherapistProfile.css';
 import '../presets.css';
 import { Rating, Slider, Pagination, FormControl, FormHelperText } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 function TherapistProfile() {
     const { userId } = useParams();
@@ -127,6 +129,10 @@ function TherapistProfile() {
             .catch(err => console.error('Error fetching data:', err));
     }, [page]);
 
+    useEffect(() => {
+        AOS.init({ duration: 1500 });
+    }, [])
+
     const paginationFunc = (event, value) => {
         setPage(value);
     }
@@ -157,7 +163,7 @@ function TherapistProfile() {
                 setFunc(priceNum);
             }
             else {
-                // setFunc(0);
+                setFunc(0);
             }
         }
         else {
@@ -292,7 +298,7 @@ function TherapistProfile() {
     };
 
     return (
-        <>
+        <div data-aos="fade-up">
             <ToastContainer
                 limit={1}
                 position="bottom-left"
@@ -302,7 +308,7 @@ function TherapistProfile() {
                 autoClose={3000}
             />
             <form onSubmit={(event) => saveEditing(event)}>
-                <div className="flex-col flex-centered" style={{ gap: '40px', paddingTop: '40px', fontSize: '14pt' }}>
+                <div className="flex-col flex-centered" style={{ gap: '20px', paddingTop: '40px', fontSize: '14pt' }}>
                     <div className="flex-row" style={{ gap: '20px' }}>
                         <div className="card flex-col flex-centered thera-prof-top-left">
                             <div className='profile-pic-container'>
@@ -466,7 +472,7 @@ function TherapistProfile() {
                     </form>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

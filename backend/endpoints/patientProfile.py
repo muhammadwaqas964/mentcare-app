@@ -7,6 +7,48 @@ PatientProfileData = Blueprint('PatientProfileData', __name__)
 # Fetch patient overview details
 @PatientProfileData.route('/patient-overview/<int:userID>', methods=['GET'])
 def get_patient_overview(userID):
+    """
+    Fetch patient overview details
+    ---
+    tags:
+      - Patient Profile
+    parameters:
+      - name: userID
+        in: path
+        required: true
+        type: integer
+        description: User ID of the patient
+    responses:
+      200:
+        description: Patient overview fetched successfully
+        schema:
+          type: object
+          properties:
+            userName:
+              type: string
+            profileImg:
+              type: string
+            allRecordsViewable:
+              type: boolean
+            mainTherapistID:
+              type: integer
+            dailySurveys:
+              type: array
+              items:
+                type: object
+            feedback:
+              type: array
+              items:
+                type: object
+            journals:
+              type: array
+              items:
+                type: object
+      404:
+        description: Patient not found
+      500:
+        description: Server error
+    """
     try:
         cursor = mysql.connection.cursor()
 
@@ -20,7 +62,13 @@ def get_patient_overview(userID):
         patient_data = cursor.fetchone()
 
         if not patient_data:
-            return jsonify({"error": "Patient not found"}), 404
+            response = jsonify({"error": "Patient not found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
         # Extract basic patient info
         userName, profileImg, allRecordsViewable, mainTherapistID = patient_data
@@ -29,8 +77,8 @@ def get_patient_overview(userID):
         cursor.execute('''
             SELECT cds.completionID, ds.dateCreated, cds.weight, cds.height, 
                    cds.calories, cds.water, cds.exercise, cds.sleep, cds.energy, cds.stress
-            FROM dailysurveys ds
-            LEFT JOIN completeddailysurveys cds ON ds.dailySurveyID = cds.dailySurveyID
+            FROM dailySurveys ds
+            LEFT JOIN completedDailySurveys cds ON ds.dailySurveyID = cds.dailySurveyID
             WHERE cds.patientID = (
                 SELECT patientID FROM patients WHERE userID = %s
             )
@@ -96,7 +144,7 @@ def get_patient_overview(userID):
 
         cursor.close()
 
-        response = {
+        responseData = {
             "userName": userName,
             "profileImg": profileImg,
             "allRecordsViewable": bool(allRecordsViewable),
@@ -106,27 +154,81 @@ def get_patient_overview(userID):
             "journals": journals_data,
         }
 
-        return jsonify(response), 200
+        response = jsonify(responseData)
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # Fetch detailed daily survey responses
-@PatientProfileData.route('/daily-survey/<int:completionID>', methods=['GET'])
+@PatientProfileData.route('/daily-survey-details/<int:completionID>', methods=['GET'])
 def get_daily_survey_details(completionID):
+    """
+        Fetch detailed daily survey responses
+    ---
+    tags:
+      - Patient Profile
+    parameters:
+      - name: completionID
+        in: path
+        required: true
+        type: integer
+        description: Completion ID of the daily survey
+    responses:
+      200:
+        description: Survey details fetched successfully
+        schema:
+          type: object
+          properties:
+            completionID:
+              type: integer
+            weight:
+              type: number
+            height:
+              type: number
+            calories:
+              type: number
+            water:
+              type: number
+            exercise:
+              type: number
+            sleep:
+              type: number
+            energy:
+              type: number
+            stress:
+              type: number
+            surveyDate:
+              type: string
+      404:
+        description: Survey not found
+      500:
+        description: Server error
+    """
     try:
         cursor = mysql.connection.cursor()
         cursor.execute('''
             SELECT cds.completionID, cds.weight, cds.height, cds.calories, cds.water, 
                    cds.exercise, cds.sleep, cds.energy, cds.stress, ds.dateCreated
-            FROM completeddailysurveys cds
-            INNER JOIN dailysurveys ds ON cds.dailySurveyID = ds.dailySurveyID
+            FROM completedDailySurveys cds
+            INNER JOIN dailySurveys ds ON cds.dailySurveyID = ds.dailySurveyID
             WHERE cds.completionID = %s
         ''', (completionID,))
         survey = cursor.fetchone()
 
         if not survey:
-            return jsonify({"error": "Survey not found"}), 404
+            response = jsonify({"error": "Survey not found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
         survey_data = {
             "completionID": survey[0],
@@ -142,7 +244,13 @@ def get_daily_survey_details(completionID):
         }
 
         cursor.close()
-        return jsonify(survey_data), 200
+        response = jsonify(survey_data)
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -150,6 +258,33 @@ def get_daily_survey_details(completionID):
 # Add new feedback
 @PatientProfileData.route('/add-feedback', methods=['POST'])
 def add_feedback():
+    """
+    Add new feedback
+    ---
+    tags:
+      - Patient Profile
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - userID
+            - feedback
+          properties:
+            userID:
+              type: integer
+              description: Therapist's user ID
+            feedback:
+              type: string
+              description: Feedback text
+    responses:
+      200:
+        description: Feedback added successfully
+      500:
+        description: Server error
+    """
     try:
         data = request.json
         userID = data.get('userID')
@@ -158,18 +293,51 @@ def add_feedback():
         cursor = mysql.connection.cursor()
         cursor.execute('''
             INSERT INTO feedback (therapistID, patientID, feedbackDate, feedback)
-            VALUES (NULL, (SELECT patientID FROM patients WHERE userID = %s), CURDATE(), %s)
-        ''', (userID, feedback))
+            VALUES (%s, (SELECT patientID FROM patients WHERE userID = %s), CURDATE(), %s)
+        ''', (userID, userID, feedback))
         mysql.connection.commit()
         cursor.close()
 
-        return jsonify({"message": "Feedback added successfully"}), 200
+        response = jsonify({"message": "Feedback added successfully"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # Add a new journal entry
 @PatientProfileData.route('/add-journal', methods=['POST'])
 def add_journal():
+    """
+    Add a new journal entry
+    ---
+    tags:
+      - Patient Profile
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - userID
+            - journalEntry
+          properties:
+            userID:
+              type: integer
+              description: Patient's user ID
+            journalEntry:
+              type: string
+              description: Journal entry content
+    responses:
+      200:
+        description: Journal added successfully
+      500:
+        description: Server error
+    """
     try:
         data = request.json
         userID = data.get('userID')
@@ -183,7 +351,13 @@ def add_journal():
         mysql.connection.commit()
         cursor.close()
 
-        return jsonify({"message": "Journal added successfully"}), 200
+        response = jsonify({"message": "Journal added successfully"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
