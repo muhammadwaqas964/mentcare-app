@@ -63,9 +63,7 @@ jobs:
 
       - name: Push changes to frontend branch using PAT
         run: |
-          git push https://github.com/${{ github.repository }}.git HEAD:frontend  # Push from main to frontend branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          git push origin frontend
       # Sync to Backend Branch
       - name: Switch to backend branch
         run: |
@@ -130,6 +128,4 @@ jobs:
 
       - name: Push changes to frontend branch using PAT
         run: |
-          git push https://github.com/${{ github.repository }}.git HEAD:backend  # Push from main to frontend branch
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          git push origin backend
