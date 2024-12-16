@@ -51,6 +51,7 @@ jobs:
           # docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           
           # docker exec mysql-docker ls -al /tmp
+          docker exec mysql-docker ls -al /tmp
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           
           # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
