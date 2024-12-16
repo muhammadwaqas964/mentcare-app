@@ -46,9 +46,13 @@ jobs:
           find ./frontend/src -type f -exec sed -i 's/http:\/\/localhost:5000\//https:\/\/mentcare-backend.onrender.com\//g' {} +
           find ./frontend/src -type f -exec sed -i 's/\"http:\/\/localhost:5000\"/\"https:\/\/mentcare-backend.onrender.com\"/g' {} +
           find ./frontend/src -type f -exec sed -i "s#io('http://localhost:5000')#io('https://mentcare-backend.onrender.com', {withCredentials:true, transports:['websocket', 'polling']})#g" {} +
-      - name: Stage and commit changes to frontend branch
+      
+      - name: Stage only the specific frontend files
+        if: github.ref == 'refs/heads/dev' && success()
         run: |
-          # Stage only the specific frontend files
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           git add frontend/public frontend/src frontend/package.json frontend/package-lock.json
           # Commit changes if there are any
           if git diff --cached --quiet; then
@@ -56,9 +60,12 @@ jobs:
           else
             git commit -m "Push to frontend branch"
           fi
-      - name: Push changes to frontend branch
+
+      - name: Push changes to frontend branch using PAT
         run: |
-          git push origin frontend
+          git push https://github.com/${{ github.repository }}.git HEAD:frontend  # Push from main to frontend branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
       # Sync to Backend Branch
       - name: Switch to backend branch
         run: |
@@ -106,17 +113,23 @@ jobs:
         run: |
           # Replace "http://localhost:3000/" with "https://mentcare-frontend.onrender.com/" in all backend files
           find ./backend -type f -exec sed -i 's/http:\/\/localhost:3000/https:\/\/mentcare-frontend.onrender.com/g' {} +
-          
-      - name: Stage and commit changes to backend branch
+
+      - name: Stage only the specific frontend files
+        if: github.ref == 'refs/heads/dev' && success()
         run: |
-          # Stage the changes
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           git add backend/endpoints backend/app.py requirements.txt
           # Commit changes if there are any
           if git diff --cached --quiet; then
             echo "No changes to commit in frontend branch."
           else
-            git commit -m "Push to backend branch"
+            git commit -m "Push to frontend branch"
           fi
-      - name: Push changes to backend branch
+
+      - name: Push changes to frontend branch using PAT
         run: |
-          git push origin backend
+          git push https://github.com/${{ github.repository }}.git HEAD:backend  # Push from main to frontend branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
