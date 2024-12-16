@@ -12,6 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=[
 sockets = {}
 socketsNavbar = {}
 
+# comment to cause github action to run
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
