@@ -12,7 +12,7 @@ try:
     driver.get("http://localhost:3000/login")
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerHTML = <div>FEATURE #18: LOGGED IN USER CAN SUBMIT A TESTIMONIAL</div>";
+    testMessage.innerHTML = "<div>FEATURE #18: LOGGED IN USER CAN SUBMIT A TESTIMONIAL</div>";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";

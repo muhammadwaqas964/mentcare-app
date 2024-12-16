@@ -4,6 +4,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webelement import WebElement
 import time
 
 service = Service("./chromedriver-win64/chromedriver.exe")
@@ -15,7 +17,7 @@ try:
 
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerText = "FEATURE #4: SEARCH THERAPIST AND ADD/REMOVE THERAPIST (Linda White)";
+    testMessage.innerHTML = "FEATURE #4: Add therapist review";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";
@@ -61,12 +63,17 @@ try:
     wait.until(EC.url_contains("/therapistProfile"))
     time.sleep(3)
 
-    buttons = driver.find_elements(By.CLASS_NAME, "td-btn")
-    review_button = None
-    for button in buttons:
-        if button.is_displayed() and button.text.strip() == "ADD REVIEW":
-            review_button = button
-            break
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    scroll_step = 100  # Pixels to scroll each step
+    scroll_pause_time = 0.1  # Time to wait between steps
+
+    current_position = 0
+    while current_position < last_height:
+        current_position += scroll_step
+        driver.execute_script(f"window.scrollTo(0, {current_position});")
+        time.sleep(scroll_pause_time)
+
+    review_button = driver.find_element(By.XPATH, "//button[@class='td-btn' and contains(text(), 'Add Review')]")
     review_button.click()
     time.sleep(2)
 
@@ -74,9 +81,12 @@ try:
     textarea.send_keys("Linda White is a great therapist!")
     time.sleep(1)
 
-    star_input = driver.find_element(By.XPATH, "//input[@name='userReviewRating' and @value='5']")
-    star_input.click()
+    textarea.send_keys(Keys.TAB + (Keys.ARROW_RIGHT * 5))
     time.sleep(1)
+
+    # star_input = driver.find_element(By.XPATH, "(//div[@class='popUp']//form//div//spam//label)")
+    # star_input.click()
+    # time.sleep(1)
 
     send_review_button = driver.find_element(By.XPATH, "//input[@type='submit' and @value='Send Review']")
     send_review_button.click()
@@ -99,9 +109,17 @@ try:
 
     wait.until(EC.url_contains("/therapistProfile"))
     time.sleep(3)
+
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    scroll_step = 100  # Pixels to scroll each step
+    scroll_pause_time = 0.1  # Time to wait between steps
+
+    current_position = 0
+    while current_position < last_height:
+        current_position += scroll_step
+        driver.execute_script(f"window.scrollTo(0, {current_position});")
+        time.sleep(scroll_pause_time)
     
-    pagination_button = driver.find_element(By.XPATH, "//input[@class='MuiPaginationItem-root' and @value='5']")
-    ActionChains(driver).move_to_element(pagination_button).click().perform()
     time.sleep(3)
     
 finally:

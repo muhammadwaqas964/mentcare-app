@@ -57,17 +57,22 @@ try:
 
     #   LOGGING IN AS PATIENT
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
-
     email_input.send_keys("john.smith@example.com")
+    time.sleep(1)
 
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
-    password_input.send_keys("password123")  
+    password_input.send_keys("password123")
+    time.sleep(1)
 
     password_toggle = driver.find_element(By.CLASS_NAME, "password-toggle-btn")
     ActionChains(driver).move_to_element(password_toggle).click().perform()
-
+    time.sleep(1)
+    
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
+    wait.until(EC.url_contains("/dashboard"))
+    print("Login successful, now on the dashboard.")
+    time.sleep(1)
 
     wait.until(EC.url_contains("/dashboard"))
     time.sleep(3)
@@ -109,17 +114,22 @@ try:
     
     #   LOGGING IN AS THERAPIST
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
-
     email_input.send_keys("linda.white@example.com")
+    time.sleep(1)
 
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
-    password_input.send_keys("password123")  
+    password_input.send_keys("password123")
+    time.sleep(1)
 
     password_toggle = driver.find_element(By.CLASS_NAME, "password-toggle-btn")
     ActionChains(driver).move_to_element(password_toggle).click().perform()
+    time.sleep(1)
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
+    wait.until(EC.url_contains("/dashboard"))
+    print("Login successful, now on the dashboard.")
+    time.sleep(1)
 
     wait.until(EC.url_contains("/dashboard"))
     time.sleep(3)
