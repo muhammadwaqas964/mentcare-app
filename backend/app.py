@@ -12,11 +12,11 @@ socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=[
 sockets = {}
 socketsNavbar = {}
 
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = 'mysql-docker'
 app.config['MYSQL_PORT'] = 3306
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "root_password"
-app.config["MYSQL_DB"] = "my_test_db"
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'root_password'
+app.config['MYSQL_DATABASE'] = 'my_test_db'
 
 mysql = MySQL(app)
 
