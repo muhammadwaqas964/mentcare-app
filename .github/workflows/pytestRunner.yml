@@ -55,7 +55,7 @@ jobs:
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
           
           # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
-          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < /tmp/dump.sql
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
           # docker exec mysql-docker ls -al /tmp
           
           docker exec -i mysql-docker mysqladmin -u root -proot_password ping
