@@ -44,30 +44,55 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
-          docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          # Create a Docker network to allow containers to communicate with each other
+          docker network create my-network
+          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30
-          docker exec mysql-docker ls -al /tmp
+          # docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          
+          # docker exec mysql-docker ls -al /tmp
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
-          docker exec mysql-docker ls -al /tmp
-          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
-          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
-          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT @@hostname;"
-          docker exec mysql-docker bash -c "echo $MYSQL_HOST"
-          sudo systemctl start mysql
-          sudo systemctl status mysql
+          
+          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < /tmp/dump.sql
+          # docker exec mysql-docker ls -al /tmp
+          
+          docker exec -i mysql-docker mysqladmin -u root -proot_password ping
+          docker exec -i mysql-docker mysql -u root -proot_password -e "SELECT * FROM users LIMIT 1;" my_test_db
+
+          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
+          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT @@hostname;"
+          # docker exec mysql-docker bash -c "echo $MYSQL_HOST"
+          # sudo systemctl start mysql
+          # sudo systemctl status mysql
+
+          # RUN THE FRONTEND
           cd ./frontend
           yarn install  # Ensure all dependencies are installed
           chmod +x ./node_modules/.bin/react-scripts
-          cd ../
-          sudo systemctl start mysql
-          sudo systemctl status mysql
-          docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
-          cd ./frontend
           yarn start &
-          cd ../backend
-          flask run &
+          cd ../
+
+          # RUN THE BACKEND
+          cd ./backend
+          flask run --host=0.0.0.0 --port=5000 &
+          cd ../
+
+          # Sleep to ensure backend is running before starting tests
           sleep 60
-          cd ../tests
+          
+          # sudo systemctl start mysql
+          # sudo systemctl status mysql
+          
+          # docker ps -f name=mysql-docker
+          # docker exec -i mysql-docker mysqladmin -u root -proot_password ping
+          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
+          # cd ./frontend
+          # yarn start &
+          # cd ../backend
+          # flask run &
+          # sleep 60
+          # cd ../tests
           curl -X POST http://localhost:5000/endpointOne -d '{}' -H "Content-Type: application/json"
           curl http://localhost:5000/endpointTwo
           python test_therapistsurveys.py
@@ -84,17 +109,17 @@ jobs:
         # run: |
       - name: Run Selenium Tests
         run: |
-          ls
-          cd ./tests
-          python test_therapistsurveys.py
+          # ls
+          # cd ./tests
+          # python test_therapistsurveys.py
       - name: Push changes to main branch
         if: github.ref == 'refs/heads/dev' && success()
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git fetch --all
-          git checkout main
-          git merge dev -X theirs --allow-unrelated-histories  # Resolve conflicts automatically in favor of dev
-          git push https://github.com/${{ github.repository }}.git HEAD:main  # Push to the 'main' branch using GITHUB_TOKEN
+          # git config user.name "github-actions"
+          # git config user.email "github-actions@github.com"
+          # git fetch --all
+          # git checkout main
+          # git merge dev -X theirs --allow-unrelated-histories  # Resolve conflicts automatically in favor of dev
+          # git push https://github.com/${{ github.repository }}.git HEAD:main  # Push to the 'main' branch using GITHUB_TOKEN
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Use the automatically created GITHUB_TOKEN for authentication
