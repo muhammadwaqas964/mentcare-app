@@ -13,9 +13,10 @@ sockets = {}
 socketsNavbar = {}
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "@ElPolloMan03"
-app.config["MYSQL_DB"] = "cs490_GP"
+app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'root_password'
+app.config['MYSQL_DB'] = 'my_test_db'
 
 mysql = MySQL(app)
 

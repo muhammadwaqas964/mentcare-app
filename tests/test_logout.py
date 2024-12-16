@@ -12,6 +12,20 @@ driver = webdriver.Chrome(service=service)
 
 try:
     driver.get("http://localhost:3000/")
+    script = """
+    var testMessage = document.createElement('div');
+    testMessage.innerHTML = "FEATURE #1: <strong>VIEW LANDING PAGE</strong>, SIGN UP, LOG IN, AND <strong>LOG OUT</strong>";
+    testMessage.style.position = "fixed";
+    testMessage.style.bottom = "10px";
+    testMessage.style.left = "10px";
+    testMessage.style.backgroundColor = "yellow";
+    testMessage.style.color = "black";
+    testMessage.style.zIndex = "9999";
+    testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
+    document.body.appendChild(testMessage);
+    """
+    driver.execute_script(script)
     time.sleep(3)
     
     driver.get("http://localhost:3000/login") 

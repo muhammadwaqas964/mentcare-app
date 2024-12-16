@@ -183,7 +183,7 @@
     font-size: 16pt;
 }
 
-.landing-send-button {
+.landing-register-now {
     margin-left: 10px;
     padding: 15px 25px;
     background-color: rgba(87, 216, 194);
@@ -194,11 +194,11 @@
     font-size: 20pt;
 }
 
-.landing-send-button:hover {
+.landing-register-now:hover {
     filter: brightness(0.8);
 }
 
-.landing-send-button:active {
+.landing-register-now-button:active {
     filter: brightness(0.6);
 }
 

@@ -95,7 +95,7 @@ function LandingPage() {
                     <h1 className='outlined-text' style={{ marginBottom: '0' }}>Welcome to <span style={{ color: 'white' }}>MentCare</span></h1>
                     <h1 className='outlined-text'>Your Journey to Wellness starts here</h1>
                     <Link to="/register" style={{ paddingTop: 80 }}>
-                        <button className="landing-send-button">Register Now</button>
+                        <button className="landing-register-now">Register Now</button>
                     </Link>
                 </div>
             </div>

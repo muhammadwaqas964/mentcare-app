@@ -12,8 +12,23 @@ driver = webdriver.Chrome(service=service)
 
 try:
     driver.get("http://localhost:3000/register")
-    wait = WebDriverWait(driver, 10)
+    script = """
+    var testMessage = document.createElement('div');
+    testMessage.innerHTML = <div>FEATURE #2: SIGN UP AS A THERAPIST</div>";
+    testMessage.style.position = "fixed";
+    testMessage.style.bottom = "10px";
+    testMessage.style.left = "10px";
+    testMessage.style.backgroundColor = "yellow";
+    testMessage.style.color = "black";
+    testMessage.style.zIndex = "9999";
+    testMessage.style.padding = "10px";
+    testMessage.style.fontSize = "16pt";
+    document.body.appendChild(testMessage);
+    """
+    driver.execute_script(script)
+    time.sleep(2)
 
+    wait = WebDriverWait(driver, 10)
 
     print("Switching to therapist registration form...")
     therapist_button = driver.find_element(By.XPATH, "//input[@value='THERAPIST']")

@@ -219,6 +219,7 @@ const TherapistListPage = () => {
                 fontSize: '11pt',
                 boxSizing: "border-box",
               }}
+              className="search-therapists-input"
             />
 
             <div style={{ width: '30%' }}>
