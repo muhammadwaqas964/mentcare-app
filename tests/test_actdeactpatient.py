@@ -15,7 +15,7 @@ try:
 
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerText = "<div>FEATURE #16: PATIENT CAN DELETE ACCOUNT</div>";
+    testMessage.innerHTML = "<div>FEATURE #16: PATIENT CAN DELETE ACCOUNT</div>";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";
@@ -53,7 +53,7 @@ try:
     wait.until(EC.url_contains("/settings"))
     time.sleep(3)
 
-    deactivate_acc = driver.find_element_by_xpath("//button[text()='DEACTIVATE ACCOUNT']")
+    deactivate_acc = driver.find_element(By.CLASS_NAME, "settings-acc-action-btn")
     ActionChains(driver).move_to_element(deactivate_acc).click().perform()
 
     wait.until(EC.url_contains("/deactivated"))
@@ -95,7 +95,7 @@ try:
     wait.until(EC.url_contains("/settings"))
     time.sleep(3)
 
-    deactivate_acc = driver.find_element_by_xpath("//button[text()='ACTIVATE ACCOUNT']")
+    deactivate_acc = driver.find_element(By.CLASS_NAME, "settings-acc-action-btn")
     ActionChains(driver).move_to_element(deactivate_acc).click().perform()
     time.sleep(5)
 
@@ -121,6 +121,7 @@ try:
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
     wait.until(EC.url_contains("/dashboard"))
+    time.sleep(3)
     
 finally:
     try:

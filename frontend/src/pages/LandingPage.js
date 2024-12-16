@@ -93,7 +93,7 @@ function LandingPage() {
                 <div className="video">{VideoPlayer()}</div>
                 <div data-aos="fade-up" className='video-text animation'>
                     <h1 className='outlined-text' style={{ marginBottom: '0' }}>Welcome to <span style={{ color: 'white' }}>MentCare</span></h1>
-                    <h1 className='outlined-text'>Your Journey to Wellness starts here</h1>
+                    <h1 className='outlined-text'>Your Journey to Wellness starts here!</h1>
                     <Link to="/register" style={{ paddingTop: 80 }}>
                         <button className="landing-register-now">Register Now</button>
                     </Link>

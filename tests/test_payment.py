@@ -13,7 +13,7 @@ try:
     driver.get("http://localhost:3000/login")
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerHTML = <div>FEATURE #14: PATIENT CAN PAY INVOICES</div>";
+    testMessage.innerHTML = "<div>FEATURE #14: PATIENT CAN PAY INVOICES</div>";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";
@@ -60,8 +60,18 @@ try:
     time.sleep(2)
 
     print("Filling out the payment form...")
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    scroll_step = 100  # Pixels to scroll each step
+    scroll_pause_time = 0.1  # Time to wait between steps
+
+    current_position = 0
+    while current_position < last_height:
+        current_position += scroll_step
+        driver.execute_script(f"window.scrollTo(0, {current_position});")
+        time.sleep(scroll_pause_time)
+
     card_number_input = wait.until(EC.presence_of_element_located((By.NAME, "cardNum")))
-    card_number_input.send_keys("999999999999")
+    card_number_input.send_keys("99999999")
     time.sleep(1)
 
     exp_month_input = driver.find_element(By.NAME, "month")
