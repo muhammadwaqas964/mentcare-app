@@ -45,10 +45,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
           # Create a Docker network to allow containers to communicate with each other
-          docker network create my-network
-          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          # docker network create my-network
+          # docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30
-          # docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           
           # docker exec mysql-docker ls -al /tmp
           docker exec mysql-docker ls -al /tmp
@@ -75,11 +75,11 @@ jobs:
           cd ../
 
           # RUN THE BACKEND
-          docker build -t my-flask-backend .
-          docker run --network my-network --name backend-container -p 5000:5000 my-flask-backend
-          # cd ./backend
-          # flask run --host=0.0.0.0 --port=5000 &
-          # cd ../
+          # docker build -t my-flask-backend .
+          # docker run --name backend-container -p 5000:5000 my-flask-backend
+          cd ./backend
+          flask run --host=0.0.0.0 --port=5000 & sleep 60
+          cd ../tests
 
           # Sleep to ensure backend is running before starting tests
           sleep 60
