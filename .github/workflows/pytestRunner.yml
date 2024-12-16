@@ -59,7 +59,7 @@ jobs:
           
           # Copy dump.sql into MySQL container and load it
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
-          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < /tmp/dump.sql
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
           
           # Verify the dump was loaded correctly
           docker exec -i mysql-docker mysql -u root -proot_password -e "SELECT * FROM users LIMIT 1;" my_test_db
