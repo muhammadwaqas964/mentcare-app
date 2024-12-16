@@ -75,9 +75,11 @@ jobs:
           cd ../
 
           # RUN THE BACKEND
-          cd ./backend
-          flask run --host=0.0.0.0 --port=5000 &
-          cd ../
+          docker build -t my-flask-backend .
+          docker run --network my-network --name backend-container -p 5000:5000 my-flask-backend
+          # cd ./backend
+          # flask run --host=0.0.0.0 --port=5000 &
+          # cd ../
 
           # Sleep to ensure backend is running before starting tests
           sleep 60
