@@ -14,7 +14,7 @@ try:
     driver.get("http://localhost:3000/register")
     script = """
     var testMessage = document.createElement('div');
-    testMessage.innerHTML = <div>FEATURE #2: SIGN UP AS A PATIENT</div>";
+    testMessage.innerHTML = "<div>FEATURE #2: SIGN UP AS A PATIENT</div>";
     testMessage.style.position = "fixed";
     testMessage.style.bottom = "10px";
     testMessage.style.left = "10px";

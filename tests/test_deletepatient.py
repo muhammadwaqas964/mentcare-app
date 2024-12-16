@@ -45,18 +45,28 @@ try:
 
     actions = ActionChains(driver)
     actions.move_to_element(dropdown_trigger).perform()
-    time.sleep(1)
+    time.sleep(2)
 
-    settings_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Log Out")))
+    settings_button = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Settings")))
     settings_button.click()
+    time.sleep(1)
 
     wait.until(EC.url_contains("/settings"))
     time.sleep(3)
 
-    delete_acc = driver.find_element_by_xpath("//button[text()='DELETE ACCOUNT']")
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    scroll_step = 100  # Pixels to scroll each step
+    scroll_pause_time = 0.1  # Time to wait between steps
+
+    current_position = 0
+    while current_position < last_height:
+        current_position += scroll_step
+        driver.execute_script(f"window.scrollTo(0, {current_position});")
+        time.sleep(scroll_pause_time)
+
+    delete_acc = driver.find_element(By.CLASS_NAME, "settings-acc-action-btn")
     ActionChains(driver).move_to_element(delete_acc).click().perform()
 
-    wait.until(EC.url_to_be("http://localhost:3000"))
     time.sleep(3)
 
     driver.get("http://localhost:3000/login")
