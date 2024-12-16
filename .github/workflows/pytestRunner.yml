@@ -44,77 +44,50 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser chromium-chromedriver
-          # Create a Docker network to allow containers to communicate with each other
-          # docker network create my-network
-          # docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
-          docker run --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          
+      - name: Set up MySQL and Backend on Same Network
+        run: |
+          # Create a Docker network to allow containers to communicate
+          docker network create my-network
+          
+          # Start MySQL container and attach to the custom network
+          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30
+
+          # Check if MySQL is running
+          docker exec mysql-docker mysqladmin -u root -proot_password ping
           
-          # docker exec mysql-docker ls -al /tmp
-          docker exec mysql-docker ls -al /tmp
+          # Copy dump.sql into MySQL container and load it
           docker cp ./dump.sql mysql-docker:/tmp/dump.sql
-          
-          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.MYSQL_DATABASE }} < ./dump.sql
           docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
-          # docker exec mysql-docker ls -al /tmp
           
-          docker exec -i mysql-docker mysqladmin -u root -proot_password ping
+          # Verify the dump was loaded correctly
           docker exec -i mysql-docker mysql -u root -proot_password -e "SELECT * FROM users LIMIT 1;" my_test_db
 
-          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
-          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT @@hostname;"
-          # docker exec mysql-docker bash -c "echo $MYSQL_HOST"
-          # sudo systemctl start mysql
-          # sudo systemctl status mysql
-
-          # RUN THE FRONTEND
+      - name: Run the Frontend
+        run: |
           cd ./frontend
           yarn install  # Ensure all dependencies are installed
           chmod +x ./node_modules/.bin/react-scripts
           yarn start &
           cd ../
 
-          # RUN THE BACKEND
-          # docker build -t my-flask-backend .
-          # docker run --name backend-container -p 5000:5000 my-flask-backend
+      - name: Run the Backend
+        run: |
           cd ./backend
-          flask run --host=0.0.0.0 --port=5000 & sleep 60
-          cd ../tests
-
+          # Run Flask backend with --host=0.0.0.0 to make it available on all interfaces
+          flask run --host=0.0.0.0 --port=5000 &
+          cd ../
+          
           # Sleep to ensure backend is running before starting tests
           sleep 60
-          
-          # sudo systemctl start mysql
-          # sudo systemctl status mysql
-          
-          # docker ps -f name=mysql-docker
-          # docker exec -i mysql-docker mysqladmin -u root -proot_password ping
-          # docker exec -i mysql-docker mysql -u root -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SELECT * FROM users LIMIT 1;" ${{ env.MYSQL_DATABASE }}
-          # cd ./frontend
-          # yarn start &
-          # cd ../backend
-          # flask run &
-          # sleep 60
-          # cd ../tests
+
+      - name: Run Selenium Tests
+        run: |
           curl -X POST http://localhost:5000/endpointOne -d '{}' -H "Content-Type: application/json"
           curl http://localhost:5000/endpointTwo
           python test_therapistsurveys.py
-      # - name: Set up MySQL database with Docker
-        # run: |
-      # Copy dump.sql to the Docker container and load it
-      # - name: Load database dump into MySQL
-        # run: |
-      # - name: Install frontend dependencies
-      #   run: |
-      # - name: Ensure react-scripts has execution permissions
-        # run: 
-      # - name: Run React frontend and Flask backend
-        # run: |
-      - name: Run Selenium Tests
-        run: |
-          # ls
-          # cd ./tests
-          # python test_therapistsurveys.py
+
       - name: Push changes to main branch
         if: github.ref == 'refs/heads/dev' && success()
         run: |
