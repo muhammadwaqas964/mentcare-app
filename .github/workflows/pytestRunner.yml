@@ -41,6 +41,9 @@ jobs:
           pip install -U pytest
           pip install -e .
           pip install webdriver-manager  # Install webdriver-manager to handle the ChromeDriver
+          sudo apt-get update -y  # Update the apt package list
+          sudo apt-get install -y chromium-browser  # Install Chromium on Ubuntu (for headless testing)
+          sudo apt-get install -y wget  # Install wget if needed
 
       # Set up Docker and start containers
       - name: Start Docker containers for Flask, MySQL
