@@ -10,6 +10,9 @@ import time
 # Set Chrome options
 chrome_options = Options()
 chrome_options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium binary
+chrome_options.add_argument("--headless")  # Run headless
+chrome_options.add_argument("--no-sandbox")  # Disable sandboxing for CI environments
+chrome_options.add_argument("--disable-dev-shm-usage")  # Solve issues with /dev/shm
 
 # Set up ChromeDriver using webdriver-manager
 service = Service(ChromeDriverManager().install())  # Automatically install and manage chromedriver
