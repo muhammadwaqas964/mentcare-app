@@ -57,7 +57,7 @@ jobs:
           
           # Start Flask backend in Docker container
           cd ./backend
-          docker build -f ../Dockerfile -t flask-backend .  # Explicitly specify the Dockerfile path
+          docker build -f ./Dockerfile -t flask-backend .  # Explicitly specify the Dockerfile path
           docker run --name flask-backend-container --network my-network -p 5000:5000 flask-backend &
           sleep 60  # Wait for Flask to start
 
