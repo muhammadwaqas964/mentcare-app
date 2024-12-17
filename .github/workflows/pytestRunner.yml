@@ -45,10 +45,10 @@ jobs:
       # Set up Docker and start containers
       - name: Start Docker containers for Flask, MySQL
         run: |
-          # Create Docker network
-          docker network create my-network  
+          # Check if the network exists, if not, create it
+          docker network inspect my-network || docker network create my-network
 
-          # Start MySQL container  
+          # Start MySQL container
           docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30  # Ensure MySQL is ready
 
@@ -60,7 +60,6 @@ jobs:
           docker build -f ../Dockerfile -t flask-backend .  # Explicitly specify the Dockerfile path
           docker run --name flask-backend-container --network my-network -p 5000:5000 flask-backend &
           sleep 60  # Wait for Flask to start
-
 
           # Optionally, start React frontend if necessary for end-to-end tests
           cd ../frontend
