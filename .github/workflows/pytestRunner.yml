@@ -56,13 +56,12 @@ jobs:
           docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
           
           # Build and start Flask backend in Docker container
-          cd ./backend
           docker build -f Dockerfile -t flask-backend .
           docker run --name flask-backend-container --network my-network -p 5000:5000 -d flask-backend
           sleep 60  # Wait for Flask to start
 
           # Optionally, start React frontend if necessary for end-to-end tests
-          cd ../frontend
+          cd ./frontend
           npm install  # Install frontend dependencies
           nohup npm start &  # Run React frontend in the background
 
