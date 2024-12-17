@@ -1,12 +1,22 @@
 # Use Python 3.9 slim image
 FROM python:3.9-slim
 
-# Install required dependencies (including pkg-config)
+# Install required dependencies (including pkg-config and Chrome)
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
     libmariadb-dev \
+    wget \
+    curl \
+    unzip \
+    google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
+
+# Install ChromeDriver
+RUN LATEST=$(curl -sSL https://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && wget -N https://chromedriver.storage.googleapis.com/$LATEST/chromedriver_linux64.zip \
+    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
+    && rm chromedriver_linux64.zip
 
 # Set working directory
 WORKDIR /app
