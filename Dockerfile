@@ -1,7 +1,7 @@
 # Use Debian Bookworm Slim base image
 FROM debian:bookworm-slim
 
-# Install required dependencies
+# Install required dependencies (including Python and pip)
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     gnupg2 \
     lsb-release \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 # Manually download and add Google's GPG key
@@ -44,8 +46,8 @@ WORKDIR /app
 # Copy the requirements file into the container
 COPY ../requirements.txt /app/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies using pip3
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 
 # Copy the backend code into the container
 COPY ../backend /app/backend
