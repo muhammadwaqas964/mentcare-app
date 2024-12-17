@@ -3,7 +3,7 @@ name: Run Python tests
 on:
   push:
     branches:
-      - main  # Adjust if you want it on a different branch like 'main'
+      - main  # Change this to the branch you are working with, e.g., 'dev'
 
 permissions:
   contents: write
@@ -11,6 +11,7 @@ permissions:
 env:
   MYSQL_ROOT_PASSWORD: "root_password"
   MYSQL_DATABASE: "my_test_db"
+  DB_DUMP: "dump.sql"
 
 jobs:
   build:
@@ -32,15 +33,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Install Docker
-      - name: Install Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          sudo systemctl start docker
-          sudo systemctl enable docker
-          docker --version
-
       # Install dependencies
       - name: Install dependencies
         run: |
@@ -50,39 +42,42 @@ jobs:
           pip install -e .
           pip install webdriver-manager  # Install webdriver-manager to handle the ChromeDriver
 
-      # Build and run Docker containers (Flask & MySQL)
-      - name: Start MySQL and Flask Backend
+      # Set up Docker and start containers
+      - name: Start Docker containers for Flask, MySQL
         run: |
-          # Create Docker network for MySQL and Flask containers to communicate
+          # Create Docker network
           docker network create my-network
 
           # Start MySQL container
           docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30  # Ensure MySQL is ready
 
-          # Start Flask backend in Docker container
+          # Set up database by importing dump.sql
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
+          
+          # Start Flask backend in Docker
           cd ./backend
           docker build -t flask-backend .  # Build the Flask image
           docker run --name flask-backend-container --network my-network -p 5000:5000 flask-backend &
-          sleep 60  # Ensure Flask is fully started
-          
-          # Optionally, start the React frontend (if needed for full E2E testing)
+          sleep 60  # Wait for Flask to start
+
+          # Optionally, start React frontend if necessary for end-to-end tests
           cd ../frontend
           npm install  # Install frontend dependencies
-          npm start &  # Run React frontend in background
+          npm start &  # Run React frontend in the background
 
-      # Run Pytest
-      - name: Run Pytest
+      # Run Pytest tests
+      - name: Run Pytest Tests
         run: |
-          python -m pytest tests --disable-warnings
+          python -m pytest backend/tests --disable-warnings
 
-      # Run Selenium Tests (ensure the app is fully up before running)
-      - name: Run Selenium Tests
+      # Run Selenium Tests
+      - name: Run Selenium Test - test_acceptingpatients.py
         run: |
-          # Example of running a simple Selenium test
-          python -m pytest tests/test_therapistsurveys.py
-          
-      # Clean up (stop containers after tests)
+          # Run Selenium test for accepting patients
+          python -m pytest tests/test_acceptingpatients.py --disable-warnings
+
+      # Clean up Docker containers
       - name: Clean up Docker containers
         run: |
           docker stop flask-backend-container mysql-docker
