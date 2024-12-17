@@ -73,7 +73,7 @@ jobs:
         run: |
           python -m pytest backend/tests --disable-warnings
 
-      # Run Selenium Tests
+      # Run Selenium Tests    
       - name: Run Selenium Test - test_acceptingpatients.py
         run: |
           # Set up environment variables for Chromium and ChromeDriver
@@ -81,13 +81,13 @@ jobs:
           export PATH=$PATH:/usr/local/bin  # Ensure chromedriver is on PATH
 
           # Set up Chrome options for headless mode
-          chrome_options="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
+          export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"                
 
           # Run Selenium test for accepting patients
-          python -m pytest tests/test_acceptingpatients.py --disable-warnings --chrome-options="$chrome_options"
+          python -m pytest tests/test_acceptingpatients.py --disable-warnings 
 
       # Clean up Docker containers
       - name: Clean up Docker containers
         run: |
           docker stop flask-backend-container mysql-docker
-          docker rm flask-backend-container mysql-docker
+          docker rm flask-backend-container mysql-docker  
