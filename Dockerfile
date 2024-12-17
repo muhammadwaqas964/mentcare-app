@@ -10,21 +10,17 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     ca-certificates \
-    gnupg \
+    gnupg2 \
     lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
-# Download Google's public signing key
-RUN wget -q -O /usr/share/keyrings/google-archive-keyring.gpg https://dl.google.com/linux/linux_signing_key.pub \
+# Download Google's public signing key and store it in the correct location
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | tee /usr/share/keyrings/google-archive-keyring.gpg > /dev/null \
     || { echo "Failed to download signing key"; exit 1; }
 
 # Add Google Chrome repository with the correct keyring
 RUN echo "deb [signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
     || { echo "Failed to add Google Chrome repository"; exit 1; }
-
-# Manually download and add Google's GPG key to trusted keyring (in case the previous key addition fails)
-RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc \
-    || { echo "Failed to add Google Chrome GPG key"; exit 1; }
 
 # Update apt repositories
 RUN apt-get update || { echo "Failed to update apt repositories"; exit 1; }
