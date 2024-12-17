@@ -1,19 +1,26 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager  # For automatic ChromeDriver setup
+from selenium.webdriver.chrome.options import Options
 import time
 
-# Use webdriver-manager to download and set up ChromeDriver
-service = Service(ChromeDriverManager().install())  # Automatically installs the driver
-driver = webdriver.Chrome(service=service)
+# Set Chrome options
+chrome_options = Options()
+chrome_options.binary_location = "/usr/bin/google-chrome"  # Path to Chrome installed in Docker
+
+# Set up ChromeDriver path manually (it should already be installed in the container)
+service = Service("/usr/local/bin/chromedriver")  # ChromeDriver path installed in Docker
+
+# Set up the WebDriver
+driver = webdriver.Chrome(service=service, options=chrome_options)
 
 try:
     driver.get("http://localhost:3000/login")
     wait = WebDriverWait(driver, 15)
 
+    # Execute script
     script = """
     var testMessage = document.createElement('div');
     testMessage.innerText = "<div>FEATURE #8: ACCEPTING PATIENTS INDICATOR</div>";
