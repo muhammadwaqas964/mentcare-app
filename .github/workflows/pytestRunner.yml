@@ -40,7 +40,7 @@ jobs:
           pip install -r requirements.txt
           pip install -U pytest
           pip install -e .
-          pip install webdriver-manager  # Install webdriver-manager to handle the ChromeDriver
+          pip install webdriver-manager  # Install webdriver-manager to handle ChromeDriver
           sudo apt-get update -y  # Update the apt package list
           sudo apt-get install -y chromium-browser  # Install Chromium on Ubuntu (for headless testing)
           sudo apt-get install -y wget  # Install wget if needed
@@ -76,7 +76,8 @@ jobs:
       # Run Selenium Tests
       - name: Run Selenium Test - test_acceptingpatients.py
         run: |
-          # Run Selenium test for accepting patients
+          # Run Selenium test for accepting patients with correct path to Chromium binary
+          export CHROME_BIN=/usr/bin/chromium-browser
           python -m pytest tests/test_acceptingpatients.py --disable-warnings
 
       # Clean up Docker containers
