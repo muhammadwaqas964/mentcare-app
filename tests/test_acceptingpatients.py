@@ -3,18 +3,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager  # For automatic ChromeDriver setup
 import time
 
-# service = Service("./chromedriver-win64/chromedriver.exe")
-# driver = webdriver.Chrome(service=service)
-
-driver_path = "E:/CS490/cs490_gp/tests/chromedriver-win64/chromedriver.exe"
-brave_path = "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
-
-option = webdriver.ChromeOptions()
-option.binary_location = brave_path
-service = Service(executable_path=driver_path)
-driver = webdriver.Chrome(service=service, options=option)
+# Use webdriver-manager to download and set up ChromeDriver
+service = Service(ChromeDriverManager().install())  # Automatically installs the driver
+driver = webdriver.Chrome(service=service)
 
 try:
     driver.get("http://localhost:3000/login")
@@ -37,25 +31,19 @@ try:
 
     email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
     email_input.send_keys("linda.white@example.com")
-    time.sleep(1)
     
     password_input = driver.find_element(By.CLASS_NAME, "password-input")
     password_input.send_keys("password123")
-    time.sleep(1)
 
     login_button = driver.find_element(By.CLASS_NAME, "loginBtn")
     login_button.click()
     wait.until(EC.url_contains("/dashboard"))
     print("Login successful, now on the dashboard.")
 
-    time.sleep(3) 
-    acceptance_btn = driver.find_element(By.CLASS_NAME, "acceptanceBtn")
+    acceptance_btn = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "acceptanceBtn")))
     acceptance_btn.click()
-
     time.sleep(2)
     acceptance_btn.click()
-
-    time.sleep(2)
 
 finally:
     try:
