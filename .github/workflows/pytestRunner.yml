@@ -32,6 +32,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Install Docker
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          docker --version
+
       # Install dependencies
       - name: Install dependencies
         run: |
@@ -78,4 +87,3 @@ jobs:
         run: |
           docker stop flask-backend-container mysql-docker
           docker rm flask-backend-container mysql-docker
-
