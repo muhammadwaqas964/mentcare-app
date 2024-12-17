@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v3
 
       # Set up Python environment
-      - name: Set up Python ${{ matrix.python-version }}  
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
@@ -46,25 +46,25 @@ jobs:
       - name: Start Docker containers for Flask, MySQL
         run: |
           # Check if the network exists, if not, create it
-          docker network create my-network || true                
+          docker network create my-network || true
 
           # Start MySQL container
-          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0      
+          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
           sleep 30  # Ensure MySQL is ready
 
           # Set up database by importing dump.sql
-          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql  
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
           
-          # Start Flask backend in Docker container
-          cd ./backend 
-          docker build -f backend/Dockerfile -t flask-backend ../   # Explicitly specify the Dockerfile path
-          docker run --name flask-backend-container --network my-network -p 5000:5000 flask-backend &
+          # Build and start Flask backend in Docker container
+          cd ./backend
+          docker build -f Dockerfile -t flask-backend .
+          docker run --name flask-backend-container --network my-network -p 5000:5000 -d flask-backend
           sleep 60  # Wait for Flask to start
 
           # Optionally, start React frontend if necessary for end-to-end tests
           cd ../frontend
           npm install  # Install frontend dependencies
-          npm start &  # Run React frontend in the background
+          nohup npm start &  # Run React frontend in the background
 
       # Run Pytest tests
       - name: Run Pytest Tests
