@@ -46,14 +46,14 @@ jobs:
       - name: Start Docker containers for Flask, MySQL
         run: |
           # Check if the network exists, if not, create it
-          docker network inspect my-network || docker network create my-network  
+          docker network create my-network || true                
 
           # Start MySQL container
-          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
+          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0      
           sleep 30  # Ensure MySQL is ready
 
           # Set up database by importing dump.sql
-          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
+          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql  
           
           # Start Flask backend in Docker container
           cd ./backend 
