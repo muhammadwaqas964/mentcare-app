@@ -16,10 +16,18 @@ RUN apt-get update && apt-get install -y \
 
 # Add Google Chrome repository and install Google Chrome (using 'bullseye' for Debian)
 RUN wget -q -O /usr/share/keyrings/google-archive-keyring.gpg https://dl.google.com/linux/linux_signing_key.pub \
-    && echo "deb [signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ bullseye main" | tee /etc/apt/sources.list.d/google-chrome.list \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/*
+    || { echo "Failed to download signing key"; exit 1; }
+
+RUN echo "deb [signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ bullseye main" | tee /etc/apt/sources.list.d/google-chrome.list \
+    || { echo "Failed to add Google Chrome repository"; exit 1; }
+
+RUN apt-get update \
+    || { echo "Failed to update apt repositories"; exit 1; }
+
+RUN apt-get install -y google-chrome-stable \
+    || { echo "Failed to install Google Chrome"; exit 1; }
+
+RUN rm -rf /var/lib/apt/lists/*
 
 # Install ChromeDriver
 RUN LATEST=$(curl -sSL https://chromedriver.storage.googleapis.com/LATEST_RELEASE) \
