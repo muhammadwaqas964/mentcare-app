@@ -73,18 +73,15 @@ jobs:
         run: |
           python -m pytest backend/tests --disable-warnings
 
-      # Run Selenium Tests    
+      # Run Selenium Tests
       - name: Run Selenium Test - test_acceptingpatients.py
         run: |
           # Set up environment variables for Chromium and ChromeDriver
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin  # Ensure chromedriver is on PATH
 
-          # Set up Chrome options for headless mode  
-          export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"                
-
           # Run Selenium test for accepting patients
-          python -m pytest tests/test_acceptingpatients.py --disable-warnings --chrome-options="$CHROME_OPTIONS"  # Pass the chrome options
+          python -m pytest tests/test_acceptingpatients.py --disable-warnings
 
       # Clean up Docker containers
       - name: Clean up Docker containers
