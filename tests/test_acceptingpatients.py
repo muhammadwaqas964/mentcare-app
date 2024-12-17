@@ -19,6 +19,12 @@ def get_driver():
     for option in chrome_options_list:
         chrome_options.add_argument(option)
 
+    # Add additional Chrome options for headless operation
+    chrome_options.add_argument("--headless")  # Ensure headless mode is enabled
+    chrome_options.add_argument("--no-sandbox")  # Bypass sandbox for CI
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Workaround for resource limits
+    chrome_options.add_argument("--remote-debugging-port=9222")  # Enable remote debugging
+
     # Set up ChromeDriver using webdriver-manager
     service = Service(ChromeDriverManager().install())  # Automatically install and manage chromedriver
 
