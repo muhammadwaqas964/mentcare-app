@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -7,12 +8,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-# Set Chrome options
+# Retrieve Chrome options from environment variable (if set)
 chrome_options = Options()
-chrome_options.binary_location = "/usr/bin/chromium-browser"  # Use Chromium binary
-chrome_options.add_argument("--headless")  # Run headless
-chrome_options.add_argument("--no-sandbox")  # Disable sandboxing for CI environments
-chrome_options.add_argument("--disable-dev-shm-usage")  # Solve issues with /dev/shm
+
+# Fetch the chrome options from the environment
+chrome_options_list = os.getenv("CHROME_OPTIONS", "").split()
+
+# Apply the options to the webdriver
+for option in chrome_options_list:
+    chrome_options.add_argument(option)
 
 # Set up ChromeDriver using webdriver-manager
 service = Service(ChromeDriverManager().install())  # Automatically install and manage chromedriver
