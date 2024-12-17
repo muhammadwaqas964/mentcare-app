@@ -1,7 +1,7 @@
 # Use Python 3.9 slim image
 FROM python:3.9-slim
 
-# Install required dependencies (including pkg-config and Chrome)
+# Install required dependencies (including pkg-config, Chrome, and lsb-release)
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     ca-certificates \
     gnupg \
+    lsb-release \
     && rm -rf /var/lib/apt/lists/*
 
 # Add Google Chrome repository and install Google Chrome
