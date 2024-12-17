@@ -74,10 +74,13 @@ jobs:
           python -m pytest backend/tests --disable-warnings
 
       # Run Selenium Tests
-      - name: Run Selenium Test - test_acceptingpatients.py
+      - name: Run Selenium Test - test_acceptingpatients.py  
         run: |
-          # Run Selenium test for accepting patients with correct path to Chromium binary
+          # Set up environment variables for Chromium and ChromeDriver
           export CHROME_BIN=/usr/bin/chromium-browser
+          export PATH=$PATH:/usr/local/bin  # Ensure chromedriver is on PATH
+
+          # Run Selenium test for accepting patients
           python -m pytest tests/test_acceptingpatients.py --disable-warnings
 
       # Clean up Docker containers
