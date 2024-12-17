@@ -44,6 +44,7 @@ jobs:
           sudo apt-get update -y  # Update the apt package list
           sudo apt-get install -y chromium-browser  # Install Chromium on Ubuntu (for headless testing)
           sudo apt-get install -y wget  # Install wget if needed
+          sudo apt-get install -y libxss1 libappindicator3-1 libindicator7 # Install additional dependencies for headless
 
       # Set up Docker and start containers
       - name: Start Docker containers for Flask, MySQL
@@ -80,6 +81,9 @@ jobs:
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin  # Ensure chromedriver is on PATH
 
+          # Set Chrome options to run in headless mode and prevent crashes
+          export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
+          
           # Run Selenium test for accepting patients
           python -m pytest tests/test_acceptingpatients.py --disable-warnings
 
