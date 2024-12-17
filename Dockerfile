@@ -22,9 +22,15 @@ RUN wget -q -O /usr/share/keyrings/google-archive-keyring.gpg https://dl.google.
 RUN echo "deb [signed-by=/usr/share/keyrings/google-archive-keyring.gpg] https://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list \
     || { echo "Failed to add Google Chrome repository"; exit 1; }
 
-# Ensure the repository is updated and Google Chrome is installed
+# Add the public key for Google repository (to solve NO_PUBKEY issue)
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc
+
+# Update apt repositories
 RUN apt-get update \
-    && apt-get install -y google-chrome-stable \
+    || { echo "Failed to update apt repositories"; exit 1; }
+
+# Install Google Chrome
+RUN apt-get install -y google-chrome-stable \
     || { echo "Failed to install Google Chrome"; exit 1; }
 
 # Clean up apt cache
