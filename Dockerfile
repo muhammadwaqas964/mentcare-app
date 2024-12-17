@@ -1,7 +1,7 @@
 # Use Debian Bookworm Slim base image
 FROM debian:bookworm-slim
 
-# Install required dependencies (including Python and pip)
+# Install required dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     gnupg2 \
     lsb-release \
     python3 \
+    python3-venv \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -46,8 +47,12 @@ WORKDIR /app
 # Copy the requirements file into the container
 COPY ../requirements.txt /app/
 
-# Install Python dependencies using pip3
-RUN python3 -m pip install --no-cache-dir -r requirements.txt
+# Create a virtual environment and install Python dependencies
+RUN python3 -m venv /venv \
+    && /venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables for Flask to use virtual environment's Python
+ENV PATH="/venv/bin:$PATH"
 
 # Copy the backend code into the container
 COPY ../backend /app/backend
