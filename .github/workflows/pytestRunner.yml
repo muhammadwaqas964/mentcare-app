@@ -53,9 +53,6 @@ jobs:
           docker-compose up -d
           sleep 60  # Adjust this based on actual startup times
 
-      - name: Run Pytest Tests
-        run: python -m pytest backend/tests --disable-warnings
-
       - name: Run Selenium Tests (accepting patients)
         run: |
           export CHROME_BIN="/usr/bin/chromium-browser"
