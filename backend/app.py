@@ -379,3 +379,13 @@ def sendFeedback(data):
 
     if patientId in sockets:
         socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
+@app.route('/routes')
+def list_routes():
+    import urllib
+    output = []
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(rule.methods)
+        url = urllib.parse.unquote(f"{rule.endpoint}: {methods} {rule}")
+        output.append(url)
+    return '<br>'.join(output)
+        
