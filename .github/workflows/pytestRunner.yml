@@ -60,7 +60,7 @@ jobs:
         run: |
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin
-          export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"  
+          export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
           docker-compose run selenium
 
       - name: Clean up Docker containers
