@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y python3-venv python3-pip
 RUN python3 -m venv /home/seluser/venv
 
 # Install dependencies inside the virtual environment
-RUN /home/seluser/venv/bin/pip install --no-cache-dir pytest selenium
+RUN /home/seluser/venv/bin/pip install --no-cache-dir pytest selenium webdriver-manager
 
 # Set the virtual environment path to use it for the container
 ENV PATH="/home/seluser/venv/bin:$PATH"
