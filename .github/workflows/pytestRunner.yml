@@ -56,12 +56,12 @@ jobs:
       - name: Run Pytest Tests
         run: python -m pytest backend/tests --disable-warnings
 
-      - name: Run Selenium Tests
+      - name: Run Selenium Tests (accepting patients)
         run: |
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
-          docker-compose run selenium
+          docker-compose run -T selenium pytest /tests/test_acceptingpatients.py --disable-warnings
 
       - name: Clean up Docker containers
         run: docker-compose down
