@@ -16,7 +16,7 @@ def get_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.binary_location = "/usr/bin/google-chrome"  # Make sure this path is correct
 
-    service = Service("/usr/local/bin/chromedriver")  # Path to the installed ChromeDriver
+    service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
