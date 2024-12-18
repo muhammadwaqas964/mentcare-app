@@ -3,7 +3,7 @@ name: Run Python tests
 on:
   push:
     branches:
-      - main  # Change this to the branch you are working with, e.g., 'dev'
+      - main
 
 permissions:
   contents: write
