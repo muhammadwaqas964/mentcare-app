@@ -1,25 +1,15 @@
 FROM selenium/standalone-chrome
 
-# Switch to root user to install packages
 USER root
 
-# Install python3-venv and other necessary dependencies
 RUN apt-get update && apt-get install -y python3-venv python3-pip
-
-# Create a virtual environment inside the user's home directory
 RUN python3 -m venv /home/seluser/venv
-
-# Install dependencies inside the virtual environment
 RUN /home/seluser/venv/bin/pip install --no-cache-dir pytest selenium webdriver-manager
 
-# Set the virtual environment path to use it for the container
 ENV PATH="/home/seluser/venv/bin:$PATH"
 
-# Verify ChromeDriver installation
 RUN which chromedriver
 
-# Switch back to the default non-root user
 USER seluser
 
-# Run the tests and ensure logs are captured
 ENTRYPOINT ["sh", "-c", "sleep 10 && pytest --disable-warnings /tests > /home/seluser/test_logs.txt"]
