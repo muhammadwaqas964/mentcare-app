@@ -24,71 +24,37 @@ jobs:
         python-version: ["3.9"]
 
     steps:
-      # Checkout the repository
       - uses: actions/checkout@v3
 
-      # Set up Python environment
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Install dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -U pytest
           pip install -e .
-          pip install webdriver-manager  # Install webdriver-manager to handle ChromeDriver
-          sudo apt-get update -y  # Update the apt package list
-          sudo apt-get install -y chromium-browser  # Install Chromium on Ubuntu (for headless testing)
-          sudo apt-get install -y wget  # Install wget if needed
-          sudo apt-get install -y libxss1 libappindicator3-1 libindicator7 # Install additional dependencies for headless
+          pip install webdriver-manager
+          sudo apt-get update -y
+          sudo apt-get install -y chromium-browser wget libxss1 libappindicator3-1 libindicator7
 
-      # Set up Docker and start containers
-      - name: Start Docker containers for Flask, MySQL
+      - name: Set up Docker and start containers
         run: |
-          # Check if the network exists, if not, create it
-          docker network create my-network || true
+          docker-compose up -d
+          sleep 60  # Adjust this based on actual startup times
 
-          # Start MySQL container
-          docker run --network my-network --name mysql-docker -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root_password -e MYSQL_DATABASE=my_test_db -d mysql:8.0
-          sleep 30  # Ensure MySQL is ready
-
-          # Set up database by importing dump.sql
-          docker exec -i mysql-docker mysql -u root -proot_password my_test_db < ./dump.sql
-          
-          # Build and start Flask backend in Docker container
-          docker build -f Dockerfile -t flask-backend .
-          docker run --name flask-backend-container --network my-network -p 5000:5000 -d flask-backend
-          sleep 60  # Wait for Flask to start
-
-          # Optionally, start React frontend if necessary for end-to-end tests
-          cd ./frontend
-          npm install  # Install frontend dependencies
-          nohup npm start &  # Run React frontend in the background
-
-      # Run Pytest tests
       - name: Run Pytest Tests
-        run: |
-          python -m pytest backend/tests --disable-warnings
+        run: python -m pytest backend/tests --disable-warnings
 
-      # Run Selenium Tests
-      - name: Run Selenium Test - test_acceptingpatients.py
+      - name: Run Selenium Tests
         run: |
-          # Set up environment variables for Chromium and ChromeDriver
-          export CHROME_BIN="/usr/bin/chromium-browser"
-          export PATH=$PATH:/usr/local/bin  # Ensure chromedriver is on PATH
-
-          # Set Chrome options to run in headless mode and prevent crashes
+          export CHROME_BIN="/usr/bin/chromium-browser"  
+          export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
-          
-          # Run Selenium test for accepting patients
-          python -m pytest tests/test_acceptingpatients.py --disable-warnings
+          docker-compose run selenium
 
-      # Clean up Docker containers
       - name: Clean up Docker containers
-        run: |
-          docker stop flask-backend-container mysql-docker
-          docker rm flask-backend-container mysql-docker
+        run: docker-compose down
