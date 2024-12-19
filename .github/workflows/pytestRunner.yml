@@ -53,12 +53,15 @@ jobs:
           docker-compose up -d
           sleep 60  # Adjust this based on actual startup times
 
+      - name: List files to verify test directory structure
+        run: ls -R
+
       - name: Run Selenium Tests (accepting patients)
         run: |
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
-          pytest /tests/test_acceptingpatients.py --disable-warnings
+          pytest ./tests/test_acceptingpatients.py --disable-warnings
 
       - name: Clean up Docker containers
         run: docker-compose down
