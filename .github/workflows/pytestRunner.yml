@@ -57,8 +57,9 @@ jobs:
         run: ls -R
 
       - name: Run Selenium Tests (accepting patients)
+        env:
+          CHROME_BIN: /usr/bin/chromium-browser
         run: |
-          export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
           pytest ./tests/test_acceptingpatients.py --disable-warnings
