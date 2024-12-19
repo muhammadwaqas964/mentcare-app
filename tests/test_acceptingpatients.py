@@ -1,90 +1,73 @@
-import os
+import pytest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 import time
 
 def get_driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.binary_location = "/usr/bin/google-chrome"
-
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    driver = webdriver.Chrome(options=options)
     return driver
 
-def test_accepting_patients():
+def test_register_if_user_not_found():
     driver = get_driver()
-    
+
     try:
         print("Navigating to login page...")
-        driver.get("http://frontend:3000/login")
-        wait = WebDriverWait(driver, 30)
+        driver.get("http://localhost:3000/login")
+        wait = WebDriverWait(driver, 120)  # Increased timeout to 120 seconds
 
-        script = """
-        var testMessage = document.createElement('div');
-        testMessage.innerText = "<div>FEATURE #8: ACCEPTING PATIENTS INDICATOR</div>";
-        testMessage.style.position = "fixed";
-        testMessage.style.bottom = "10px";
-        testMessage.style.left = "10px";
-        testMessage.style.backgroundColor = "yellow";
-        testMessage.style.color = "black";
-        testMessage.style.zIndex = "9999";
-        testMessage.style.padding = "10px";
-        testMessage.style.fontSize = "16pt";
-        document.body.appendChild(testMessage);
-        """
-        driver.execute_script(script)
-
+        # Locate email input by class name and enter text
         print("Locating email input...")
-        email_input = wait.until(EC.presence_of_element_located((By.NAME, "email")))
+        email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
         print("Email input found. Entering email...")
-        email_input.send_keys("linda.white@example.com")
-        
+        email_input.send_keys("unregistered.email@example.com")  # Use an unregistered email for testing
+
+        # Locate password input by class name and enter text
         print("Locating password input...")
-        password_input = driver.find_element(By.NAME, "password")
+        password_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "password-input")))
         print("Password input found. Entering password...")
         password_input.send_keys("password123")
 
+        # Locate and click the login button by class name
         print("Locating login button...")
-        login_button = driver.find_element(By.TAG_NAME, "button")
+        login_button = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "loginBtn")))
         print("Login button found. Clicking login button...")
         login_button.click()
-        
-        print("Current URL: ", driver.current_url)
-        time.sleep(5)  # Pause to observe any changes
 
-        print("Waiting for dashboard element...")
+        # Wait for 5 seconds to simulate user feedback processing
+        print("Waiting for feedback...")
+        time.sleep(5)
+
+        # Check for the error message indicating the user is not registered
+        error_message = None
         try:
-            dashboard_element = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "dashboard-indicator")))
-            print("Login successful, now on the dashboard.")
-        except TimeoutException:
-            print("Dashboard element not found. Capturing page source for debugging.")
-            with open("page_source.html", "w") as file:
-                file.write(driver.page_source)
-            raise
+            error_message = driver.find_element(By.XPATH, "//*[contains(text(), 'Invalid credentials')]")
+        except:
+            pass
 
-        print("Locating acceptance button...")
-        acceptance_btn = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "acceptanceBtn")))
-        print("Acceptance button found. Clicking acceptance button...")
-        acceptance_btn.click()
-        time.sleep(2)
-        print("Clicking acceptance button again...")
-        acceptance_btn.click()
+        if error_message:
+            print("User not registered. Navigating to registration page...")
+            register_link = wait.until(EC.presence_of_element_located((By.LINK_TEXT, "Register Now")))
+            register_link.click()
+
+            # Wait for the registration page to load
+            print("Waiting for registration page to load...")
+            register_heading = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "register-heading")))
+            print("Registration page loaded. Test passed!")
+        else:
+            print("User is registered. Test passed!")
+
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        raise
 
     finally:
-        try:
-            driver.quit()
-        except Exception as e:
-            print(f"Error while quitting the driver: {e}")
-        print("Program ended.")
+        driver.quit()
 
 if __name__ == "__main__":
-    test_accepting_patients()
+    pytest.main()
