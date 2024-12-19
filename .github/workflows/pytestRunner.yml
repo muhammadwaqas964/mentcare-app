@@ -39,7 +39,7 @@ jobs:
           pip install -e .
           pip install webdriver-manager
           sudo apt-get update -y
-          sudo apt-get install -y chromium-browser wget libxss1 libappindicator3-1 libindicator7
+          sudo apt-get install -y chromium-browser chromium-chromedriver wget libxss1 libappindicator3-1 libindicator7
 
       - name: Install Docker Compose
         run: |
@@ -58,7 +58,7 @@ jobs:
           export CHROME_BIN="/usr/bin/chromium-browser"
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
-          docker-compose run -T selenium pytest /tests/test_acceptingpatients.py --disable-warnings
+          pytest /tests/test_acceptingpatients.py --disable-warnings
 
       - name: Clean up Docker containers
         run: docker-compose down
