@@ -47,6 +47,8 @@ jobs:
           chromium-browser --version
           which chromedriver
           chromedriver --version
+          ls -l /usr/bin/chromium-browser
+          ls -l /usr/bin/google-chrome
 
       - name: Install Docker Compose
         run: |
@@ -69,6 +71,8 @@ jobs:
         run: |
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
+          echo "CHROME_BIN: $CHROME_BIN"
+          echo "CHROME_OPTIONS: $CHROME_OPTIONS"
           pytest ./tests/test_acceptingpatients.py --disable-warnings
 
       - name: Clean up Docker containers
