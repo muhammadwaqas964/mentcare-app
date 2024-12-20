@@ -1,48 +1,152 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, json, send_file #,render_template, request
 from flask_mysqldb import MySQL
-from flask_cors import CORS
-from flask_socketio import SocketIO
-from flasgger import Swagger
+from flask_cors import CORS, cross_origin
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
+from datetime import datetime
 from io import BytesIO
-
-# Initialize Flask app
+from flasgger import Swagger #added for API documentation
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
-socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000")
+CORS(app, origins="http://localhost:3000")
+socketio = SocketIO(app, cors_allowed_origins="http://localhost:3000", methods=["GET", "POST", "OPTIONS"])
 
-# MySQL Configuration
-app.config['MYSQL_HOST'] = 'mysql'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'root_password'
-app.config['MYSQL_DB'] = 'cs490_GP'
-mysql = MySQL(app)
-
-# Swagger Configuration
-swagger = Swagger(app)
-
-# SocketIO Connections
 sockets = {}
 socketsNavbar = {}
+# comment to cause github action to run
+app.config['MYSQL_HOST'] = 'mysql-container'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'root_password'
+app.config['MYSQL_DB'] = 'my_test_db'
 
-@app.route("/api/login", methods=['POST'])
-def login():
-    try:
-        data = request.get_json()
-        email = data.get('email')
-        password = data.get('password')
-        cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM users WHERE email=%s AND password=%s', (email, password))
-        user = cursor.fetchone()
-        cursor.close()
-        if user:
-            return jsonify(success=True), 200
-        else:
-            return jsonify(success=False, message='Invalid credentials'), 401
-    except Exception as err:
-        return jsonify(error=str(err)), 500
+mysql = MySQL(app)
+
+# Initialize Swagger
+swagger = Swagger(app)
+
+from endpoints.example import examplePageStuff
+app.register_blueprint(examplePageStuff)
+
+# adrian
+
+from endpoints.chatPage import chatPageData
+app.register_blueprint(chatPageData)
+
+from endpoints.paymentPage import paymentPageData
+app.register_blueprint(paymentPageData)
+
+# akul
+
+from endpoints.landingPage import landingPageData
+app.register_blueprint(landingPageData)
+
+from endpoints.therapistProfile import therapist_routes
+app.register_blueprint(therapist_routes)
+
+# anish
+
+from endpoints.therapistListPage import therapistListData
+app.register_blueprint(therapistListData)
+
+from endpoints.patientProfile import PatientProfileData
+app.register_blueprint(PatientProfileData)
+
+# fausto
+
+from endpoints.loginPage import loginPageData
+app.register_blueprint(loginPageData)
+
+from endpoints.registrationPage import registrationPageData
+app.register_blueprint(registrationPageData)
+
+from endpoints.patientDashboard import PatientDashboardData
+app.register_blueprint(PatientDashboardData)
+
+# joel
+
+from endpoints.therapistDashboard import TherapistDashboardData
+app.register_blueprint(TherapistDashboardData)
+
+from endpoints.settings import settingsPageData
+app.register_blueprint(settingsPageData)
+
+@app.before_request
+def handle_options():
+    if request.method == "OPTIONS":
+        response = app.make_response("")
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        return response, 200
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
+@app.route("/")
+def defaultFunc():
+    """
+    Check Backend Status
+    ---
+    tags:
+      - General
+    responses:
+      200:
+        description: Backend status
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "Backend is alive"
+    """
+    # return {"status": "Backend is alive"}
+    response = jsonify({'status': 'Backend is alive'})
+    response.status_code = 200
+    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 @app.route("/navbarData", methods=['POST'])
 def navbarDataFunc():
+    """
+    Fetch Navbar Data
+    ---
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            fakeUserID:
+              type: integer
+              description: Fake user ID
+            userType:
+              type: string
+              description: User type (e.g., Patient or Therapist)
+    responses:
+      200:
+        description: Navbar data fetched successfully
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              userID:
+                type: integer
+              userName:
+                type: string
+              userType:
+                type: string
+      404:
+        description: User not found
+    """
     try:
         fakeUserId = request.json.get('fakeUserID')
         userType = request.json.get('userType')
@@ -52,91 +156,226 @@ def navbarDataFunc():
 
         if userType == 'Patient':
             cursor.execute('''
-                SELECT users.userID, userName, userType FROM users
-                INNER JOIN patients ON users.userID = patients.userID
-                WHERE patients.patientID = %s
-            ''', (fakeUserId, ))
+                    SELECT users.userID, userName, userType FROM users
+                    INNER JOIN patients ON users.userID = patients.userID
+                    WHERE patients.patientID = %s
+                    ''', (fakeUserId, ))
         elif userType == 'Therapist':
             cursor.execute('''
-                SELECT users.userID, userName, userType FROM users
-                INNER JOIN therapists ON users.userID = therapists.userID
-                WHERE therapists.therapistID = %s
-            ''', (fakeUserId, ))
-
+                    SELECT users.userID, userName, userType, therapists.isActive FROM users
+                    INNER JOIN therapists ON users.userID = therapists.userID
+                    WHERE therapists.therapistID = %s
+                    ''', (fakeUserId, ))
         data = cursor.fetchall()
         if data:
             columns = [column[0] for column in cursor.description]
-            results = [dict(zip(columns, row)) for row in data]
+            results = [dict(zip(columns, row)) for row in data]                
             totalResults.append(results)
 
             userId = results[0]['userID']
-            cursor.execute('SELECT notificationID, message, redirectLocation FROM notifications WHERE userID = %s', (userId,))
-            notifs_data = cursor.fetchall()
 
+            cursor.execute('''
+                    SELECT notificationID, message, redirectLocation FROM notifications WHERE userID = %s
+                    ''', (userId, ))
+            notifs_data = cursor.fetchall()
             if notifs_data:
                 notifs_columns = [column[0] for column in cursor.description]
                 notifs_results = [dict(zip(notifs_columns, row)) for row in notifs_data]
                 totalResults.append(notifs_results)
             else:
                 totalResults.append(None)
-
-            return jsonify(totalResults), 200
+            
+            # return jsonify(totalResults)
+            response = jsonify(totalResults)
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            return jsonify(message="User not found"), 404
-    except Exception as err:
-        return jsonify(error=str(err)), 500
+            response = jsonify({"message" : "User not found"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
 
-@app.route("/retriveProfilePic", methods=['POST'])
+    except Exception as err:
+        return {"error":  f"{err}"}
+    
+@app.route('/retriveProfilePic', methods=['POST'])
 def retriveProfilePicFunc():
     try:
         realUserID = request.json.get('realUserID')
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT profileImg FROM users WHERE userID = %s', (realUserID,))
+        cursor.execute('''
+            SELECT profileImg FROM users
+            WHERE userID = %s
+        ''', (realUserID,))
+
         data = cursor.fetchone()
-
-        if data and data[0]:
-            return jsonify(profileImg=data[0]), 200
+        if data and data[0] is not None:
+            # profile_img_data = data[0]
+            # if profile_img_data:
+            #     img_stream = BytesIO(profile_img_data)
+            #     return send_file(img_stream, mimetype='image/jpeg')
+            # else:
+            response = jsonify({"profileImg": data[0]})
+            response.status_code = 200
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
         else:
-            return jsonify(error="Profile image is null"), 404
+            response = jsonify({"error": "Profile image is null"})
+            response.status_code = 404
+            response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            return response
     except Exception as err:
-        return jsonify(error=str(err)), 500
-
-@app.route("/deleteNotification", methods=['POST'])
+        return {"error":  f"{err}"}
+    
+@app.route('/deleteNotification', methods=['POST'])
 def delNotifFunc():
+    """
+    Delete a Notification
+    ---
+    tags:
+      - Notifications
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            notificationID:
+              type: integer
+              example: 1
+    responses:
+      200:
+        description: Notification deleted successfully
+      500:
+        description: Internal Server Error
+    """
     try:
         notificationID = request.json.get('notificationID')
+
         cursor = mysql.connection.cursor()
-        cursor.execute('DELETE FROM notifications WHERE notificationID = %s', (notificationID,))
+        cursor.execute('''
+                    DELETE FROM notifications WHERE notificationID = %s
+                    ''', (notificationID, ))
         mysql.connection.commit()
         cursor.close()
 
-        return jsonify(message="Notification successfully deleted!"), 200
+        response = jsonify({"message" : "Notification succesfully delete!"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
     except Exception as err:
-        return jsonify(error=str(err)), 500
+        return {"error":  f"{err}"}
+    
+@app.route('/updateSocketsNavbar', methods=['POST'])
+def updateSocketsNavFunc():
+    """
+    Update Navbar Sockets
+    ---
+    tags:
+      - Sockets
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            realUserID:
+              type: integer
+              example: 101
+    responses:
+      200:
+        description: Navbar sockets updated successfully
+      500:
+        description: Internal Server Error
+    """
+    try:
+        print("GOT HERE")
+        realUserID = request.json.get('realUserID')
+        #socketsNavbar[realUserID] = request.sid
+        #print("UPDATE NAVBAR SOCKETS CONNECTIONS")
+        print("CURRENT NAVBAR SOCKETS CONNECTIONS: ", socketsNavbar)
+        #print(f"Added socketId {request.sid} for userId {realUserID} to socketsNavbar")
 
+        response = jsonify({"message" : "Sockets navbar succesfully updated!"})
+        response.status_code = 200
+        response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    except Exception as err:
+        return {"error":  f"{err}"}
+
+#############   BEGINNING OF SOCKETIO CODE   ############
+
+if __name__ == '__main__':
+    socketio.run(app)
+
+#   Initiate socket connection (for whatever page users goes into)
 @socketio.on('init-socket-comm')
 def initializeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
     userId = data.get('userID')
     socketId = request.sid
     sockets[userId] = socketId
+    print("CURRENT SOCKETS CONNECTIONS: ", sockets)
     print(f"Added socketId {socketId} for userId {userId}")
 
+#   Removes socket connection (for the page user was just in)
 @socketio.on('rem-socket-comm')
 def removeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
     userId = data.get('userID')
     if userId in sockets:
-        sockets.pop(userId)
-        print(f"Removed socketId for userId {userId}")
+        socketId = sockets.pop(userId)
+        print(f"Removed socketId {socketId} for userId {userId} to sockets")
+    else:
+        print(f"userId {userId} not found in sockets dictionary")
 
-@app.route("/routes")
-def list_routes():
-    import urllib
-    output = []
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(rule.methods)
-        url = urllib.parse.unquote(f"{rule.endpoint}: {methods} {rule}")
-        output.append(url)
-    return '<br>'.join(output)
+#   Initiate socket connection for the user's navbar
+@socketio.on('init-socket-navbar-comm')
+def initializeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
+    userId = data.get('userID')
+    socketId = request.sid
+    socketsNavbar[userId] = socketId
+    print("CURRENT NAVBAR SOCKETS CONNECTIONS: ", socketsNavbar)
+    print(f"Added socketId {socketId} for userId {userId} to socketsNavbar")
 
-if __name__ == "__main__":
-    socketio.run(app, host="0.0.0.0", port=5000)
+#   Removes socket connection for the user's navbar
+@socketio.on('rem-socket-navbar-comm')
+def removeSocketCommunication(data):
+    #   In this case, userID is the ACTUAL userID
+    userId = data.get('userID')
+    if userId in sockets:
+        socketId = sockets.pop(userId)
+        print(f"Removed socketId {socketId} for userId {userId} to sockets")
+    else:
+        print(f"userId {userId} not found in sockets dictionary")
+
+#   (WIP) Sent from Patient Overview Page to a Patient's Dashboard Page
+@socketio.on('send-new-feedback')
+def sendFeedback(data):
+    patientId = data.get('patientID')
+    feedback = data.get('feedback')
+
+    if patientId in sockets:
+        socketio.emit('new-feedback', {'feedback': feedback}, room=sockets[patientId])
