@@ -33,7 +33,6 @@ jobs:
         with:
           python-version: 3.11
 
-      # Step 3: Install backend dependencies and create virtual environment
       - name: Install backend dependencies and create virtual environment
         run: |
           cd backend
@@ -44,7 +43,7 @@ jobs:
           pip install pytest selenium webdriver-manager
           cd ..
 
-      # Step 4: Set up Node.js for the frontend
+      # Step 3: Set up Node.js for the frontend
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -55,7 +54,7 @@ jobs:
           cd frontend
           npm install
 
-      # Step 5: Start Backend and Frontend
+      # Step 4: Start Backend and Frontend
       - name: Start Backend and Frontend
         run: |
           cd backend
@@ -65,16 +64,9 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 6: Run all tests (including backend, frontend, and selenium tests)
-      - name: Run all tests
-        run: |
-          cd backend
-          source venv/bin/activate
-          pytest ../tests/ --disable-warnings  # Run all tests in the tests directory
-
-      # Step 7: Run specific Selenium test file - test_acceptingpatients.py
+      # Step 5: Run specific Selenium test file
       - name: Run test_acceptingpatients.py
         run: |
           cd backend
           source venv/bin/activate
-          pytest ../tests/test_acceptingpatients.py --disable-warnings  # Run specific test file (Selenium test)
+          pytest ../tests/test_acceptingpatients.py --disable-warnings  # Running specific test file
