@@ -1,4 +1,4 @@
-name: Verify File Presence
+name: Run Backend and Frontend Tests
 
 on:
   push:
@@ -9,23 +9,64 @@ on:
       - main
 
 jobs:
-  verify-file:
+  test-backend-frontend:
+    name: Start and Test Backend & Frontend
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: cs490_GP
+        ports:
+          - 3306:3306
 
     steps:
       # Step 1: Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: List all files in the repository
-      - name: List files
-        run: ls -R
+      # Step 2: Set up Python for the backend
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
 
-      # Step 3: Check if the file exists
-      - name: Check for `test_acceptingpatients.py`
+      - name: Install backend dependencies
         run: |
-          if [ -f "tests/test_acceptingpatients.py" ]; then
-            echo "File exists!";
-          else
-            echo "File not found!" && exit 1;
-          fi
+          cd backend
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      # Step 3: Set up Node.js for the frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      # Step 4: Start Backend and Frontend
+      - name: Start Backend and Frontend
+        run: |
+          cd backend
+          source venv/bin/activate
+          flask run --host=0.0.0.0 --port=5000 &
+          cd ../frontend
+          npm start &
+          sleep 30  # Wait for services to start
+
+      # Step 5: Install Selenium dependencies
+      - name: Install Selenium dependencies
+        run: |
+          pip install selenium webdriver-manager
+
+      # Step 6: Run `test_acceptingpatients.py`
+      - name: Run Selenium Test
+        run: |
+          python tests/test_acceptingpatients.py
