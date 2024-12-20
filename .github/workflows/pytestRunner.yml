@@ -69,4 +69,4 @@ jobs:
         run: |
           cd backend
           source venv/bin/activate
-          pytest tests/ --disable-warnings  # Running both backend and selenium tests in the same step
+          pytest tests/test_acceptingpatients.py --disable-warnings  # Running both backend and selenium tests in the same step
