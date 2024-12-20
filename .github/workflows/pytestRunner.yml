@@ -1,68 +1,71 @@
-name: Run Python tests
+name: Test Backend and Frontend
 
 on:
   push:
     branches:
       - main
-
-permissions:
-  contents: write
-
-env:
-  MYSQL_ROOT_PASSWORD: "root_password"
-  MYSQL_DATABASE: "my_test_db"
-  DB_DUMP: "dump.sql"
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    name: Run tests
+  test-backend-frontend:
+    name: Start and Test Backend & Frontend
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.9"]
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: cs490_GP
+        ports:
+          - 3306:3306
 
     steps:
-      - uses: actions/checkout@v3
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
+      # Step 2: Set up Python for Backend
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.9
 
-      - name: Install dependencies
+      - name: Install backend dependencies
         run: |
-          python -m pip install --upgrade pip
+          cd backend
+          python -m venv venv
+          source venv/bin/activate
           pip install -r requirements.txt
-          pip install -U pytest webdriver-manager
-          sudo apt-get update -y
-          sudo apt-get install -y chromium-browser wget libxss1 libappindicator3-1 libindicator7
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
-          docker-compose --version
+      # Step 3: Set up Node.js for Frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-      - name: Start Docker containers
+      - name: Install frontend dependencies
         run: |
-          docker-compose up -d
-          for i in {1..15}; do
-            if curl -s http://localhost:3000; then
-              echo "Frontend is ready"; break
-            fi
-            echo "Waiting for frontend to be ready..."
-            sleep 10
-          done
+          cd frontend
+          npm install
+
+      # Step 4: Start Backend and Frontend
+      - name: Start Backend and Frontend
+        run: |
+          cd backend
+          source venv/bin/activate
+          flask run --host=0.0.0.0 --port=5000 &
+          cd ../frontend
+          npm start &
+          sleep 30  # Wait for services to start
+
+      # Step 5: Run Selenium Tests
+      - name: Install Selenium dependencies
+        run: |
+          pip install selenium webdriver-manager
 
       - name: Run Selenium Tests
-        env:
-          FRONTEND_URL: http://localhost:3000
-          CHROME_BIN: /usr/bin/chromium-browser
         run: |
-          pytest ./tests/test_acceptingpatients.py --disable-warnings
-
-      - name: Clean up Docker containers
-        run: docker-compose down
+          python tests/selenium_test_login.py
