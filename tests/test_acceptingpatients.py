@@ -3,17 +3,16 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import chromedriver_binary  # Adds chromedriver binary to path
-from webdriver_manager.chrome import ChromeDriverManager  # To automatically manage chromedriver version
+from webdrivermanager import ChromeDriverManager
 
 def get_driver():
+    # Install and setup ChromeDriver
+    ChromeDriverManager().install()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-
-    # Use webdriver-manager to manage ChromeDriver version
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    driver = webdriver.Chrome(options=options)
     return driver
 
 def test_register_if_user_not_found():
