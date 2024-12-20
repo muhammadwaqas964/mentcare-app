@@ -64,9 +64,9 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 5: Run specific Selenium test file
-      - name: Run test_acceptingpatients.py
+      # Step 5: Run all tests (including Selenium tests)
+      - name: Run Backend, Frontend, and Selenium Tests
         run: |
           cd backend
           source venv/bin/activate
-          pytest ../tests/test_acceptingpatients.py --disable-warnings  # Running specific test file
+          pytest tests/ --disable-warnings  # Running both backend and selenium tests in the same step
