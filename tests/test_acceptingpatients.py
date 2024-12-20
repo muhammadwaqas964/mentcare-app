@@ -3,16 +3,14 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdrivermanager import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
 
 def get_driver():
-    # Install and setup ChromeDriver
-    ChromeDriverManager().install()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     return driver
 
 def test_register_if_user_not_found():
