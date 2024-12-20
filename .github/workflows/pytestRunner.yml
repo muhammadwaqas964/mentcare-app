@@ -54,7 +54,15 @@ jobs:
           cd frontend
           npm install
 
-      # Step 4: Start Backend and Frontend
+      # Step 4: Install Chrome and ChromeDriver for Selenium
+      - name: Install Chrome and ChromeDriver for Selenium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y chromium-chromedriver
+          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+      # Step 5: Start Backend and Frontend
       - name: Start Backend and Frontend
         run: |
           cd backend
@@ -64,9 +72,16 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 5: Run all tests (including Selenium tests)
-      - name: Run Backend, Frontend, and Selenium Tests
+      # Step 6: Run Specific Selenium Test (test_acceptingpatients.py)
+      - name: Run Selenium Test for accepting patients
         run: |
           cd backend
           source venv/bin/activate
-          pytest tests/test_acceptingpatients.py --disable-warnings  # Running both backend and selenium tests in the same step
+          pytest tests/test_acceptingpatients.py --disable-warnings  # Corrected path to tests/test_acceptingpatients.py
+
+      # Step 7: Run All Tests in the tests Directory
+      - name: Run All Tests
+        run: |
+          cd backend
+          source venv/bin/activate
+          pytest tests/ --disable-warnings  # Run all tests in the 'tests' directory
