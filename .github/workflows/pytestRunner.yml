@@ -36,10 +36,11 @@ jobs:
       - name: Install backend dependencies and create virtual environment
         run: |
           cd backend
-          python -m venv venv  # Ensure virtual environment is created
+          python -m venv venv  # Create virtual environment
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest selenium webdriver-manager
           cd ..
 
       # Step 3: Set up Node.js for the frontend
@@ -67,5 +68,5 @@ jobs:
       - name: Run Tests
         run: |
           cd backend
-          source venv/bin/activate      
-          python ../tests/
+          source venv/bin/activate
+          pytest ../tests/
