@@ -37,32 +37,14 @@ jobs:
           pip install -r requirements.txt
           pip install -U pytest
           pip install -e .
-          pip install webdriver-manager
-          pip install chromedriver-binary
+          pip install webdrivermanager
           sudo apt-get update -y
           sudo apt-get install -y chromium-browser wget libxss1 libappindicator3-1 libindicator7
-
-      - name: Remove incorrect ChromeDriver version
-        run: |
-          sudo rm /usr/local/bin/chromedriver
-          sudo rm /opt/hostedtoolcache/Python/3.9.20/x64/lib/python3.9/site-packages/chromedriver_binary/chromedriver
-
-      - name: Install ChromeDriver matching Chrome version
-        run: |
-          # Download the correct ChromeDriver version (for Chrome version 131)
-          wget https://chromedriver.storage.googleapis.com/131.0.6778.204/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
-          sudo chmod +x /usr/local/bin/chromedriver
 
       - name: Verify Chromium Installation
         run: |
           which chromium-browser
           chromium-browser --version
-          which chromedriver
-          chromedriver --version
-          ls -l /usr/bin/chromium-browser
-          ls -l /usr/bin/google-chrome
 
       - name: Install Docker Compose
         run: |
@@ -80,13 +62,10 @@ jobs:
         run: ls -R
 
       - name: Run Selenium Tests (accepting patients)
-        env:
-          CHROME_BIN: /usr/bin/chromium-browser
         run: |
+          export CHROME_BIN="/usr/bin/chromium-browser"  
           export PATH=$PATH:/usr/local/bin
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"
-          echo "CHROME_BIN: $CHROME_BIN"
-          echo "CHROME_OPTIONS: $CHROME_OPTIONS"
           pytest ./tests/test_acceptingpatients.py --disable-warnings
 
       - name: Clean up Docker containers
