@@ -38,7 +38,7 @@ jobs:
           pip install -U pytest
           pip install -e .
           pip install webdriver-manager
-          pip install chromedriver-binary==131.0.6778.139.0
+          pip install chromedriver-binary==131.0.6778.139
           sudo apt-get update -y
           sudo apt-get install -y wget libxss1 libappindicator3-1 libindicator7
 
