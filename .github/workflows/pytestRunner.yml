@@ -61,11 +61,11 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 5: Run Selenium Tests
+      # Step 5: Run Selenium Tests  
       - name: Install Selenium dependencies
         run: |
           pip install selenium webdriver-manager
 
-      - name: Run Selenium Tests
+      - name: Run Selenium Tests  
         run: |
-          python tests/selenium_test_login.py
+          python tests/test_acceptingpatients.py  
