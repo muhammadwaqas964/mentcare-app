@@ -3,7 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
+import chromedriver_binary  # Adds chromedriver binary to path
 
 def get_driver():
     options = webdriver.ChromeOptions()
