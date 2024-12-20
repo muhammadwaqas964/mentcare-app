@@ -1,94 +1,49 @@
-name: Run Backend and Frontend Tests
+name: Selenium Test Workflow
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  test-backend-frontend:
-    name: Start and Test Backend & Frontend
+  selenium-tests:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: cs490_GP
-        ports:
-          - 3306:3306
-
     steps:
-      # Step 1: Checkout the code
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python for the backend
+      # Step 2: Install dependencies
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip curl
+          sudo apt-get install -y google-chrome-stable
+          CHROME_VERSION=$(google-chrome --version | grep -oE '[0-9]+')
+          DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+          wget -N "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          rm chromedriver_linux64.zip
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      # Step 3: Set up Python environment and install Selenium
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
-      - name: Install backend dependencies and create virtual environment
+      - name: Install Python dependencies
         run: |
-          cd backend
-          python -m venv venv  # Create virtual environment
+          python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest selenium webdriver-manager
-          cd ..
+          pip install selenium pytest webdriver-manager
 
-      # Step 3: Install Chrome and Chrome WebDriver
-      - name: Install Chrome and WebDriver
+      # Step 4: Run Selenium tests
+      - name: Run Selenium Tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          sudo apt-get install -y chromium-browser
-          CHROME_VERSION=$(chromium-browser --version | grep -oE '[0-9]+')
-          DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          wget -N https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
-          rm chromedriver_linux64.zip
-        env:
-          CHROME_BIN: /usr/bin/chromium-browser
-
-      # Step 4: Set up Node.js for the frontend
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
-
-      # Step 5: Start Backend and Frontend
-      - name: Start Backend and Frontend
-        run: |
-          cd backend
           source venv/bin/activate
-          flask run --host=0.0.0.0 --port=5000 &
-          cd ../frontend
-          npm start &
-          sleep 30  # Wait for services to start
-
-      # Step 6: Run all tests
-      - name: Run Tests
-        run: |
-          cd backend
-          source venv/bin/activate
-          pytest ../tests/
-
-      # Step 7: Debug Python Environment (Optional, for troubleshooting)
-      - name: Debug Python Environment
-        run: |
-          source backend/venv/bin/activate
-          python --version
-          pip list
+          pytest tests/test_acceptingpatients.py
