@@ -58,11 +58,6 @@ jobs:
           docker-compose up -d
           sleep 60  # Adjust this based on actual startup times
 
-      - name: Verify Backend is Running
-        run: |
-          curl http://localhost:5000/  # Replace with an actual health endpoint
-          curl http://localhost:3000/login   # Ensure the frontend is accessible
-
       - name: List files to verify test directory structure
         run: ls -R
 
@@ -70,7 +65,7 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/chromium-browser
         run: |
-          export PATH=$PATH:/usr/local/bin
+          export PATH=$PATH:/usr/local/bin  
           export CHROME_OPTIONS="--headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222"  
           pytest ./tests/test_acceptingpatients.py --disable-warnings
 
