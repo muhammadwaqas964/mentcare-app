@@ -1,31 +1,72 @@
-name: Selenium Test Setup with WebDriver Manager
+name: Run Backend and Frontend Tests
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  setup-selenium:
+  test-backend-frontend:
+    name: Start and Test Backend & Frontend
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: cs490_GP
+        ports:
+          - 3306:3306
+
     steps:
-      # Step 1: Set up Python Environment
+      # Step 1: Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Python for the backend
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
-      - name: Install Python Dependencies
+      - name: Install backend dependencies and create virtual environment
         run: |
-          python -m venv venv
+          cd backend
+          python -m venv venv  # Create virtual environment
           source venv/bin/activate
           pip install --upgrade pip
+          pip install -r requirements.txt
           pip install pytest selenium webdriver-manager
-          deactivate
+          cd ..
 
-      # Step 2: Run Selenium Test
-      - name: Run Selenium Tests
+      # Step 3: Set up Node.js for the frontend
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install frontend dependencies
         run: |
+          cd frontend
+          npm install
+
+      # Step 4: Start Backend and Frontend
+      - name: Start Backend and Frontend
+        run: |
+          cd backend
           source venv/bin/activate
-          pytest ../tests/
+          flask run --host=0.0.0.0 --port=5000 &
+          cd ../frontend
+          npm start &
+          sleep 30  # Wait for services to start
+
+      # Step 5: Run all tests
+      - name: Run Tests
+        run: |
+          cd backend
+          source venv/bin/activate
+          pytest tests/
