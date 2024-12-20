@@ -45,6 +45,11 @@ services:
       - backend
     networks:
       - my_custom_network
+    healthcheck:
+      test: curl -f http://localhost:3000 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   selenium:
     build:
@@ -58,7 +63,7 @@ services:
     entrypoint: >
       sh -c "sleep 15 && pytest --disable-warnings /tests"
     environment:
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://localhost:3000  
       - BACKEND_URL=http://backend:5000
     networks:
       - my_custom_network
