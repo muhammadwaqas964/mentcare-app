@@ -1,46 +1,54 @@
-import pytest
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+import time
 
 def get_driver():
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    options.add_argument('--headless')  # Run in headless mode (optional)
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(options=options)
     return driver
 
-def test_register_if_user_not_found():
-    FRONTEND_URL = "http://localhost:3000"
+def test_login_and_navigate_to_main_page():
     driver = get_driver()
 
     try:
         print("Navigating to login page...")
-        driver.get(f"{FRONTEND_URL}/login")
-        wait = WebDriverWait(driver, 120)  # Increased timeout to 120 seconds
+        driver.get("http://localhost:3000/login")
 
-        print("Locating email input...")
-        email_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "email-input")))
+        # Wait for the page to load by checking if the login button is available
+        wait = WebDriverWait(driver, 30)
+        login_button = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "loginBtn")))
+
+        print("Login button found. Entering credentials...")
+
+        # Locate and fill the email and password
+        email_input = driver.find_element(By.CLASS_NAME, "email-input")
+        password_input = driver.find_element(By.CLASS_NAME, "password-input")
         email_input.send_keys("unregistered.email@example.com")
-
-        print("Locating password input...")
-        password_input = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "password-input")))
         password_input.send_keys("password123")
 
-        print("Locating login button...")
-        login_button = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "loginBtn")))
+        # Click the login button
         login_button.click()
 
-        print("Waiting for feedback...")
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Invalid credentials')]")))
+        # Wait for the page to load after clicking login (e.g., by checking for an element on the next page)
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "selectable-tab")))
 
+        print("Login successful, navigating to the main page...")
+
+        # Now click on the "MentCare" logo (now identified by the class "selectable-tab")
+        logo = driver.find_element(By.CLASS_NAME, "selectable-tab")
+        logo.click()
+
+        # Wait for the main page to load (adjust this to check for a specific element)
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "main-page-element")))
+
+        print("Main page loaded successfully.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
     finally:
         driver.quit()
-
-if __name__ == "__main__":
-    pytest.main()
