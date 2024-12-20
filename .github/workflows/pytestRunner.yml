@@ -1,4 +1,4 @@
-name: Selenium Test Workflow
+name: Selenium Test Setup with WebDriver Manager
 
 on:
   push:
@@ -6,44 +6,26 @@ on:
       - main
 
 jobs:
-  selenium-tests:
+  setup-selenium:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Install dependencies
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip curl
-          sudo apt-get install -y google-chrome-stable
-          CHROME_VERSION=$(google-chrome --version | grep -oE '[0-9]+')
-          DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          wget -N "https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip"
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
-          rm chromedriver_linux64.zip
-        env:
-          DEBIAN_FRONTEND: noninteractive
-
-      # Step 3: Set up Python environment and install Selenium
+      # Step 1: Set up Python Environment
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
 
-      - name: Install Python dependencies
+      - name: Install Python Dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install selenium pytest webdriver-manager
+          pip install pytest selenium webdriver-manager
+          deactivate
 
-      # Step 4: Run Selenium tests
+      # Step 2: Run Selenium Test
       - name: Run Selenium Tests
         run: |
           source venv/bin/activate
-          pytest tests/test_acceptingpatients.py
+          pytest ../tests/
