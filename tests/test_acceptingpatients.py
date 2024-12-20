@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+import os
 
 def get_driver():
     options = webdriver.ChromeOptions()
@@ -16,11 +17,12 @@ def get_driver():
     return driver
 
 def test_register_if_user_not_found():
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
     driver = get_driver()
 
     try:
         print("Navigating to login page...")
-        driver.get("http://localhost:3000/login")
+        driver.get(f"{FRONTEND_URL}/login")
         wait = WebDriverWait(driver, 120)  # Increased timeout to 120 seconds
 
         # Locate email input by class name and enter text
