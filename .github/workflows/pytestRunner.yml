@@ -33,6 +33,7 @@ jobs:
         with:
           python-version: 3.11
 
+      # Step 3: Install backend dependencies and create virtual environment
       - name: Install backend dependencies and create virtual environment
         run: |
           cd backend
@@ -43,7 +44,7 @@ jobs:
           pip install pytest selenium webdriver-manager
           cd ..
 
-      # Step 3: Set up Node.js for the frontend
+      # Step 4: Set up Node.js for the frontend
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -53,14 +54,6 @@ jobs:
         run: |
           cd frontend
           npm install
-
-      # Step 4: Install Chrome and ChromeDriver for Selenium
-      - name: Install Chrome and ChromeDriver for Selenium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-          sudo apt-get install -y chromium-chromedriver
-          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
 
       # Step 5: Start Backend and Frontend
       - name: Start Backend and Frontend
@@ -72,16 +65,16 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 6: Run Specific Selenium Test (test_acceptingpatients.py)
-      - name: Run Selenium Test for accepting patients
+      # Step 6: Run all tests (including backend, frontend, and selenium tests)
+      - name: Run all tests
         run: |
           cd backend
           source venv/bin/activate
-          pytest tests/test_acceptingpatients.py --disable-warnings  # Corrected path to tests/test_acceptingpatients.py
+          pytest ../tests/ --disable-warnings  # Run all tests in the tests directory
 
-      # Step 7: Run All Tests in the tests Directory
-      - name: Run All Tests
+      # Step 7: Run specific Selenium test file - test_acceptingpatients.py
+      - name: Run test_acceptingpatients.py
         run: |
           cd backend
           source venv/bin/activate
-          pytest tests/ --disable-warnings  # Run all tests in the 'tests' directory
+          pytest ../tests/test_acceptingpatients.py --disable-warnings  # Run specific test file (Selenium test)
