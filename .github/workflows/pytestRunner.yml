@@ -43,7 +43,22 @@ jobs:
           pip install pytest selenium webdriver-manager
           cd ..
 
-      # Step 3: Set up Node.js for the frontend
+      # Step 3: Install Chrome and Chrome WebDriver
+      - name: Install Chrome and WebDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          sudo apt-get install -y chromium-browser
+          CHROME_VERSION=$(chromium-browser --version | grep -oE '[0-9]+')
+          DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+          wget -N https://chromedriver.storage.googleapis.com/$DRIVER_VERSION/chromedriver_linux64.zip
+          unzip chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/
+          rm chromedriver_linux64.zip
+        env:
+          CHROME_BIN: /usr/bin/chromium-browser
+
+      # Step 4: Set up Node.js for the frontend
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -54,7 +69,7 @@ jobs:
           cd frontend
           npm install
 
-      # Step 4: Start Backend and Frontend
+      # Step 5: Start Backend and Frontend
       - name: Start Backend and Frontend
         run: |
           cd backend
@@ -64,9 +79,16 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 5: Run all tests
+      # Step 6: Run all tests
       - name: Run Tests
         run: |
           cd backend
           source venv/bin/activate
           pytest ../tests/
+
+      # Step 7: Debug Python Environment (Optional, for troubleshooting)
+      - name: Debug Python Environment
+        run: |
+          source backend/venv/bin/activate
+          python --version
+          pip list
