@@ -67,5 +67,7 @@ jobs:
       # Step 5: Run Selenium Tests (test_acceptingpatients.py)
       - name: Run Selenium Tests (test_acceptingpatients.py)
         run: |
+          cd backend
           source venv/bin/activate  # Activate virtual environment
+          cd ../
           pytest tests/test_acceptingpatients.py --disable-warnings  # Running only the test_acceptingpatients.py file
