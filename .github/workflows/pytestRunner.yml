@@ -31,14 +31,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: 3.11  # Match your local version
 
       - name: Install backend dependencies
         run: |
-          cd backend
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest selenium webdriver-manager
 
       # Step 3: Set up Node.js for the frontend
       - name: Set up Node.js
@@ -61,12 +62,8 @@ jobs:
           npm start &
           sleep 30  # Wait for services to start
 
-      # Step 5: Install Selenium dependencies
-      - name: Install Selenium dependencies
+      # Step 5: Run all tests
+      - name: Run Tests
         run: |
-          pip install selenium webdriver-manager
-
-      # Step 6: Run `test_acceptingpatients.py`
-      - name: Run Selenium Test
-        run: |
-          python tests/test_acceptingpatients.py
+          source venv/bin/activate
+          pytest tests/
