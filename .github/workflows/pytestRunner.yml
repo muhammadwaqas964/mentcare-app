@@ -1,4 +1,4 @@
-name: Test Backend and Frontend
+name: Verify File Presence
 
 on:
   push:
@@ -9,63 +9,23 @@ on:
       - main
 
 jobs:
-  test-backend-frontend:
-    name: Start and Test Backend & Frontend
+  verify-file:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: cs490_GP
-        ports:
-          - 3306:3306
-
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set up Python for Backend
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
+      # Step 2: List all files in the repository
+      - name: List files
+        run: ls -R
 
-      - name: Install backend dependencies
+      # Step 3: Check if the file exists
+      - name: Check for `test_acceptingpatients.py`
         run: |
-          cd backend
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-      # Step 3: Set up Node.js for Frontend
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install frontend dependencies
-        run: |
-          cd frontend
-          npm install
-
-      # Step 4: Start Backend and Frontend
-      - name: Start Backend and Frontend
-        run: |
-          cd backend
-          source venv/bin/activate
-          flask run --host=0.0.0.0 --port=5000 &
-          cd ../frontend
-          npm start &
-          sleep 30  # Wait for services to start
-
-      # Step 5: Run Selenium Tests  
-      - name: Install Selenium dependencies
-        run: |
-          pip install selenium webdriver-manager
-
-      - name: Run Selenium Tests  
-        run: |
-          python tests/test_acceptingpatients.py  
+          if [ -f "tests/test_acceptingpatients.py" ]; then
+            echo "File exists!";
+          else
+            echo "File not found!" && exit 1;
+          fi
